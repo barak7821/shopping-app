@@ -1,0 +1,195 @@
+import React, { useEffect, useState } from 'react'
+import { NavLink, Link } from 'react-router-dom'
+import { useAuth } from '../utils/AuthContext';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+import { FiUser, FiSearch, FiShoppingCart, FiMenu, FiX } from "react-icons/fi"
+import { log } from '../utils/log';
+import { useCart } from '../utils/CartContext';
+import Theme from './Theme';
+
+
+export default function NavBar() {
+    const [cartCount, setCartCount] = useState(0)
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const { isAuthenticated, isAdmin } = useAuth()
+    const { cart } = useCart()
+
+    useEffect(() => {
+        if (cart) {
+            const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0)
+            setCartCount(totalItems)
+        }
+    }, [cart])
+
+    const logout = () => {
+        localStorage.removeItem('token')
+        window.location.reload()
+    }
+
+    return (
+        <>
+            {/* Big Screen */}
+            <div className="w-full bg-white hidden lg:block sticky top-0 z-40 shadow-sm transition-all duration-200">
+                <div className="max-w-screen-xl mx-auto grid grid-cols-3 items-center py-4 px-6 min-h-[64px]">
+                    {/* Logo */}
+                    <img src="https://www.trafongroup.com/wp-content/uploads/2019/04/logo-placeholder.png" alt="Logo" aria-label='Logo' className="h-8" />
+                    {/* Navigation */}
+                    <ul className='flex justify-center items-center gap-8 font-montserrat font-medium'>
+                        {[{ name: "HOME", link: "/", label: "Home" },
+                        { name: "COLLECTION", link: "/collection", label: "Collection" },
+                        { name: "ABOUT", link: "/about", label: "About" },
+                        { name: "CONTACT", link: "/contact", label: "Contact" }].map((item, index) => (
+                            <li key={index}>
+                                <NavLink to={item.link} aria-label={item.label} className={({ isActive }) => isActive
+                                    ? "text-neutral-800 border-b border-neutral-800 pb-1"
+                                    : "text-neutral-800"}>
+                                    {item.name}
+                                </NavLink>
+                            </li>
+                        ))}
+                        {isAdmin && <li>
+                            <NavLink to="/admin" aria-label='Admin' className={({ isActive }) => isActive
+                                ? "text-neutral-800 border-b border-neutral-800 pb-1 whitespace-nowrap"
+                                : "text-neutral-800 whitespace-nowrap"}>
+                                ADMIN PANEL
+                            </NavLink>
+                        </li>
+                        }
+                    </ul>
+
+                    {/* Right - Icons */}
+                    <div className="flex justify-end items-center gap-8">
+                        {/* Search */}
+                        <button aria-label="Search">
+                            <FiSearch size={20} alt="Search" className="w-5 cursor-pointer" />
+                        </button>
+                        {/* Profile */}
+                        {isAuthenticated === true ?
+                            <Menu as="div" className="relative inline-block text-left">
+                                <MenuButton className="pt-1.5" aria-label='Menu'>
+                                    <FiUser size={20} alt="Menu" className="w-5 cursor-pointer" />
+                                </MenuButton>
+                                <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-neutral-200 ring-opacity-5 focus:outline-none z-50">
+                                    <MenuItem as="div">
+                                        <Link to="/profile" aria-label='Profile' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
+                                            My Profile
+                                        </Link>
+                                    </MenuItem>
+                                    <MenuItem as="div">
+                                        <Link to="/settings" aria-label='Settings' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
+                                            Settings
+                                        </Link>
+                                    </MenuItem>
+                                    <MenuItem as="div">
+                                        <button onClick={logout} aria-label='Logout' className="w-full text-left block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
+                                            Logout
+                                        </button>
+                                    </MenuItem>
+                                </MenuItems>
+                            </Menu>
+                            : <Link to="/login" aria-label='Login'>
+                                <FiUser size={20} alt="Menu" className="w-5 cursor-pointer" />
+                            </Link>}
+                        {/* Cart */}
+                        <Link to="/cart" aria-label='Cart' className='relative'>
+                            <FiShoppingCart size={20} alt="Cart" className="w-5 min-w-5" />
+                            {cartCount > 0 &&
+                                <p className="absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full text-[8px]">
+                                    {cartCount}
+                                </p>
+                            }
+                        </Link>
+
+                        {/* Theme */}
+                        <Theme />
+                    </div>
+                </div >
+            </div>
+
+            {/* Mobile Nav */}
+            <div className="flex justify-between items-center py-4 px-6 min-h-[64px] lg:hidden dark:bg-neutral-900 dark:text-white">
+                {/* Logo */}
+                <div className=''>
+                    <img src="https://www.trafongroup.com/wp-content/uploads/2019/04/logo-placeholder.png" alt="Logo" className="h-8" />
+                </div>
+                {/* Right - Icons */}
+                <div className="flex items-center gap-4 ml-4">
+                    {/* Search */}
+                    <button aria-label="Search">
+                        <FiSearch size={20} className="w-5 cursor-pointer" />
+                    </button>
+                    {/* Profile */}
+                    {isAuthenticated === true ?
+                        <Menu as="div" className="relative inline-block">
+                            <MenuButton className="pt-1.5" aria-label='Menu'>
+                                <FiUser size={20} className="w-5 cursor-pointer" />
+                            </MenuButton>
+                            <MenuItems className="absolute right-0 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-neutral-200 ring-opacity-5 focus:outline-none z-50">
+                                <MenuItem as="div">
+                                    <Link to="/" aria-label='Profile' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
+                                        My Profile
+                                    </Link>
+                                </MenuItem>
+                                <MenuItem as="div">
+                                    <Link to="/" aria-label='Settings' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
+                                        Settings
+                                    </Link>
+                                </MenuItem>
+                                <MenuItem as="div">
+                                    <button onClick={logout} aria-label='Logout' className="w-full text-left block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
+                                        Logout
+                                    </button>
+                                </MenuItem>
+                            </MenuItems>
+                        </Menu>
+                        : <Link to="/login" aria-label='Menu'>
+                            <FiUser size={20} className="w-5 cursor-pointer" />
+                        </Link>}
+                    {/* Cart */}
+                    <Link to="/cart" aria-label='Cart' className='relative'>
+                        <FiShoppingCart size={20} className="w-5" />
+                        {cartCount > 0 &&
+                            <p className="absolute right-[-5px] bottom-[-5px] w-4 h-4 flex items-center justify-center bg-black text-white rounded-full text-[8px]">
+                                {cartCount}
+                            </p>
+                        }
+                    </Link>
+                    {/* Menu Button */}
+                    <button onClick={() => setMobileOpen(true)} aria-label="Open Menu">
+                        <FiMenu size={20} className='w-8 cursor-pointer' />
+                    </button>
+                </div>
+            </div>
+
+            {/* Drawer / Overlay Menu */}
+            {mobileOpen &&
+                <div className="fixed inset-0 z-40 bg-black/40">
+                    {/* Drawer */}
+                    <div className="relative w-full bg-white h-full shadow-lg flex flex-col z-50 dark:bg-neutral-800 dark:text-white">
+                        {/* X icon */}
+                        <button className="absolute top-4 right-4" onClick={() => setMobileOpen(false)} aria-label="Close Menu">
+                            <FiX size={20} alt="Close Menu" className='w-5 cursor-pointer' />
+                        </button>
+                        <nav className="mt-16 flex flex-col gap-2 px-6 font-montserrat font-medium h-full">
+                            {[
+                                { name: 'HOME', link: '/', label: 'Home' },
+                                { name: 'COLLECTION', link: '/collection', label: 'Collection' },
+                                { name: 'ABOUT', link: '/about', label: 'About' },
+                                { name: 'CONTACT', link: '/contact', label: 'Contact' }
+                            ].map((item, index) => (
+                                <NavLink key={index} to={item.link} aria-label={item.label} onClick={() => setMobileOpen(false)} className="py-2 border-b text-neutral-800 dark:text-white">{item.name}</NavLink>
+                            ))}
+                            {/* ADMIN */}
+                            {isAuthenticated &&
+                                <NavLink to="/admin" aria-label='Admin' onClick={() => setMobileOpen(false)} className="py-2 border-b text-neutral-800">ADMIN PANEL</NavLink>
+                            }
+                            <div className='mt-auto mb-6 flex items-center justify-center gap-4'>
+                                <Theme />
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            }
+        </>
+    )
+}
