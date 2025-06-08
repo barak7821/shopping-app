@@ -7,6 +7,8 @@ import Product from './pages/Product.jsx';
 import Cart from './pages/Cart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import Payment from './pages/Payment.jsx';
+import Profile from './pages/Profile.jsx';
+import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
 
 function App() {
   return (
@@ -17,6 +19,7 @@ function App() {
       <Route path='/cart' element={<Cart />} />
       <Route path='/checkout' element={<Checkout />} />
       <Route path='/payment' element={<Payment />} />
+      <Route path='/profile' element={<ProtectedRouteAuth><Profile /></ProtectedRouteAuth>} />
       <Route path='/product/:productId' element={<Product />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

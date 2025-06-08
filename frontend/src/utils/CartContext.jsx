@@ -17,7 +17,7 @@ export const CartProvider = ({ children }) => {
     // function to add an item to the cart
     const addToCart = (productId, size) => {
         setCart(prevCart => {
-            const existingIndex = prevCart.findIndex(item => item.id === productId && item.size === size) // check if the item already exists in the cart
+            const existingIndex = prevCart.findIndex(item => item._id === productId && item.size === size) // check if the item already exists in the cart
 
             if (existingIndex !== -1) { // if the item already exists
                 const updated = [...prevCart] // create a copy of the cart
@@ -40,7 +40,7 @@ export const CartProvider = ({ children }) => {
     // function to remove/decrement an item from the cart
     const removeFromCart = (productId, size) => {
         setCart(prevCart => {
-            const existingIndex = prevCart.findIndex(item => item.id === productId && item.size === size) // check if the item already exists in the cart
+            const existingIndex = prevCart.findIndex(item => item._id === productId && item.size === size) // check if the item already exists in the cart
 
             if (existingIndex === -1) { // if the item doesn't exist
                 return prevCart
@@ -66,7 +66,7 @@ export const CartProvider = ({ children }) => {
     const clearItem = (productId, size) => {
         setCart(prevCart => {
             const updated = prevCart.filter(
-                item => !(item.id === productId && item.size === size)
+                item => !(item._id === productId && item.size === size)
             )
             localStorage.setItem("cart", JSON.stringify(updated))
             return updated

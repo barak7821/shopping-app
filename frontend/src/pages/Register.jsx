@@ -160,7 +160,7 @@ export default function Home() {
           <div className="w-full flex flex-col gap-1">
             <label htmlFor="password" className="font-semibold text-[#232323] text-sm mb-1">Password</label>
             <div className="relative">
-              <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} placeholder="Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+              <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} autoComplete='off' placeholder="Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
               {password &&
                 <button className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <FiEye /> : <FiEyeOff />}
@@ -179,7 +179,7 @@ export default function Home() {
           <div className="w-full flex flex-col gap-1">
             <label htmlFor="confirmPassword" className="font-semibold text-[#232323] text-sm mb-1">Confirm Password</label>
             <div className="relative">
-              <input id="confirmPassword" onChange={e => setConfirmPassword(e.target.value)} value={confirmPassword} type={showConfirmPassword ? "text" : "password"} placeholder="Confirm Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+              <input id="confirmPassword" onChange={e => setConfirmPassword(e.target.value)} value={confirmPassword} type={showConfirmPassword ? "text" : "password"} autoComplete="off" placeholder="Confirm Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
               {confirmPassword &&
                 <button className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                   {showConfirmPassword ? <FiEye /> : <FiEyeOff />}

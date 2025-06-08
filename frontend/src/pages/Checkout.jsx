@@ -45,7 +45,7 @@ export default function Checkout() {
 
       // Update states with fetched data
       setName(data?.name || "")
-      setEmail(data.email || "")
+      setEmail(data?.email || "")
       setPhone(data?.phone || "")
       setStreet(data?.street || "")
       setCity(data?.city || "")
@@ -54,7 +54,7 @@ export default function Checkout() {
 
       setLoading(false)
     } catch (error) {
-      console.error("Failed to fetch user data", error)
+      errorLog("Failed to fetch user data", error)
       notyf.error("Something went wrong. Please try again later.")
       setLoading(false)
     }

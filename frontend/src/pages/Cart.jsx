@@ -1,21 +1,45 @@
 import React, { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar';
-import { log } from '../utils/log';
+import { errorLog, log } from '../utils/log';
 import { useCart } from '../utils/CartContext';
-import demoData from '../../demoData';
 import { FiX } from "react-icons/fi"
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
+import axios from 'axios';
+import { Notyf } from 'notyf';
+import 'notyf/notyf.min.css';
+import Loading from '../components/Loading';
 
 export default function Cart() {
     const nav = useNavigate()
-    const [fullCart, setFullCart] = useState([])
+    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const { cart, removeFromCart, addToCart, clearItem } = useCart()
+    const [fullCart, setFullCart] = useState([])
+    const [productsList, setProductsList] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    const getProducts = async () => {
+        setLoading(true)
+        try {
+            const { data } = await axios.get('http://localhost:3000/api/products')
+            log("Products:", data)
+            setProductsList(data)
+        } catch (error) {
+            errorLog("Error in getProducts", error)
+            notyf.error("Something went wrong. Please try again later.")
+        } finally {
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
-        const items = cart.map(cartItem => { // get the product from the demoData
-            const product = demoData.find(item => item.id === cartItem.id) // find the product by id in the demoData
+        getProducts() // Get products from the server
+    }, [])
+
+    useEffect(() => {
+        const items = cart.map(cartItem => { // get the product from the localStorage
+            const product = productsList.find(item => item._id === cartItem.id)
             return product
                 ? {
                     ...product,
@@ -29,7 +53,13 @@ export default function Cart() {
 
         log(`items:${items}`)
         log(`fullCart:${fullCart}`)
-    }, [cart])
+    }, [cart, productsList])
+
+    if (loading) {
+        return (
+            <Loading />
+        )
+    }
 
     return (
         <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6]">
@@ -51,12 +81,12 @@ export default function Cart() {
                             </button>
                         </div>
                     ) : (fullCart.map(item => (
-                        <div key={`${item.id}-${item.size}`} className="flex items-center justify-between gap-8 bg-white/90 rounded-2xl shadow-md p-5">
+                        <div key={`${item._id}-${item.size}`} className="flex items-center justify-between gap-8 bg-white/90 rounded-2xl shadow-md p-5">
                             {/* Image + Info */}
                             <div className="flex items-center gap-6">
                                 <img src={item.image} alt={item.title} className="w-28 h-28 object-cover rounded-xl border border-[#f2e8db] shadow-sm" />
                                 <div>
-                                    <h3 className="text-xl font-semibold text-[#1a1a1a] mb-1">{item.title}</h3>
+                                    <h3 className="text-xl font-semibold text-[#1a1a1a] mb-1">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
                                     <p className="text-sm text-gray-500 mb-1">Size: <span className="font-bold">{item.size?.toUpperCase()}</span></p>
                                     <p className="text-lg font-bold text-[#1a1a1a]">${(+item.price * item.quantity).toFixed(2)}</p>
                                 </div>
@@ -73,7 +103,7 @@ export default function Cart() {
                                 <button onClick={() => addToCart(item.id, item.size)} className="px-3 py-1 bg-gray-200 rounded cursor-pointer" aria-label="Increase quantity" title="Increase">+</button>
 
                                 {/* Remove from cart */}
-                                <button onClick={() => clearItem(item.id, item.size)} className="p-2 hover:bg-[#f5f3ef] rounded-full transition group" aria-label="Remove from cart" title="Remove">
+                                <button onClick={() => clearItem(item.id, item.size)} className="p-2 hover:bg-[#f5f3ef] rounded-full transition group cursor-pointer" aria-label="Remove from cart" title="Remove">
                                     <FiX className="w-7 h-7 text-gray-400 group-hover:text-[#c1a875] transition" />
                                 </button>
                             </div>

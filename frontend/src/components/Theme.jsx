@@ -25,7 +25,7 @@ export default function Theme() {
     }
 
     return (
-        <button onClick={handleThemeChange} aria-label={themeBtn ? "Switch to light mode" : "Switch to dark mode"} className="bg-transparent border-none outline-none transition text-neutral-800 hover:text-[#c1a875] focus:text-[#c1a875] active:scale-95 cursor-pointer dark:text-white"
+        <button onClick={handleThemeChange} aria-label={themeBtn ? "Switch to light mode" : "Switch to dark mode"} className="bg-transparent border-none outline-none transition text-neutral-800 hover:text-[#c1a875] focus:text-[#c1a875] active:scale-95 cursor-pointer"
             style={{ lineHeight: 0 }}>
             {themeBtn ? <FiMoon className="text-2xl" /> : <FiSun className="text-2xl" />}
         </button>

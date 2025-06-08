@@ -1,12 +1,44 @@
 import NavBar from '../components/NavBar';
-import demoData from '../../demoData';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
 import { FiRefreshCw, FiShield, FiHeadphones } from "react-icons/fi"
+import { useEffect, useState } from 'react';
+import { errorLog, log } from '../utils/log';
+import axios from 'axios';
+import { Notyf } from 'notyf';
+import 'notyf/notyf.min.css';
+import Loading from '../components/Loading';
 
 export default function Home() {
     const nav = useNavigate()
+    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+    const [productsList, setProductsList] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    const getProducts = async () => {
+        setLoading(true)
+        try {
+            const { data } = await axios.get('http://localhost:3000/api/products')
+            setProductsList(data)
+            log("Products:", data)
+        } catch (error) {
+            errorLog("Error in getProducts", error)
+            notyf.error("Something went wrong. Please try again later.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        getProducts()
+    }, [])
+
+    if (loading) {
+        return (
+            <Loading />
+        )
+    }
 
     return (
         <div className='min-h-screen flex flex-col font-montserrat dark:bg-neutral-900'>
@@ -52,8 +84,8 @@ export default function Home() {
                     {/* Products */}
                     <div className="w-full max-w-[1280px] mx-auto">
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12 px-4 md:px-0">
-                            {demoData.map((item) => (
-                                <div key={item.id} onClick={() => nav(`/product/${item.id}`)} className="flex flex-col items-center group cursor-pointer">
+                            {productsList.map(item =>
+                                <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
                                     {/* Image */}
                                     <div className="w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
                                         <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6", }} />
@@ -67,7 +99,7 @@ export default function Home() {
                                         </p>
                                     </div>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 </section>
@@ -87,8 +119,8 @@ export default function Home() {
                     {/* Products */}
                     <div className="w-full max-w-[1280px] mx-auto">
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12 px-4 md:px-0">
-                            {demoData.slice(0, 5).map((item) => (
-                                <div key={item.id} onClick={() => nav(`/product/${item.id}`)} className="flex flex-col items-center group cursor-pointer">
+                            {productsList.slice(0, 5).map((item) => (
+                                <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
                                     {/* Image */}
                                     <div className="relative w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
                                         <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />

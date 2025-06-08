@@ -163,7 +163,7 @@ export default function NavBar() {
 
             {/* Drawer / Overlay Menu */}
             {mobileOpen &&
-                <div className="fixed inset-0 z-40 bg-black/40">
+                <div className="fixed inset-0 z-40 bg-black/40 lg:hidden">
                     {/* Drawer */}
                     <div className="relative w-full bg-white h-full shadow-lg flex flex-col z-50 dark:bg-neutral-800 dark:text-white">
                         {/* X icon */}

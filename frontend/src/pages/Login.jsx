@@ -119,7 +119,7 @@ export default function Login() {
                     <div className="w-full flex flex-col gap-1">
                         <label htmlFor="password" className="font-semibold text-[#232323] text-sm mb-1">Password</label>
                         <div className='relative'>
-                            <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} placeholder='Password...' className='w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50' />
+                            <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} autoComplete='off' placeholder='Password...' className='w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50' />
                             {password &&
                                 <button className='absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer' onClick={() => setShowPassword(!showPassword)}>
                                     {showPassword ? <FiEye /> : <FiEyeOff />}

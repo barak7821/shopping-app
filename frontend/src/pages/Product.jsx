@@ -1,33 +1,62 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import demoData from '../../demoData'
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
-import { log } from '../utils/log';
+import { errorLog, log } from '../utils/log';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { useCart } from '../utils/CartContext';
+import axios from 'axios';
+import Loading from '../components/Loading';
 
 export default function Product() {
     const { productId } = useParams()
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+    const { addToCart } = useCart()
     const [size, setSize] = useState("")
     const [activeTab, setActiveTab] = useState("description")
-    const item = demoData.find(item => item.id === productId) // Find product by id
-    const { addToCart } = useCart()
+    const [item, setItem] = useState({})
+    const [loading, setLoading] = useState(true)
 
+    const getProducts = async () => {
+        setLoading(true)
+        try {
+            const { data } = await axios.get('http://localhost:3000/api/products')
+            log("Products:", data)
+
+            const item = data.find(item => item._id === productId) // Find product by id
+            setItem(item)
+            log("Product:", item)
+        } catch (error) {
+            errorLog("Error in getProducts", error)
+            notyf.error("Something went wrong. Please try again later.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        getProducts() // Get products from the server
+    }, [])
+
+    // Function to add the product to the cart
     const handleClick = () => {
-        if (!size) {
+        if (!size) { // Check if size is selected
             notyf.error("Please select a size")
             errorLog("Please select a size")
             return
         }
 
-
         // Add to cart
-        addToCart(item.id, size)
+        addToCart(item._id, size)
         log("Add to cart clicked")
+    }
+
+    if (loading) {
+        return (
+            <Loading />
+        )
     }
 
     return (
@@ -42,10 +71,9 @@ export default function Product() {
 
                 {/* Details section */}
                 <div className='flex flex-col max-w-md pl-5 justify-center'>
-                    <h1 className='text-4xl font-bold mb-4'>{item.title}</h1>
-                    <p className='text-gray-700'>⭐⭐⭐⭐⭐ ({item.rating})</p>
+                    <h1 className='text-4xl font-bold mb-4'>{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h1>
                     <div className='flex flex-col py-5'>
-                        <p className="text-gray-800 font-[#1a1a1a] font-bold text-3xl">${item.price.toFixed(2)}</p>
+                        <p className="text-gray-800 font-[#1a1a1a] font-bold text-3xl">${item.price}</p>
                     </div>
                     <p className="text-gray-600 mb-10">{item.description}
                         Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem eum maxime rerum quibusdam eius qui suscipit eligendi corrupti unde perferendis deserunt provident, quas consectetur molestias, pariatur porro ratione. Accusantium, sint.
@@ -54,12 +82,9 @@ export default function Product() {
                     {/* Size */}
                     <p className='text-gray-700'>Select Size</p>
                     <div className='flex gap-2 py-2'>
-                        <button onClick={e => setSize(e.target.value)} value={"xs"} className={`bg-gray-200 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === "xs" ? "bg-gray-500" : ""}`}>XS</button>
-                        <button onClick={e => setSize(e.target.value)} value={"s"} className={`bg-gray-200 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === "s" ? "bg-gray-500" : ""}`}>S</button>
-                        <button onClick={e => setSize(e.target.value)} value={"m"} className={`bg-gray-200 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === "m" ? "bg-gray-500" : ""}`}>M</button>
-                        <button onClick={e => setSize(e.target.value)} value={"l"} className={`bg-gray-200 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === "l" ? "bg-gray-500" : ""}`}>L</button>
-                        <button onClick={e => setSize(e.target.value)} value={"xl"} className={`bg-gray-200 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === "xl" ? "bg-gray-500" : ""}`}>XL</button>
-                        <button onClick={e => setSize(e.target.value)} value={"xxl"} className={`bg-gray-200 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === "xxl" ? "bg-gray-500" : ""}`}>XXL</button>
+                        {item.sizes.map((item, index) =>
+                            <button key={index} onClick={e => setSize(e.target.value)} value={item} className={`bg-gray-200 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === item ? "bg-gray-500" : ""}`}>{item}</button>
+                        )}
                     </div>
 
                     {/* Add to cart */}

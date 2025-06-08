@@ -4,6 +4,7 @@ import dotenv from "dotenv"
 import authRoutes from "./routes/authRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 import orderRoutes from "./routes/orderRoutes.js"
+import productRoutes from "./routes/productRoutes.js"
 import connectToDB from "./utils/dbConfig.js"
 import { errorLog } from "./utils/log.js"
 
@@ -19,6 +20,7 @@ app.use(cors({
 app.use("/api/auth", authRoutes) // authentication routes (eg. register, login)
 app.use("/api/user", userRoutes) // user routes (eg. get, update or remove user details)
 app.use("/api/order", orderRoutes) // order routes (eg. create, get, update or remove order details)
+app.use("/api/products", productRoutes) // product routes (eg. add, get, update or remove product details)
 
 // Define a simple ping endpoint to check if the server is running
 app.get("/api/ping", (req, res) => res.send("Running"))
