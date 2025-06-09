@@ -4,10 +4,10 @@ import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { errorLog, log } from '../utils/log';
 import Loading from '../components/Loading';
-import axios from 'axios';
 import { useAuth } from '../utils/AuthContext';
 import NavBar from '../components/NavBar';
 import { FiEye, FiEyeOff } from "react-icons/fi"
+import { handleLogin } from '../utils/api';
 
 export default function Login() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
@@ -52,10 +52,7 @@ export default function Login() {
         // If all validations pass, proceed with login
         setLoading(true)
         try {
-            const { data } = await axios.post("http://localhost:3000/api/auth/login", {
-                email,
-                password
-            })
+            const data = await handleLogin(email, password)
 
             localStorage.setItem("token", data.token) // Save the token in local storage
             setIsAuthenticated(true) // Update authentication state

@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { FiEye, FiEyeOff } from "react-icons/fi"
 import { useEffect } from 'react';
+import { handleRegister } from '../utils/api.js';
 
 export default function Home() {
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
@@ -85,14 +86,16 @@ export default function Home() {
       return
     }
 
+    const userData = {
+      name,
+      email,
+      password
+    }
+
     // If all validations pass, set loading state and proceed with registration
     setLoading(true)
     try {
-      const { data } = await axios.post("http://localhost:3000/api/auth", {
-        name,
-        email,
-        password
-      })
+      const data = await handleRegister(userData)
 
       localStorage.setItem("token", data.token) // Save the token in local storage
       setIsAuthenticated(true) // Update authentication state

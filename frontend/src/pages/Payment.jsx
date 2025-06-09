@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar';
 import { useCart } from '../utils/CartContext';
 import { errorLog, log } from '../utils/log';
-import demoData from '../../demoData';
 import { FaCreditCard, FaPaypal, FaApplePay, FaGooglePay } from "react-icons/fa6"
 import AboutCard from '../components/AboutCard';
 import Footer from '../components/Footer';
@@ -10,8 +9,8 @@ import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { useNavigate } from 'react-router-dom';
 import Loading from '../components/Loading';
-import axios from 'axios';
 import { useAuth } from '../utils/AuthContext';
+import { fetchProducts, handleGuestOrder, handleOrder } from '../utils/api';
 
 export default function Payment() {
     const nav = useNavigate()
@@ -27,8 +26,23 @@ export default function Payment() {
     const [loading, setLoading] = useState(false)
     const [demoPayment, setDemoPayment] = useState({})
     const { isAuthenticated } = useAuth()
+    const [productsList, setProductsList] = useState([])
 
-    // Verify there is shipping address before continue with payment page
+    // Get products from server
+    const getProducts = async () => {
+        setLoading(true)
+        try {
+            const data = await fetchProducts()
+            setProductsList(data)
+        } catch (error) {
+            errorLog("Error in getProducts", error)
+            notyf.error("Something went wrong. Please try again later.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // Verify there is shipping address before continue with payment page - shipping address is required!
     useEffect(() => {
         setLoading(true)
         if (!address || Object.keys(address).length === 0) {
@@ -41,14 +55,17 @@ export default function Payment() {
         }
 
         log(address)
+
+        getProducts() // get products from server
     }, [address])
 
     useEffect(() => {
-        const items = cart.map(cartItem => { // get the product from the demoData
-            const product = demoData.find(item => item.id === cartItem.id) // find the product by id in the demoData
+        const items = cart.map(cartItem => { // get the product from the localStorage
+            const product = productsList.find(item => item._id === cartItem.id) // find the product by id in the server
             return product
                 ? {
                     ...product,
+                    id: product._id,
                     size: cartItem.size,
                     quantity: cartItem.quantity
                 }
@@ -56,8 +73,8 @@ export default function Payment() {
         }).filter(Boolean) // remove null values
 
         setFullCart(items)
-        log("fullCart updated", items)
-    }, [cart])
+        log("fullCart updated", fullCart)
+    }, [cart, productsList])
 
     // Format credit card number with spaces
     const formatCardNumber = (value) => {
@@ -175,33 +192,30 @@ export default function Payment() {
             }
         }
 
+        // Prepare order details
+        const orderDetails = {
+            orderItems: fullCart.map(item => ({
+                id: item.id,
+                price: item.price,
+                quantity: item.quantity,
+                size: item.size
+            })),
+            shippingAddress: address,
+            paymentMethod: paymentMethod,
+        }
+
+        log("orderDetails:", orderDetails)
+
         // Send order details to backend
         try {
-            const orderDetails = {
-                orderItems: fullCart.map(item => ({
-                    id: item.id,
-                    price: item.price,
-                    quantity: item.quantity,
-                    size: item.size
-                })),
-                shippingAddress: address,
-                paymentMethod: paymentMethod,
-            }
-
-            log("orderDetails:", orderDetails)
-
-            const token = localStorage.getItem("token") // get token from local storage
-            setCart([])
-
             // check if user is authenticated, to set route
-            const response = isAuthenticated
-                ? await axios.post("http://localhost:3000/api/order", { orderDetails }, { headers: { Authorization: `Bearer ${token}` } })
-                : await axios.post("http://localhost:3000/api/order/guest", { orderDetails })
-
-            log("Order created successfully:", response.data)
+            const data = isAuthenticated
+                ? await handleOrder(orderDetails)
+                : await handleGuestOrder(orderDetails)
 
             // clear cart and redirect to order success page
             localStorage.removeItem("cart")
+            setCart([]) // clear cart
 
             notyf.success("Order created successfully!")
             nav("/orderSuccess")

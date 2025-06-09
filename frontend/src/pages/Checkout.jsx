@@ -9,9 +9,9 @@ import 'notyf/notyf.min.css';
 import { getNames } from 'country-list';
 import stringSimilarity from 'string-similarity';
 import { useCart } from '../utils/CartContext';
-import axios from 'axios';
 import { useAuth } from '../utils/AuthContext';
 import Loading from '../components/Loading';
+import { fetchUserData } from '../utils/api';
 
 export default function Checkout() {
   const nav = useNavigate()
@@ -30,18 +30,14 @@ export default function Checkout() {
   const [error, setError] = useState(false)
 
   // get user data from server on load if user logged in
-  const fetchUserData = async () => { // if user not logged in, return
+  const getUserData = async () => { // if user not logged in, return
     if (!isAuthenticated) {
       setLoading(false)
       return
     }
-    const token = localStorage.getItem("token") // get token from local storage
 
     try {
-      const { data } = await axios.get("http://localhost:3000/api/user", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      log("User data:", data) // log user data
+      const data = await fetchUserData()
 
       // Update states with fetched data
       setName(data?.name || "")
@@ -63,7 +59,7 @@ export default function Checkout() {
   // fetch user data on load
   useEffect(() => {
     setLoading(true)
-    fetchUserData()
+    getUserData()
   }, [isAuthenticated])
 
   const handleClick = () => {

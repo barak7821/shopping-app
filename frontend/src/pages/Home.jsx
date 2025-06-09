@@ -5,10 +5,10 @@ import AboutCard from '../components/AboutCard';
 import { FiRefreshCw, FiShield, FiHeadphones } from "react-icons/fi"
 import { useEffect, useState } from 'react';
 import { errorLog, log } from '../utils/log';
-import axios from 'axios';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import Loading from '../components/Loading';
+import { fetchProducts } from '../utils/api';
 
 export default function Home() {
     const nav = useNavigate()
@@ -19,7 +19,7 @@ export default function Home() {
     const getProducts = async () => {
         setLoading(true)
         try {
-            const { data } = await axios.get('http://localhost:3000/api/products')
+            const data = await fetchProducts()
             setProductsList(data)
             log("Products:", data)
         } catch (error) {

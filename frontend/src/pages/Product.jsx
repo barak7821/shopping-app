@@ -7,8 +7,8 @@ import { errorLog, log } from '../utils/log';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { useCart } from '../utils/CartContext';
-import axios from 'axios';
 import Loading from '../components/Loading';
+import { fetchProducts } from '../utils/api';
 
 export default function Product() {
     const { productId } = useParams()
@@ -22,9 +22,7 @@ export default function Product() {
     const getProducts = async () => {
         setLoading(true)
         try {
-            const { data } = await axios.get('http://localhost:3000/api/products')
-            log("Products:", data)
-
+            const data = await fetchProducts()
             const item = data.find(item => item._id === productId) // Find product by id
             setItem(item)
             log("Product:", item)

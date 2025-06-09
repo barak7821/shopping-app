@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar'
-import axios from 'axios'
 import { errorLog, log } from '../utils/log'
 import { Notyf } from 'notyf'
 import 'notyf/notyf.min.css'
@@ -11,6 +10,7 @@ import stringSimilarity from 'string-similarity';
 import AboutCard from '../components/AboutCard';
 import Footer from '../components/Footer';
 import { FiX } from "react-icons/fi"
+import { fetchUserData, handleUpdateUser } from '../utils/api'
 
 export default function Profile() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top', }, })
@@ -29,18 +29,14 @@ export default function Profile() {
     const [Address, setAddress] = useState(false)
 
     // get user data from server on load
-    const fetchUserData = async () => { // if user not logged in, return
+    const getUserData = async () => { // if user not logged in, return
         if (!isAuthenticated) {
             setLoading(false)
             return
         }
-        const token = localStorage.getItem("token") // get token from local storage
 
         try {
-            const { data } = await axios.get("http://localhost:3000/api/user", {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            log("User data:", data) // log user data
+            const data = await fetchUserData()
 
             // Update states with fetched data
             setName(data?.name || "")
@@ -62,7 +58,7 @@ export default function Profile() {
     // fetch user data on load
     useEffect(() => {
         setLoading(true)
-        fetchUserData()
+        getUserData()
     }, [isAuthenticated])
 
     // Function to update user data in server
@@ -120,25 +116,23 @@ export default function Profile() {
             setMatchCountry("")
         }
 
-        // Update user data
-        const data = {}
+        // Set object to update user data
+        const userData = {}
+
         // Only update fields that are provided
-        if (name) data.name = name
-        if (email) data.email = email
-        if (phone || phone === "") data.phone = phone
-        if (street || street === "") data.street = street.toLowerCase()
-        if (city || city === "") data.city = city.toLowerCase()
-        if (zip || zip === "") data.zip = zip
-        if (country || country === "") data.country = country.toLowerCase()
+        if (name) userData.name = name
+        if (email) userData.email = email
+        if (phone || phone === "") userData.phone = phone
+        if (street || street === "") userData.street = street.toLowerCase()
+        if (city || city === "") userData.city = city.toLowerCase()
+        if (zip || zip === "") userData.zip = zip
+        if (country || country === "") userData.country = country.toLowerCase()
 
-        const token = localStorage.getItem("token") // get token from local storage
+        // Update user data
         try {
-            const response = await axios.patch("http://localhost:3000/api/user", data, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-
+            const data = await handleUpdateUser(userData)
             notyf.success("User data updated successfully!")
-            log("User data updated successfully", data)
+            log("User data updated successfully", userData)
         } catch (error) {
             errorLog("Failed to update user data", error)
             notyf.error("Something went wrong. Please try again later.")

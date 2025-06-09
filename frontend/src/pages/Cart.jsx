@@ -6,10 +6,10 @@ import { FiX } from "react-icons/fi"
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
-import axios from 'axios';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import Loading from '../components/Loading';
+import { fetchProducts } from '../utils/api';
 
 export default function Cart() {
     const nav = useNavigate()
@@ -22,8 +22,7 @@ export default function Cart() {
     const getProducts = async () => {
         setLoading(true)
         try {
-            const { data } = await axios.get('http://localhost:3000/api/products')
-            log("Products:", data)
+            const data = await fetchProducts()
             setProductsList(data)
         } catch (error) {
             errorLog("Error in getProducts", error)
@@ -43,6 +42,7 @@ export default function Cart() {
             return product
                 ? {
                     ...product,
+                    id: product._id,
                     size: cartItem.size,
                     quantity: cartItem.quantity
                 }

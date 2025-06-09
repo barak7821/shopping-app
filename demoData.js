@@ -1,4 +1,4 @@
-const demoData = [
+[
     {
         "id": "1",
         "title": "T-shirt Classic",
@@ -99,6 +99,4 @@ const demoData = [
         "sizes": ["XS", "S", "M", "L"],
         "rating": 4.6
     }
-];
-
-export default demoData;
+]
