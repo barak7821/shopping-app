@@ -33,6 +33,12 @@ export const updateUserSchemaJoi = Joi.object(
     }
 )
 
+export const updatePasswordSchemaJoi = Joi.object(
+    {
+        password: Joi.string().min(6).max(20).required()
+    }
+)
+
 const userSchema = new mongoose.Schema(
     {
         name: String,

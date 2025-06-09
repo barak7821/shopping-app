@@ -54,7 +54,7 @@ export const checkUserAuth = async () => {
     const { data } = await axios.get(`${baseApiUrl}/auth`, {
         headers: { Authorization: `Bearer ${token}` }
     })
-    log("Check user auth response:", data.exist)
+    log("Check user auth response:", data)
     return data
 }
 
@@ -94,5 +94,31 @@ export const handleUpdateUser = async (userData) => {
         headers: { Authorization: `Bearer ${token}` }
     })
     log("Update user response:", data)
+    return data
+}
+
+// Function to change password
+export const handleChangePassword = async (userData) => {
+    if (!token) {
+        log("No token found")
+        return
+    }
+    const { data } = await axios.patch(`${baseApiUrl}/user/password`, userData, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    log("Change password response:", data)
+    return data
+}
+
+// Function to verify password
+export const verifyPassword = async (password) => {
+    if (!token) {
+        log("No token found")
+        return
+    }
+    const { data } = await axios.post(`${baseApiUrl}/user/password`, { password }, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    log("Verify password response:", data)
     return data
 }

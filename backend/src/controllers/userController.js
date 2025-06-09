@@ -1,5 +1,6 @@
-import User, { updateUserSchemaJoi } from "../models/userModel.js"
+import User, { updatePasswordSchemaJoi, updateUserSchemaJoi } from "../models/userModel.js"
 import { log, errorLog } from "../utils/log.js"
+import { checkPassword, hashPassword } from "../utils/passwordUtils.js"
 
 // Controller to get the logged-in user's details
 export const getUser = async (req, res) => {
@@ -63,6 +64,63 @@ export const deleteUser = async (req, res) => {
         res.status(200).json({ message: "User deleted successfully" })
     } catch (error) {
         errorLog("Error in deleteUser controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+export const changePassword = async (req, res) => {
+    const { password, oldPassword } = req.body
+    try {
+        // Validate input fields
+        if (!password || !oldPassword) return res.status(400).json({ message: "All fields are required" })
+
+        // Validate input against Joi schema
+        await updatePasswordSchemaJoi.validateAsync({ password })
+
+        // check if new password is the same as the old password
+        if (password === oldPassword) {
+            return res.status(400).json({ code: "same", message: "New password cannot be the same as the old password" })
+        }
+
+        // find user
+        const user = await User.findById(req.user.id).select("+password")
+        if (!user) return res.status(400).json({ code: "!exist", message: "User don't exists" })
+
+        // Verify the password
+        const isPasswordValid = await checkPassword(oldPassword, user.password)
+        if (!isPasswordValid) return res.status(400).json({ code: "invalid_pass", message: "Invalid password" })
+
+        // hash the new password
+        const hashedPassword = await hashPassword(password)
+
+        // update the password
+        await User.findByIdAndUpdate(user._id, { password: hashedPassword })
+        log("Password changed successfully")
+        res.status(200).json({ message: "Password changed successfully" })
+    } catch (error) {
+        errorLog("Error in changePassword controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+export const verifyPassword = async (req, res) => {
+    const { password } = req.body
+    try {
+        // Validate input fields
+        if (!password) return res.status(400).json({ message: "All fields are required" })
+
+        // Find user
+        const user = await User.findById(req.user.id).select("+password")
+        if (!user) return res.status(400).json({ code: "!exist", message: "User don't exists" })
+
+        // Verify the password
+        const isPasswordValid = await checkPassword(password, user.password)
+        if (!isPasswordValid) return res.status(400).json({ code: "invalid_pass", message: "Invalid password" })
+
+        log("Password verified successfully")
+        res.status(200).json({ message: "Password verified successfully" })
+    } catch (error) {
+        errorLog("Error in verifyPassword controller", error.message)
         res.status(500).json({ message: error.message || "Internal Server Error" })
     }
 }

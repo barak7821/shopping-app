@@ -10,7 +10,7 @@ import stringSimilarity from 'string-similarity';
 import AboutCard from '../components/AboutCard';
 import Footer from '../components/Footer';
 import { FiX } from "react-icons/fi"
-import { fetchUserData, handleUpdateUser } from '../utils/api'
+import { fetchUserData, handleUpdateUser, verifyPassword } from '../utils/api'
 
 export default function Profile() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top', }, })
@@ -27,6 +27,10 @@ export default function Profile() {
     const countries = getNames() // Get all country names
     const match = stringSimilarity.findBestMatch(country.toLocaleLowerCase(), countries) // find best match between user input and all country names
     const [Address, setAddress] = useState(false)
+    const [verifyByPassword, setVerifyByPassword] = useState(false)
+    const [password, setPassword] = useState("")
+    const [errorPassword, setErrorPassword] = useState("")
+
 
     // get user data from server on load
     const getUserData = async () => { // if user not logged in, return
@@ -60,6 +64,27 @@ export default function Profile() {
         setLoading(true)
         getUserData()
     }, [isAuthenticated])
+
+    const handlePasswordConfirm = async () => {
+        setLoading(true)
+        try {
+            const valid = await verifyPassword(password)
+            if (!valid) {
+                notyf.error("Wrong password!")
+                setLoading(false)
+                return
+            }
+            setVerifyByPassword(false)
+            setPassword("")
+            await handleClick()
+        } catch (error) {
+            errorLog("Error in handlePasswordConfirm", error)
+            notyf.error("Something went wrong. Please try again.")
+            setErrorPassword("Something went wrong. Please try again.")
+        }
+        setLoading(false)
+    }
+
 
     // Function to update user data in server
     const handleClick = async () => {
@@ -251,11 +276,47 @@ export default function Profile() {
                     }
 
                     {/* Update Button */}
-                    <button onClick={handleClick} className="w-full mt-4 py-4 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-lg shadow-md transition hover:bg-white hover:text-black active:scale-95">
+                    <button onClick={() => setVerifyByPassword(true)} className="w-full mt-4 py-4 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-lg shadow-md transition hover:bg-white hover:text-black active:scale-95">
                         Update
                     </button>
                 </div>
             </div>
+
+            {/*  Modal for password verification */}
+            {verifyByPassword &&
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full flex flex-col p-8 gap-5 animate-fadeIn">
+                        <h2 className="text-2xl font-prata font-bold text-[#232323] mb-2 text-center">
+                            Confirm Your Password
+                        </h2>
+                        <p className="text-base text-[#666] text-center mb-2">
+                            For security, please enter your password to update your details.
+                        </p>
+                        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="border border-gray-200 rounded-xl px-4 py-3 text-base font-montserrat bg-neutral-50 focus:ring-2 focus:ring-[#c1a875] focus:outline-none" autoFocus />
+                        {errorPassword && (
+                            <p className='text-sm text-red-500 text-center'>
+                                {errorPassword}
+                            </p>
+                        )}
+
+                        <div className="flex gap-4 mt-4">
+                            <button
+                                onClick={() => setVerifyByPassword(false)}
+                                className="flex-1 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 font-semibold transition hover:bg-gray-100 hover:text-black active:scale-95"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handlePasswordConfirm}
+                                className="flex-1 py-3 rounded-xl bg-[#c1a875] text-white font-semibold shadow-sm border border-[#c1a875] transition hover:bg-[#a68c5a] hover:text-white active:scale-95"
+                            >
+                                Confirm & Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
 
             {/* About Section */}
             <AboutCard />

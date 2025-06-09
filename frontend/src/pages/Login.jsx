@@ -65,9 +65,11 @@ export default function Login() {
 
             if (redirect) {
                 nav(redirect) // Navigate to the specified route
+                window.location.reload()
                 return
             } else {
                 nav("/") // Navigate to home page
+                window.location.reload()
             }
         } catch (error) {
             if (error.response && error.response.status === 400 && error.response.data.code === "!exist") {

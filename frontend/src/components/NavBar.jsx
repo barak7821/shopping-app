@@ -76,8 +76,8 @@ export default function NavBar() {
                                         </Link>
                                     </MenuItem>
                                     <MenuItem as="div">
-                                        <Link to="/settings" aria-label='Settings' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
-                                            Settings
+                                        <Link to="/password" aria-label='Change-Password' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
+                                            Change Password
                                         </Link>
                                     </MenuItem>
                                     <MenuItem as="div">
@@ -131,8 +131,8 @@ export default function NavBar() {
                                     </Link>
                                 </MenuItem>
                                 <MenuItem as="div">
-                                    <Link to="/" aria-label='Settings' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
-                                        Settings
+                                    <Link to="/password" aria-label='Change-Password' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
+                                        Change Password
                                     </Link>
                                 </MenuItem>
                                 <MenuItem as="div">

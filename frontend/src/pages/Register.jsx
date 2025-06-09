@@ -108,6 +108,7 @@ export default function Home() {
       setConfirmPassword("")
 
       nav("/") // Redirect to home page after successful registration
+      window.location.reload()
     } catch (error) {
       setError(true)
       if (error.response && error.response.status === 400 && error.response.data.code === "exist") {

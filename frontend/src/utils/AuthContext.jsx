@@ -22,7 +22,8 @@ export const AuthProvider = ({ children }) => {
 
             // Check if token is valid
             try {
-                const { data } = await checkUserAuth()
+                const data = await checkUserAuth()
+                // reload page if user is authenticated
                 setIsAuthenticated(data.exist)
             } catch (error) {
                 errorLog("Error in checkAuth:", error)
