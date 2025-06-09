@@ -4,7 +4,7 @@ import Joi from "joi"
 export const localSchema = Joi.object(
     {
         name: Joi.string().min(2).max(20).required(),
-        email: Joi.string().email().min(5).max(30).required(),
+        email: Joi.string().email().required(),
         password: Joi.string().min(6).max(20).required(),
         role: Joi.string().default("user"),
         provider: Joi.string().valid("local").default("local"),
@@ -18,6 +18,18 @@ export const googleSchema = Joi.object(
         role: Joi.string().default("user"),
         provider: Joi.string().valid("google").default("google"),
         lastLogin: Joi.date()
+    }
+)
+
+export const updateUserSchemaJoi = Joi.object(
+    {
+        name: Joi.string().min(2).max(20),
+        email: Joi.string().email(),
+        phone: Joi.string().pattern(/^\d{9,15}$/).allow(""),
+        street: Joi.string().allow(""),
+        city: Joi.string().allow(""),
+        zip: Joi.string().allow(""),
+        country: Joi.string().allow("")
     }
 )
 
@@ -42,6 +54,11 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "local" // Default provider is "local", can be "google" or others
         },
+        phone: String,
+        street: String,
+        city: String,
+        zip: String,
+        country: String,
         otpCode: String, // One-time password for verification
         otpExpiresAt: Date // Expiration time for the OTP
     },

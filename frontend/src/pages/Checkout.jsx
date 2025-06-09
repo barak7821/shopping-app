@@ -74,8 +74,8 @@ export default function Checkout() {
       return
     }
 
-    // Check if name is less than 4 characters
-    if (name.length <= 4) {
+    // Check if name is less than 3 characters
+    if (name.length < 3) {
       notyf.error("Full name must be at least 4 characters long")
       log("Full name must be at least 4 characters long")
       return

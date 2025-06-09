@@ -13,9 +13,9 @@ export const orderUserSchemaJoi = Joi.object(
             })
         ).required(),
         shippingAddress: Joi.object({
-            name: Joi.string().required(),
+            name: Joi.string().min(2).max(20).required(),
             email: Joi.string().email().required(),
-            phone: Joi.string().min(10).max(10).pattern(/^[0-9]+$/).required(),
+            phone: Joi.string().pattern(/^[0-9]+$/).required(),
             street: Joi.string().required(),
             city: Joi.string().required(),
             zip: Joi.string().required(),
