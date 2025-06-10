@@ -65,9 +65,8 @@ export default function Payment() {
             return product
                 ? {
                     ...product,
-                    id: product._id,
-                    size: cartItem.size,
-                    quantity: cartItem.quantity
+                    selectedSize: cartItem.size,
+                    selectedQuantity: cartItem.quantity
                 }
                 : null
         }).filter(Boolean) // remove null values
@@ -124,8 +123,6 @@ export default function Payment() {
                 return
             }
         }
-
-
 
         // Check if credit card number is 13-19 digits
         if (paymentMethod === "creditCard" && creditCardNumber.length < 13 || creditCardNumber.length > 19) {
@@ -195,10 +192,10 @@ export default function Payment() {
         // Prepare order details
         const orderDetails = {
             orderItems: fullCart.map(item => ({
-                id: item.id,
-                price: item.price,
-                quantity: item.quantity,
-                size: item.size
+                itemId: item._id,
+                itemPricePerUnit: item.price,
+                selectedQuantity: item.selectedQuantity,
+                selectedSize: item.selectedSize
             })),
             shippingAddress: address,
             paymentMethod: paymentMethod,
@@ -290,13 +287,13 @@ export default function Payment() {
                         <h1 className="text-3xl font-bold mb-7 font-prata text-[#181818]">Order Summary</h1>
                         <div className="bg-white/80 rounded-2xl shadow-sm px-8 py-7 flex flex-col gap-4">
                             {fullCart.map(item =>
-                                <div key={`${item.id}-${item.size}`} className="flex items-center gap-7 border-b border-gray-200 pb-4 last:border-b-0">
+                                <div key={`${item.id}-${item.selectedSize}`} className="flex items-center gap-7 border-b border-gray-200 pb-4 last:border-b-0">
                                     <img src={item.image} alt={item.title} className="w-24 h-24 object-cover rounded-xl border border-[#f2e8db] shadow-sm" />
                                     <div className="flex flex-col gap-1">
-                                        <h3 className="font-semibold text-lg text-[#1a1a1a]">{item.title}</h3>
-                                        <p className="text-sm text-gray-500">Size: <span className="font-bold">{item.size?.toUpperCase()}</span></p>
-                                        <p className="font-base text-sm text-gray-500">{item.quantity}</p>
-                                        <p className="text-base font-black text-[#1a1a1a]">${(+item.price * item.quantity).toFixed(2)}</p>
+                                        <h3 className="font-semibold text-lg text-[#1a1a1a]">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                                        <p className="text-sm text-gray-500">Size: <span className="font-bold">{item.selectedSize?.toUpperCase()}</span></p>
+                                        <p className="font-base text-sm text-gray-500">Quantity: <span className="font-bold">{item.selectedQuantity}</span></p>
+                                        <p className="text-base font-black text-[#1a1a1a]">${(+item.price * item.selectedQuantity).toFixed(2)}</p>
                                     </div>
                                 </div>
                             )}
@@ -306,17 +303,17 @@ export default function Payment() {
                                 <div className="flex justify-between">
                                     <span>Subtotal</span>
                                     <span className="font-bold text-[#1a1a1a]">
-                                        ${(+fullCart.reduce((acc, item) => acc + item.price * item.quantity, 0)).toFixed(2)}
+                                        ${(+fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0)).toFixed(2)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Shipping</span>
-                                    <span className="font-bold text-[#1a1a1a]">${shippingPrice}</span>
+                                    <span className="font-bold text-[#1a1a1a]">${shippingPrice.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-xl pt-2">
                                     <span className="font-bold">Total</span>
                                     <span className="font-bold text-[#1a1a1a]">
-                                        ${(fullCart.reduce((acc, item) => acc + item.price * item.quantity, 0) + +shippingPrice).toFixed(2)}
+                                        ${(fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0) + +shippingPrice).toFixed(2)}
                                     </span>
                                 </div>
                             </div>

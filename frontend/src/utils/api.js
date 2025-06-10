@@ -122,3 +122,16 @@ export const verifyPassword = async (password) => {
     log("Verify password response:", data)
     return data
 }
+
+// Function to fetch orders by user ID
+export const fetchOrdersById = async () => {
+    if (!token) {
+        log("No token found")
+        return
+    }
+    const { data } = await axios.get(`${baseApiUrl}/order`, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    log("Orders by user ID response:", data)
+    return data
+}

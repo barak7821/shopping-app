@@ -35,15 +35,15 @@ export default function NavBar() {
                     <img src="https://www.trafongroup.com/wp-content/uploads/2019/04/logo-placeholder.png" alt="Logo" aria-label='Logo' className="h-8" />
                     {/* Navigation */}
                     <ul className='flex justify-center items-center gap-8 font-montserrat font-medium'>
-                        {[{ name: "HOME", link: "/", label: "Home" },
-                        { name: "COLLECTION", link: "/collection", label: "Collection" },
-                        { name: "ABOUT", link: "/about", label: "About" },
-                        { name: "CONTACT", link: "/contact", label: "Contact" }].map((item, index) => (
+                        {[{ text: "HOME", link: "/", aria: "Home" },
+                        { text: "COLLECTION", link: "/collection", aria: "Collection" },
+                        { text: "ABOUT", link: "/about", aria: "About" },
+                        { text: "CONTACT", link: "/contact", aria: "Contact" }].map((item, index) => (
                             <li key={index}>
-                                <NavLink to={item.link} aria-label={item.label} className={({ isActive }) => isActive
+                                <NavLink to={item.link} aria-label={item.aria} className={({ isActive }) => isActive
                                     ? "text-neutral-800 border-b border-neutral-800 pb-1"
                                     : "text-neutral-800"}>
-                                    {item.name}
+                                    {item.text}
                                 </NavLink>
                             </li>
                         ))}
@@ -70,16 +70,15 @@ export default function NavBar() {
                                     <FiUser size={20} alt="Menu" className="w-5 cursor-pointer" />
                                 </MenuButton>
                                 <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-neutral-200 ring-opacity-5 focus:outline-none z-50">
-                                    <MenuItem as="div">
-                                        <Link to="/profile" aria-label='Profile' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
-                                            My Profile
-                                        </Link>
-                                    </MenuItem>
-                                    <MenuItem as="div">
-                                        <Link to="/password" aria-label='Change-Password' className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
-                                            Change Password
-                                        </Link>
-                                    </MenuItem>
+                                    {[{ text: "My Profile", link: "/profile", aria: "Profile" },
+                                    { text: "My Orders", link: "/orders", aria: "Orders" },
+                                    { text: "Change Password", link: "/password", aria: "Change-Password" }].map((item, index) => (
+                                        <MenuItem key={index} as="div">
+                                            <Link to={item.link} aria-label={item.aria} className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
+                                                {item.text}
+                                            </Link>
+                                        </MenuItem>
+                                    ))}
                                     <MenuItem as="div">
                                         <button onClick={logout} aria-label='Logout' className="w-full text-left block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-gray-900">
                                             Logout

@@ -6,10 +6,10 @@ export const orderUserSchemaJoi = Joi.object(
         userId: Joi.string().required(),
         orderItems: Joi.array().items(
             Joi.object({
-                id: Joi.string().required(),
-                price: Joi.number().required(),
-                quantity: Joi.number().required(),
-                size: Joi.string().required()
+                itemId: Joi.string().required(),
+                itemPricePerUnit: Joi.number().required(),
+                selectedQuantity: Joi.number().required(),
+                selectedSize: Joi.string().required()
             })
         ).required(),
         shippingAddress: Joi.object({
@@ -29,10 +29,10 @@ export const orderGuestSchemaJoi = Joi.object(
         userId: Joi.string().valid("guest").default("guest"),
         orderItems: Joi.array().items(
             Joi.object({
-                id: Joi.string().required(),
-                price: Joi.number().required(),
-                quantity: Joi.number().required(),
-                size: Joi.string().required()
+                itemId: Joi.string().required(),
+                itemPricePerUnit: Joi.number().required(),
+                selectedQuantity: Joi.number().required(),
+                selectedSize: Joi.string().required()
             })
         ).required(),
         shippingAddress: Joi.object({
@@ -56,47 +56,31 @@ const orderSchema = new mongoose.Schema(
         },
         orderItems: [
             {
-                id: String,
-                price: Number,
-                quantity: Number,
-                size: String
+                itemId: String,
+                itemPricePerUnit: Number,
+                selectedQuantity: Number,
+                selectedSize: String
             }
         ],
         shippingAddress: {
-            name: {
-                type: String,
-
-            },
+            name: String,
             email: {
                 type: String,
                 lowercase: true, // Converts email to lowercase before saving
                 trim: true // Removes space from both ends of the email
-
             },
-            phone: {
-                type: String,
+            phone: String,
+            street: String,
+            city: String,
+            zip: String,
+            country: String,
 
-            },
-            street: {
-                type: String,
-
-            },
-            city: {
-                type: String,
-
-            },
-            zip: {
-                type: String,
-
-            },
-            country: {
-                type: String,
-            }
         },
         paymentMethod: String,
-        isDelivered: {
-            type: Boolean,
-            default: false
+        status: {
+            type: String,
+            enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+            default: "pending"
         },
         deliveredAt: Date
     },

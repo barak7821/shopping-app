@@ -9,6 +9,8 @@ import Checkout from './pages/Checkout.jsx';
 import Payment from './pages/Payment.jsx';
 import Profile from './pages/Profile.jsx';
 import Password from './pages/Password.jsx';
+import Orders from './pages/Orders.jsx';
+import OrderDetails from './pages/OrderDetails.jsx';
 import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
 
 function App() {
@@ -23,6 +25,8 @@ function App() {
       <Route path='/payment' element={<Payment />} />
       <Route path='/product/:productId' element={<Product />} />
       <Route path='/profile' element={<ProtectedRouteAuth><Profile /></ProtectedRouteAuth>} />
+      <Route path='/orders' element={<ProtectedRouteAuth><Orders /></ProtectedRouteAuth>} />
+      <Route path='/orders/:orderId' element={<ProtectedRouteAuth><OrderDetails /></ProtectedRouteAuth>} />
       <Route path='/password' element={<ProtectedRouteAuth><Password /></ProtectedRouteAuth>} />
     </Routes>
   )
