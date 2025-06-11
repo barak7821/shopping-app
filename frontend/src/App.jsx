@@ -11,6 +11,7 @@ import Profile from './pages/Profile.jsx';
 import Password from './pages/Password.jsx';
 import Orders from './pages/Orders.jsx';
 import OrderDetails from './pages/OrderDetails.jsx';
+import Collection from './pages/Collection.jsx';
 import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
       <Route path='/register' element={<Register />} />
       <Route path='/login' element={<Login />} />
       <Route path='/cart' element={<Cart />} />
+      <Route path='/collection' element={<Collection />} />
       <Route path='/checkout' element={<Checkout />} />
       <Route path='/payment' element={<Payment />} />
       <Route path='/product/:productId' element={<Product />} />

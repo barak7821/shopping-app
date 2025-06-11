@@ -1,9 +1,9 @@
+import React, { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
 import { FiRefreshCw, FiShield, FiHeadphones } from "react-icons/fi"
-import { useEffect, useState } from 'react';
 import { errorLog, log } from '../utils/log';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
@@ -92,7 +92,7 @@ export default function Home() {
                                     </div>
                                     <div className="flex flex-col items-center w-full">
                                         <h3 className="font-prata text-base md:text-lg text-[#232323] mb-1 text-center">
-                                            {item.title}
+                                            {item.title.replace(/\b\w/g, l => l.toUpperCase())}
                                         </h3>
                                         <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a]">
                                             ${item.price.toFixed(2)}
@@ -185,7 +185,7 @@ export default function Home() {
                     </div>
                 </section>
             </div>
-            
+
             {/* About Section */}
             <AboutCard />
 
