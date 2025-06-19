@@ -76,7 +76,7 @@ export default function Cart() {
                     {fullCart.length === 0 ? (
                         <div className="bg-white/80 rounded-2xl shadow-md py-12 flex flex-col items-center">
                             <p className="text-2xl text-[#80715a] font-semibold mb-3">Your cart is empty.</p>
-                            <button onClick={() => nav("/")} className="px-8 py-3 border border-[#1a1a1a] bg-[#1a1a1a] text-white hover:bg-white hover:text-black transition rounded-2xl shadow font-semibold text-lg active:scale-95 mt-6">
+                            <button onClick={() => nav("/")} className="px-8 py-3 border border-[#1a1a1a] bg-[#1a1a1a] text-white hover:bg-white hover:text-black transition rounded-2xl shadow font-semibold text-lg active:scale-95 mt-6 cursor-pointer">
                                 Shop Now
                             </button>
                         </div>
