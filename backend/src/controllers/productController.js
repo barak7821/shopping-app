@@ -3,10 +3,10 @@ import { errorLog, log } from "../utils/log.js";
 
 // Controller to add a new product
 export const addProduct = async (req, res) => {
-    const { title, category, price, image, description, sizes } = req.body
+    const { title, category, price, image, description, sizes, type } = req.body
     try {
         // Validate input fields
-        if (!title || !category || !price || !image || !description || !sizes) return res.status(400).json({ message: "Missing required fields" })
+        if (!title || !category || !price || !image || !description || !sizes || !type) return res.status(400).json({ message: "Missing required fields" })
 
         // Validate input against Joi schema
         await productSchemaJoi.validateAsync({ title, category, price, image, description, sizes })
@@ -22,7 +22,8 @@ export const addProduct = async (req, res) => {
             price,
             image,
             description,
-            sizes
+            sizes,
+            type: type.toLowerCase()
         })
 
         // Save the new product to the database
@@ -59,15 +60,15 @@ export const addMultipleProducts = async (req, res) => {
         const formattedProducts = []
 
         for (const product of products) {
-            const { title, category, price, image, description, sizes } = product
+            const { title, category, price, image, description, sizes, type } = product
 
             // Check for required fields
-            if (!title || !category || !price || !image || !description || !sizes) {
+            if (!title || !category || !price || !image || !description || !sizes || !type) {
                 return res.status(400).json({ message: `Missing fields in one of the products` })
             }
 
             // Validate with Joi
-            await productSchemaJoi.validateAsync({ title, category, price, image, description, sizes })
+            await productSchemaJoi.validateAsync({ title, category, price, image, description, sizes, type })
 
             // Check if product already exists
             const exists = await Product.findOne({ title: title.toLowerCase() })
@@ -82,7 +83,8 @@ export const addMultipleProducts = async (req, res) => {
                 price,
                 image,
                 description,
-                sizes
+                sizes,
+                type: type.toLowerCase()
             })
         }
 

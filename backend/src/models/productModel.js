@@ -3,12 +3,16 @@ import Joi from "joi";
 
 export const productSchemaJoi = Joi.object(
     {
-        title: Joi.string().min(2).max(20).required(),
+        title: Joi.string().min(2).max(30).required(),
         category: Joi.string().min(2).max(20).required(),
         price: Joi.number().required(),
         image: Joi.string().required(),
         description: Joi.string().required(),
-        sizes: Joi.array().required()
+        sizes: Joi.array().required(),
+        type: Joi.string().valid(
+            "t-shirt", "shirt", "hoodie", "dress", "pants",
+            "shorts", "skirt", "jacket", "leggings"
+        ).required()
     }
 )
 
@@ -19,7 +23,8 @@ const productSchema = new mongoose.Schema(
         price: Number,
         image: String,
         description: String,
-        sizes: [ String ]
+        sizes: [String],
+        type: String,
     },
     { timestamps: true }  // Automatically adds 'createdAt' and 'updatedAt' fields
 )

@@ -84,22 +84,24 @@ export default function Home() {
                     {/* Products */}
                     <div className="w-full max-w-[1280px] mx-auto">
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12 px-4 md:px-0">
-                            {productsList.map(item =>
-                                <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
-                                    {/* Image */}
-                                    <div className="w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
-                                        <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6", }} />
+                            {productsList
+                                .slice(0, 10)
+                                .map(item =>
+                                    <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
+                                        {/* Image */}
+                                        <div className="w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
+                                            <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6", }} />
+                                        </div>
+                                        <div className="flex flex-col items-center w-full">
+                                            <h3 className="font-prata text-base md:text-lg text-[#232323] mb-1 text-center">
+                                                {item.title.replace(/\b\w/g, l => l.toUpperCase())}
+                                            </h3>
+                                            <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a]">
+                                                ${item.price.toFixed(2)}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col items-center w-full">
-                                        <h3 className="font-prata text-base md:text-lg text-[#232323] mb-1 text-center">
-                                            {item.title.replace(/\b\w/g, l => l.toUpperCase())}
-                                        </h3>
-                                        <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a]">
-                                            ${item.price.toFixed(2)}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
+                                )}
                         </div>
                     </div>
                 </section>
