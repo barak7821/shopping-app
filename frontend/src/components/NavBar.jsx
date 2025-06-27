@@ -6,11 +6,13 @@ import { FiUser, FiSearch, FiShoppingCart, FiMenu, FiX } from "react-icons/fi"
 import { log } from '../utils/log';
 import { useCart } from '../utils/CartContext';
 import Theme from './Theme';
+import SearchBar from './SearchBar';
 
 
 export default function NavBar() {
     const [cartCount, setCartCount] = useState(0)
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
     const { isAuthenticated, isAdmin } = useAuth()
     const { cart } = useCart()
 
@@ -24,6 +26,12 @@ export default function NavBar() {
     const logout = () => {
         localStorage.removeItem('token')
         window.location.reload()
+    }
+
+    if (searchOpen) {
+        return (
+            <SearchBar setSearchOpen={setSearchOpen} />
+        )
     }
 
     return (
@@ -60,7 +68,7 @@ export default function NavBar() {
                     {/* Right - Icons */}
                     <div className="flex justify-end items-center gap-8">
                         {/* Search */}
-                        <button aria-label="Search">
+                        <button aria-label="Search" onClick={() => setSearchOpen(true)}>
                             <FiSearch size={20} alt="Search" className="w-5 cursor-pointer" />
                         </button>
                         {/* Profile */}
