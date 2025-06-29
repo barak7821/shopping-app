@@ -8,7 +8,6 @@ import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import Loading from '../components/Loading';
 import { fetchProducts } from '../utils/api';
 
 export default function Cart() {
@@ -55,11 +54,25 @@ export default function Cart() {
         log(`fullCart:${fullCart}`)
     }, [cart, productsList])
 
-    if (loading) {
-        return (
-            <Loading />
-        )
-    }
+    // if (loading) {
+    //     return (
+    //         <Loading />
+    //     )
+    // }
+
+    const skeleton = ( // Loading skeleton for cart items
+        <div className="flex items-center justify-between gap-8 bg-white/90 rounded-2xl shadow-md p-5 animate-pulse">
+            <div className="flex items-center gap-6">
+                <div className="w-28 h-28 bg-gray-200 rounded-xl border border-[#f2e8db]" />
+                <div className="flex flex-col gap-2">
+                    <div className="h-6 w-40 bg-gray-200 rounded" />
+                    <div className="h-4 w-24 bg-gray-100 rounded" />
+                    <div className="h-5 w-20 bg-gray-200 rounded" />
+                </div>
+            </div>
+            <div className="w-10 h-10 bg-gray-100 rounded-xl" />
+        </div>
+    )
 
     return (
         <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6]">
@@ -73,43 +86,45 @@ export default function Cart() {
 
                 {/* Cart Items */}
                 <div className="w-full flex flex-col gap-7">
-                    {fullCart.length === 0 ? (
-                        <div className="bg-white/80 rounded-2xl shadow-md py-12 flex flex-col items-center">
-                            <p className="text-2xl text-[#80715a] font-semibold mb-3">Your cart is empty.</p>
-                            <button onClick={() => nav("/")} className="px-8 py-3 border border-[#1a1a1a] bg-[#1a1a1a] text-white hover:bg-white hover:text-black transition rounded-2xl shadow font-semibold text-lg active:scale-95 mt-6 cursor-pointer">
-                                Shop Now
-                            </button>
-                        </div>
-                    ) : (fullCart.map(item => (
-                        <div key={`${item._id}-${item.size}`} className="flex items-center justify-between gap-8 bg-white/90 rounded-2xl shadow-md p-5">
-                            {/* Image + Info */}
-                            <div className="flex items-center gap-6">
-                                <img src={item.image} alt={item.title} className="w-28 h-28 object-cover rounded-xl border border-[#f2e8db] shadow-sm" />
-                                <div>
-                                    <h3 className="text-xl font-semibold text-[#1a1a1a] mb-1">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
-                                    <p className="text-sm text-gray-500 mb-1">Size: <span className="font-bold">{item.size?.toUpperCase()}</span></p>
-                                    <p className="text-lg font-bold text-[#1a1a1a]">${(+item.price * item.quantity).toFixed(2)}</p>
-                                </div>
-                            </div>
-                            {/* Remove */}
-                            <div className="flex items-center gap-4">
-                                {/* Decrease quantity */}
-                                <button onClick={() => removeFromCart(item.id, item.size)} className="px-3 py-1 bg-gray-200 rounded cursor-pointer" aria-label="Decrease quantity" title="Decrease">-</button>
-
-                                {/* Quantity */}
-                                <span className="font-medium">{item.quantity}</span>
-
-                                {/* Increase quantity */}
-                                <button onClick={() => addToCart(item.id, item.size)} className="px-3 py-1 bg-gray-200 rounded cursor-pointer" aria-label="Increase quantity" title="Increase">+</button>
-
-                                {/* Remove from cart */}
-                                <button onClick={() => clearItem(item.id, item.size)} className="p-2 hover:bg-[#f5f3ef] rounded-full transition group cursor-pointer" aria-label="Remove from cart" title="Remove">
-                                    <FiX className="w-7 h-7 text-gray-400 group-hover:text-[#c1a875] transition" />
+                    {loading
+                        ? skeleton
+                        : fullCart.length === 0 ? (
+                            <div className="bg-white/80 rounded-2xl shadow-md py-12 flex flex-col items-center">
+                                <p className="text-2xl text-[#80715a] font-semibold mb-3">Your cart is empty.</p>
+                                <button onClick={() => nav("/")} className="px-8 py-3 border border-[#1a1a1a] bg-[#1a1a1a] text-white hover:bg-white hover:text-black transition rounded-2xl shadow font-semibold text-lg active:scale-95 mt-6 cursor-pointer">
+                                    Shop Now
                                 </button>
                             </div>
-                        </div>
-                    ))
-                    )}
+                        ) : (fullCart.map(item => (
+                            <div key={`${item._id}-${item.size}`} className="flex items-center justify-between gap-8 bg-white/90 rounded-2xl shadow-md p-5">
+                                {/* Image + Info */}
+                                <div className="flex items-center gap-6">
+                                    <img src={item.image} alt={item.title} className="w-28 h-28 object-cover rounded-xl border border-[#f2e8db] shadow-sm" />
+                                    <div>
+                                        <h3 className="text-xl font-semibold text-[#1a1a1a] mb-1">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                                        <p className="text-sm text-gray-500 mb-1">Size: <span className="font-bold">{item.size?.toUpperCase()}</span></p>
+                                        <p className="text-lg font-bold text-[#1a1a1a]">${(+item.price * item.quantity).toFixed(2)}</p>
+                                    </div>
+                                </div>
+                                {/* Remove */}
+                                <div className="flex items-center gap-4">
+                                    {/* Decrease quantity */}
+                                    <button onClick={() => removeFromCart(item.id, item.size)} className="px-3 py-1 bg-gray-200 rounded cursor-pointer" aria-label="Decrease quantity" title="Decrease">-</button>
+
+                                    {/* Quantity */}
+                                    <span className="font-medium">{item.quantity}</span>
+
+                                    {/* Increase quantity */}
+                                    <button onClick={() => addToCart(item.id, item.size)} className="px-3 py-1 bg-gray-200 rounded cursor-pointer" aria-label="Increase quantity" title="Increase">+</button>
+
+                                    {/* Remove from cart */}
+                                    <button onClick={() => clearItem(item.id, item.size)} className="p-2 hover:bg-[#f5f3ef] rounded-full transition group cursor-pointer" aria-label="Remove from cart" title="Remove">
+                                        <FiX className="w-7 h-7 text-gray-400 group-hover:text-[#c1a875] transition" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                        )}
                 </div>
 
                 {/* Total */}

@@ -15,6 +15,7 @@ import Collection from './pages/Collection.jsx';
 import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
+import SearchResults from './pages/SearchResults.jsx';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
       <Route path='/product/:productId' element={<Product />} />
       <Route path='/about' element={<About />} />
       <Route path='/contact' element={<Contact />} />
+      <Route path='/search' element={<SearchResults />} />
       {/* Protected Routes */}
       <Route path='/profile' element={<ProtectedRouteAuth><Profile /></ProtectedRouteAuth>} />
       <Route path='/orders' element={<ProtectedRouteAuth><Orders /></ProtectedRouteAuth>} />

@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { errorLog, log } from '../utils/log';
-import Loading from '../components/Loading';
 import { fetchProducts } from '../utils/api';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
+import LoadingSkeleton from '../components/LoadingSkeleton';
 
 export default function Collection() {
     const nav = useNavigate()
@@ -120,12 +120,6 @@ export default function Collection() {
 
         setSortedList(filtered)
     }, [productsList, selectedCategories, selectedSubCategories, selectedSizes, sortBy])
-
-    if (loading) {
-        return (
-            <Loading />
-        )
-    }
 
     return (
         <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6]">
@@ -245,23 +239,24 @@ export default function Collection() {
                             <div className="w-full">
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-12 gap-y-12">
                                     {/* sorted according to new - createdAt */}
-                                    {sortedList
-                                        .map(item =>
-                                            <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
-                                                {/* Image */}
-                                                <div className="w-[170px] h-[210px] md:w-[140px] md:h-[280px] lg:w-[180px] xl:[220px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
-                                                    <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
+                                    {loading
+                                        ? Array.from({ length: 20 }).map((_, i) => <LoadingSkeleton key={i} />)
+                                        : sortedList
+                                            .map(item =>
+                                                <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
+                                                    <div className="w-[170px] h-[210px] md:w-[140px] md:h-[280px] lg:w-[180px] xl:[220px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
+                                                        <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
+                                                    </div>
+                                                    <div className="flex flex-col items-center w-full">
+                                                        <h3 className="font-prata text-base md:text-lg text-[#232323] mb-1 text-center">
+                                                            {item.title.replace(/\b\w/g, l => l.toUpperCase())}
+                                                        </h3>
+                                                        <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a]">
+                                                            ${item.price.toFixed(2)}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div className="flex flex-col items-center w-full">
-                                                    <h3 className="font-prata text-base md:text-lg text-[#232323] mb-1 text-center">
-                                                        {item.title.replace(/\b\w/g, l => l.toUpperCase())}
-                                                    </h3>
-                                                    <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a]">
-                                                        ${item.price.toFixed(2)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
+                                            )}
                                 </div>
                             </div>
                         </main>

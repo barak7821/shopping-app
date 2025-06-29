@@ -135,3 +135,27 @@ export const fetchOrdersById = async () => {
     log("Orders by user ID response:", data)
     return data
 }
+
+// Function to find products by search input - limited to 10 results
+export const findProductsLimited = async (search) => {
+    if (!search || search.trim() === "") {
+        log("Search input is required")
+        return
+    }
+    const { data } = await axios.post(`${baseApiUrl}/products/search`, { search })
+    log("Search results:", data)
+    return data
+}
+
+// Function to find products by search query
+export const findProductsQuery = async (query) => {
+    if (!query || query.trim() === "") {
+        log("Query is required")
+        return
+    }
+
+    const { data } = await axios.get(`${baseApiUrl}/products/query`, { params: { search: query } })
+
+    log("Search results:", data)
+    return data
+}

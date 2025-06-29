@@ -8,7 +8,6 @@ import Footer from '../components/Footer';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { useNavigate } from 'react-router-dom';
-import Loading from '../components/Loading';
 import { useAuth } from '../utils/AuthContext';
 import { fetchProducts, handleGuestOrder, handleOrder } from '../utils/api';
 
@@ -224,11 +223,34 @@ export default function Payment() {
         }
     }
 
-    if (loading) {
-        return (
-            <Loading />
-        )
-    }
+    const skeletonOrder = ( // loading state for order summary
+        <div className="flex items-center gap-7 border-b border-gray-200 pb-4 last:border-b-0 animate-pulse">
+            <div className="w-24 h-24 bg-gray-200 rounded-xl border border-[#f2e8db] shadow-sm" />
+            <div className="flex flex-col gap-1">
+                <div className="h-5 w-32 bg-gray-200 rounded mb-1" />
+                <div className="h-4 w-20 bg-gray-100 rounded mb-1" />
+                <div className="h-4 w-24 bg-gray-100 rounded mb-1" />
+                <div className="h-5 w-16 bg-gray-200 rounded" />
+            </div>
+        </div>
+    )
+
+    const skeletonTotals = ( // loading state for totals
+        <div className="pt-5 flex flex-col gap-2 text-lg animate-pulse">
+            <div className="flex justify-between items-center">
+                <span className="w-20 h-5 bg-gray-100 rounded" />
+                <span className="w-16 h-5 bg-gray-200 rounded" />
+            </div>
+            <div className="flex justify-between items-center">
+                <span className="w-20 h-5 bg-gray-100 rounded" />
+                <span className="w-16 h-5 bg-gray-200 rounded" />
+            </div>
+            <div className="flex justify-between items-center text-xl pt-2">
+                <span className="w-20 h-6 bg-gray-200 rounded" />
+                <span className="w-20 h-6 bg-gray-300 rounded" />
+            </div>
+        </div>
+    )
 
     return (
         <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6]">
@@ -286,37 +308,41 @@ export default function Payment() {
                     <section className="w-full">
                         <h1 className="text-3xl font-bold mb-7 font-prata text-[#181818]">Order Summary</h1>
                         <div className="bg-white/80 rounded-2xl shadow-sm px-8 py-7 flex flex-col gap-4">
-                            {fullCart.map(item =>
-                                <div key={`${item.id}-${item.selectedSize}`} className="flex items-center gap-7 border-b border-gray-200 pb-4 last:border-b-0">
-                                    <img src={item.image} alt={item.title} className="w-24 h-24 object-cover rounded-xl border border-[#f2e8db] shadow-sm" />
-                                    <div className="flex flex-col gap-1">
-                                        <h3 className="font-semibold text-lg text-[#1a1a1a]">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
-                                        <p className="text-sm text-gray-500">Size: <span className="font-bold">{item.selectedSize?.toUpperCase()}</span></p>
-                                        <p className="font-base text-sm text-gray-500">Quantity: <span className="font-bold">{item.selectedQuantity}</span></p>
-                                        <p className="text-base font-black text-[#1a1a1a]">${(+item.price * item.selectedQuantity).toFixed(2)}</p>
+                            {loading
+                                ? skeletonOrder
+                                : fullCart.map(item =>
+                                    <div key={`${item.id}-${item.selectedSize}`} className="flex items-center gap-7 border-b border-gray-200 pb-4 last:border-b-0">
+                                        <img src={item.image} alt={item.title} className="w-24 h-24 object-cover rounded-xl border border-[#f2e8db] shadow-sm" />
+                                        <div className="flex flex-col gap-1">
+                                            <h3 className="font-semibold text-lg text-[#1a1a1a]">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                                            <p className="text-sm text-gray-500">Size: <span className="font-bold">{item.selectedSize?.toUpperCase()}</span></p>
+                                            <p className="font-base text-sm text-gray-500">Quantity: <span className="font-bold">{item.selectedQuantity}</span></p>
+                                            <p className="text-base font-black text-[#1a1a1a]">${(+item.price * item.selectedQuantity).toFixed(2)}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
                             {/* Totals */}
-                            <div className="pt-5 flex flex-col gap-2 text-lg">
-                                <div className="flex justify-between">
-                                    <span>Subtotal</span>
-                                    <span className="font-bold text-[#1a1a1a]">
-                                        ${(+fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0)).toFixed(2)}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Shipping</span>
-                                    <span className="font-bold text-[#1a1a1a]">${shippingPrice.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between text-xl pt-2">
-                                    <span className="font-bold">Total</span>
-                                    <span className="font-bold text-[#1a1a1a]">
-                                        ${(fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0) + +shippingPrice).toFixed(2)}
-                                    </span>
-                                </div>
-                            </div>
+                            {loading
+                                ? skeletonTotals
+                                : <div className="pt-5 flex flex-col gap-2 text-lg">
+                                    <div className="flex justify-between">
+                                        <span>Subtotal</span>
+                                        <span className="font-bold text-[#1a1a1a]">
+                                            ${(+fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0)).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Shipping</span>
+                                        <span className="font-bold text-[#1a1a1a]">${shippingPrice.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xl pt-2">
+                                        <span className="font-bold">Total</span>
+                                        <span className="font-bold text-[#1a1a1a]">
+                                            ${(fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0) + +shippingPrice).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>}
                         </div>
                     </section>
                 </div>

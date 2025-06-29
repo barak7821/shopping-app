@@ -58,7 +58,7 @@ export default function Product() {
     }
 
     return (
-        <div className='min-h-screen'>
+        <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6]">
             <NavBar />
             <div className='flex justify-center py-10 gap-10 lg:flex-row flex-col'>
 
@@ -69,13 +69,11 @@ export default function Product() {
 
                 {/* Details section */}
                 <div className='flex flex-col max-w-md pl-5 justify-center'>
-                    <h1 className='text-4xl font-bold mb-4'>{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h1>
+                    <h1 className='text-4xl font-bold mb-4 text-nowrap'>{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h1>
                     <div className='flex flex-col py-5'>
                         <p className="text-gray-800 font-[#1a1a1a] font-bold text-3xl">${item.price}</p>
                     </div>
-                    <p className="text-gray-600 mb-10">{item.description}
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem eum maxime rerum quibusdam eius qui suscipit eligendi corrupti unde perferendis deserunt provident, quas consectetur molestias, pariatur porro ratione. Accusantium, sint.
-                    </p>
+                    <p className="text-gray-600 mb-10">{item.description}</p>
 
                     {/* Size */}
                     <p className='text-gray-700'>Select Size</p>
@@ -113,9 +111,7 @@ export default function Product() {
 
                 <div className='flex'>
                     {activeTab === "description"
-                        ? <p className="text-gray-700 mb-6">{item.description}
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat assumenda, numquam optio eaque minus explicabo. Ducimus hic doloremque praesentium molestias amet, cum provident magnam alias odio eveniet maiores rem laudantium.
-                        </p>
+                        ? <p className="text-gray-700">{item.description}</p>
                         : <div className="space-y-4 w-full my-5">
                             {/* Example reviews, replace with real data if available */}
                             <div className="border-b pb-2">

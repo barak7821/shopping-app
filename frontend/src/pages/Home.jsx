@@ -7,8 +7,8 @@ import { FiRefreshCw, FiShield, FiHeadphones } from "react-icons/fi"
 import { errorLog, log } from '../utils/log';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import Loading from '../components/Loading';
 import { fetchProducts } from '../utils/api';
+import LoadingSkeleton from '../components/LoadingSkeleton';
 
 export default function Home() {
     const nav = useNavigate()
@@ -33,12 +33,6 @@ export default function Home() {
     useEffect(() => {
         getProducts()
     }, [])
-
-    if (loading) {
-        return (
-            <Loading />
-        )
-    }
 
     return (
         <div className='min-h-screen flex flex-col font-montserrat dark:bg-neutral-900'>
@@ -84,9 +78,9 @@ export default function Home() {
                     {/* Products */}
                     <div className="w-full max-w-[1280px] mx-auto">
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12 px-4 md:px-0">
-                            {productsList
-                                .slice(0, 10)
-                                .map(item =>
+                            {loading
+                                ? Array.from({ length: 10 }).map((_, i) => <LoadingSkeleton key={i} />)
+                                : productsList.slice(0, 10).map(item =>
                                     <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
                                         {/* Image */}
                                         <div className="w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
@@ -121,26 +115,28 @@ export default function Home() {
                     {/* Products */}
                     <div className="w-full max-w-[1280px] mx-auto">
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12 px-4 md:px-0">
-                            {productsList.slice(0, 5).map((item) => (
-                                <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
-                                    {/* Image */}
-                                    <div className="relative w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
-                                        <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
-                                        {/* Badge */}
-                                        <span className="absolute top-3 left-3 bg-[#c1a875] text-white text-xs font-bold px-3 py-1 rounded-full shadow-md tracking-wide">
-                                            Best Seller
-                                        </span>
+                            {loading
+                                ? Array.from({ length: 5 }).map((_, i) => <LoadingSkeleton key={i} />)
+                                : productsList.slice(0, 5).map((item) => (
+                                    <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
+                                        {/* Image */}
+                                        <div className="relative w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
+                                            <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
+                                            {/* Badge */}
+                                            <span className="absolute top-3 left-3 bg-[#c1a875] text-white text-xs font-bold px-3 py-1 rounded-full shadow-md tracking-wide">
+                                                Best Seller
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col items-center w-full">
+                                            <h3 className="font-prata text-base md:text-lg text-[#232323] mb-1 text-center">
+                                                {item.title}
+                                            </h3>
+                                            <p className="font-bold text-sm md:text-base text-center mb-1">
+                                                ${item.price.toFixed(2)}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col items-center w-full">
-                                        <h3 className="font-prata text-base md:text-lg text-[#232323] mb-1 text-center">
-                                            {item.title}
-                                        </h3>
-                                        <p className="font-bold text-sm md:text-base text-center mb-1">
-                                            ${item.price.toFixed(2)}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
                     </div>
                 </section>
