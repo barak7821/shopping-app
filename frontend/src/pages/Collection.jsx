@@ -122,16 +122,16 @@ export default function Collection() {
     }, [productsList, selectedCategories, selectedSubCategories, selectedSizes, sortBy])
 
     return (
-        <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6]">
+        <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6] dark:bg-neutral-900">
             <NavBar />
 
             <div className="flex-1 w-full">
                 <div className="max-w-[1280px] mx-auto flex flex-col items-center pt-8 pb-20 px-4">
                     {/* Title */}
-                    <h1 className="font-prata text-3xl md:text-5xl text-[#181818] mb-2 tracking-tight text-center">
+                    <h1 className="font-prata text-3xl md:text-5xl text-[#181818] dark:text-neutral-100 mb-2 tracking-tight text-center">
                         All Collections
                     </h1>
-                    <p className="text-sm md:text-lg text-[#555] font-montserrat text-center mb-8 max-w-xs md:max-w-md">
+                    <p className="text-sm md:text-lg text-[#555] dark:text-neutral-300 font-montserrat text-center mb-8 max-w-xs md:max-w-md">
                         Browse and filter our full range of products by category, type, or size.
                     </p>
 
@@ -143,7 +143,7 @@ export default function Collection() {
                                 {/* Category */}
                                 <div>
                                     <h3 className="font-semibold mb-2 text-[#c1a875]">Categories</h3>
-                                    <div className="flex flex-col gap-2 text-sm">
+                                    <div className="flex flex-col gap-2 text-sm text-[#555] dark:text-neutral-300">
                                         {[
                                             { name: "Men", value: "men" },
                                             { name: "Women", value: "women" },
@@ -159,7 +159,7 @@ export default function Collection() {
                                 {/* Types */}
                                 <div>
                                     <h3 className="font-semibold mb-2 text-[#c1a875]">Type</h3>
-                                    <div className="flex flex-col gap-2 text-sm">
+                                    <div className="flex flex-col gap-2 text-sm text-[#555] dark:text-neutral-300">
                                         {[
                                             { name: "T-Shirt", value: "t-shirt" },
                                             { name: "Shirt", value: "shirt" },
@@ -183,7 +183,7 @@ export default function Collection() {
                                     <h3 className="font-semibold mb-2 text-[#c1a875]">Sizes</h3>
                                     {/* Adult Sizes */}
                                     <div className="flex flex-col gap-2 text-sm">
-                                        <h4 className="font-bold text-xs text-[#888] mb-1">Adult Sizes</h4>
+                                        <h4 className="font-bold text-xs text-[#888] dark:text-neutral-400 mb-1">Adult Sizes</h4>
                                         {[
                                             { name: "XS", value: "XS" },
                                             { name: "S", value: "S" },
@@ -192,24 +192,24 @@ export default function Collection() {
                                             { name: "XL", value: "XL" },
                                             { name: "XXL", value: "XXL" }
                                         ].map(item =>
-                                            <label key={item.value} className="flex items-center gap-2 cursor-pointer">
+                                            <label key={item.value} className="flex items-center gap-2 cursor-pointer text-[#555] dark:text-neutral-300">
                                                 <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" onChange={sizeFilter} />
                                                 {item.name}
                                             </label>
                                         )}
                                     </div>
                                     {/* Separator */}
-                                    <hr className='border-gray-200 my-2' />
+                                    <hr className='border-gray-200 dark:border-neutral-700 my-2' />
                                     {/* Kids Sizes */}
                                     <div className="flex flex-col gap-2 text-sm mt-2">
-                                        <h4 className="font-bold text-xs text-[#888] mb-1">Kids Sizes</h4>
+                                        <h4 className="font-bold text-xs text-[#888] dark:text-neutral-400 mb-1">Kids Sizes</h4>
                                         {[
                                             { name: "4", value: "4" },
                                             { name: "6", value: "6" },
                                             { name: "8", value: "8" },
                                             { name: "10", value: "10" }
                                         ].map(item =>
-                                            <label key={item.value} className="flex items-center gap-2 cursor-pointer">
+                                            <label key={item.value} className="flex items-center gap-2 cursor-pointer text-[#555] dark:text-neutral-300">
                                                 <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" onChange={sizeFilter} />
                                                 {item.name}
                                             </label>
@@ -223,7 +223,7 @@ export default function Collection() {
                         <main className="flex-1 flex flex-col gap-6">
                             {/* Sort Bar */}
                             <div className="flex justify-end mb-2">
-                                <select onChange={e => setSortBy(e.target.value)} className="rounded-2xl border border-gray-200 px-4 py-2 text-base bg-neutral-50 shadow-sm focus:ring-2 focus:ring-[#c1a875] focus:outline-none w-auto">
+                                <select onChange={e => setSortBy(e.target.value)} className="rounded-2xl border border-gray-200 dark:border-neutral-700 px-4 py-2 text-base bg-neutral-50 dark:bg-neutral-800 shadow-sm focus:ring-2 focus:ring-[#c1a875] focus:outline-none w-auto">
                                     {[
                                         { name: "Sort By: Featured", value: "featured" },
                                         { name: "Sort By: Newest Arrivals", value: "new" },
@@ -238,7 +238,6 @@ export default function Collection() {
                             {/* Products Grid */}
                             <div className="w-full">
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-12 gap-y-12">
-                                    {/* sorted according to new - createdAt */}
                                     {loading
                                         ? Array.from({ length: 20 }).map((_, i) => <LoadingSkeleton key={i} />)
                                         : sortedList
@@ -248,10 +247,10 @@ export default function Collection() {
                                                         <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
                                                     </div>
                                                     <div className="flex flex-col items-center w-full">
-                                                        <h3 className="font-prata text-base md:text-lg text-[#232323] mb-1 text-center">
+                                                        <h3 className="font-prata text-base md:text-lg text-[#232323] dark:text-neutral-100 mb-1 text-center">
                                                             {item.title.replace(/\b\w/g, l => l.toUpperCase())}
                                                         </h3>
-                                                        <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a]">
+                                                        <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a] dark:text-neutral-200">
                                                             ${item.price.toFixed(2)}
                                                         </p>
                                                     </div>

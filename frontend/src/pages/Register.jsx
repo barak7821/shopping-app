@@ -130,44 +130,44 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf8f6]">
+    <div className="min-h-screen bg-[#faf8f6] dark:bg-neutral-900">
       <NavBar />
       <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 w-full max-w-md flex flex-col gap-7 items-center">
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8 md:p-12 w-full max-w-md flex flex-col gap-7 items-center">
 
           {/* Title */}
-          <h1 className="font-prata font-bold text-4xl text-[#181818] mb-2 tracking-tight">
+          <h1 className="font-prata font-bold text-4xl text-[#181818] dark:text-neutral-100 mb-2 tracking-tight">
             Register
           </h1>
 
           {/* Name */}
           <div className="w-full flex flex-col gap-1">
-            <label htmlFor="name" className="font-semibold text-[#232323] text-sm mb-1">Full Name</label>
-            <input id="name" onChange={e => setName(e.target.value)} value={name} type="text" placeholder="Name..." className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+            <label htmlFor="name" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Full Name</label>
+            <input id="name" onChange={e => setName(e.target.value)} value={name} type="text" placeholder="Name..." className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
             {error && name && name.length < 3 ?
               <p className="text-xs text-red-500 pl-1 mt-1">Name must be at least 3 characters long</p>
-              : <p className="text-xs text-gray-500 pl-1 mt-1">Please enter your full name. It should be at least 3 characters long.</p>
+              : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter your full name. It should be at least 3 characters long.</p>
             }
           </div>
 
           {/* Email */}
           <div className="w-full flex flex-col gap-1">
-            <label htmlFor="email" className="font-semibold text-[#232323] text-sm mb-1">Email</label>
-            <input id="email" onChange={e => setEmail(e.target.value)} value={email} type="email" placeholder="Email..." className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+            <label htmlFor="email" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Email</label>
+            <input id="email" onChange={e => setEmail(e.target.value)} value={email} type="email" placeholder="Email..." className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
             {error && email && !email.includes("@") ?
               <p className="text-xs text-red-500 pl-1 mt-1">Invalid email format</p>
-              : <p className="text-xs text-gray-500 pl-1 mt-1">Please enter a valid email address.</p>
+              : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter a valid email address.</p>
             }
           </div>
 
           {/* Password */}
           <div className="w-full flex flex-col gap-1">
-            <label htmlFor="password" className="font-semibold text-[#232323] text-sm mb-1">Password</label>
+            <label htmlFor="password" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Password</label>
             <div className="relative">
-              <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} autoComplete='off' placeholder="Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+              <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} autoComplete='off' placeholder="Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
               {password &&
                 <button className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <FiEye /> : <FiEyeOff />}
+                  {showPassword ? <FiEye className='text-neutral-800 dark:text-neutral-100' /> : <FiEyeOff className='text-neutral-800 dark:text-neutral-100' />}
                 </button>
               }
             </div>
@@ -175,24 +175,24 @@ export default function Home() {
               password.length < 6 ?
                 <p className="text-xs text-red-500 pl-1 mt-1">Password must be at least 6 characters long</p>
                 : <p className="text-xs text-red-500 pl-1 mt-1">Password must contain at least one uppercase letter, one lowercase letter, and one number</p>
-              : <p className="text-xs text-gray-500 pl-1 mt-1">Your password should be at least 6 characters and include upper & lower case letters and a number.</p>
+              : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Your password should be at least 6 characters and include upper & lower case letters and a number.</p>
             }
           </div>
 
           {/* Confirm Password */}
           <div className="w-full flex flex-col gap-1">
-            <label htmlFor="confirmPassword" className="font-semibold text-[#232323] text-sm mb-1">Confirm Password</label>
+            <label htmlFor="confirmPassword" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Confirm Password</label>
             <div className="relative">
-              <input id="confirmPassword" onChange={e => setConfirmPassword(e.target.value)} value={confirmPassword} type={showConfirmPassword ? "text" : "password"} autoComplete="off" placeholder="Confirm Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+              <input id="confirmPassword" onChange={e => setConfirmPassword(e.target.value)} value={confirmPassword} type={showConfirmPassword ? "text" : "password"} autoComplete="off" placeholder="Confirm Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
               {confirmPassword &&
                 <button className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                  {showConfirmPassword ? <FiEye /> : <FiEyeOff />}
+                  {showConfirmPassword ? <FiEye className='text-neutral-800 dark:text-neutral-100' /> : <FiEyeOff className='text-neutral-800 dark:text-neutral-100' />}
                 </button>
               }
             </div>
             {error && confirmPassword && confirmPassword !== password ?
               <p className="text-xs text-red-500 pl-1 mt-1">Passwords do not match</p>
-              : <p className="text-xs text-gray-500 pl-1 mt-1">Please confirm your password.</p>
+              : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please confirm your password.</p>
             }
           </div>
 
@@ -202,7 +202,7 @@ export default function Home() {
           </button>
 
           {/* Link to Login */}
-          <Link to="/login" className="text-sm text-[#80715a] hover:text-[#c1a875] underline transition mt-1">
+          <Link to="/login" className="text-sm text-[#80715a] hover:text-[#c1a875] hover:underline transition mt-1">
             Already have an account? Login
           </Link>
         </div>

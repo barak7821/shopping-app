@@ -126,42 +126,37 @@ export default function SearchResults() {
     }, [productsList, selectedCategories, selectedSubCategories, selectedSizes, sortBy])
 
     return (
-        <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6]">
+        <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6] dark:bg-neutral-900">
             <NavBar />
 
             {productsList.length === 0 && !loading
                 ? <div className="flex-1 flex flex-col items-center justify-center px-4">
-                    {/* Title */}
-                    <h1 className="font-prata text-3xl md:text-5xl text-[#181818] mb-2 tracking-tight text-center">
+                    <h1 className="font-prata text-3xl md:text-5xl text-[#181818] dark:text-neutral-100 mb-2 tracking-tight text-center">
                         No Results Found
                     </h1>
-                    <p className="text-sm md:text-lg text-[#555] font-montserrat text-center mb-8 max-w-xs md:max-w-md">
+                    <p className="text-sm md:text-lg text-[#555] dark:text-neutral-300 font-montserrat text-center mb-8 max-w-xs md:max-w-md">
                         We couldn't find any products matching your search for "<span className="font-bold text-[#c1a875]">{query}</span>". Please try a different search term or check your spelling.
                     </p>
-                    <button onClick={() => nav("/")} className="px-8 py-3 border border-[#1a1a1a] bg-[#1a1a1a] text-white hover:bg-white hover:text-black transition rounded-2xl shadow font-semibold text-lg active:scale-95 mt-6 cursor-pointer">
+                    <button onClick={() => nav("/")} className="px-8 py-3 border border-[#1a1a1a] dark:border-neutral-300 bg-[#1a1a1a] dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-white hover:text-black dark:hover:bg-neutral-800 dark:hover:text-white transition rounded-2xl shadow font-semibold text-lg active:scale-95 mt-6 cursor-pointer">
                         Go Back to Home
                     </button>
                 </div>
 
-                : < div className="flex-1 w-full">
+                : <div className="flex-1 w-full">
                     <div className="max-w-[1280px] mx-auto flex flex-col items-center pt-8 pb-20 px-4">
-                        {/* Title */}
-                        <h1 className="font-prata text-3xl md:text-5xl text-[#181818] mb-2 tracking-tight text-center">
+                        <h1 className="font-prata text-3xl md:text-5xl text-[#181818] dark:text-neutral-100 mb-2 tracking-tight text-center">
                             Search Results
                         </h1>
-                        <p className="text-sm md:text-lg text-[#555] font-montserrat text-center mb-8 max-w-xs md:max-w-md">
+                        <p className="text-sm md:text-lg text-[#555] dark:text-neutral-300 font-montserrat text-center mb-8 max-w-xs md:max-w-md">
                             Showing results for "<span className="font-bold text-[#c1a875]">{query}</span>"
                         </p>
 
-                        {/* Filters and Products */}
                         <div className="flex w-full gap-12">
-                            {/* Filters */}
                             <aside className="hidden md:block flex-shrink-0 pt-4">
                                 <div className="flex flex-col gap-8">
-                                    {/* Category */}
                                     <div>
                                         <h3 className="font-semibold mb-2 text-[#c1a875]">Categories</h3>
-                                        <div className="flex flex-col gap-2 text-sm">
+                                        <div className="flex flex-col gap-2 text-sm dark:text-neutral-200">
                                             {[
                                                 { name: "Men", value: "men" },
                                                 { name: "Women", value: "women" },
@@ -174,10 +169,9 @@ export default function SearchResults() {
                                             )}
                                         </div>
                                     </div>
-                                    {/* Types */}
                                     <div>
                                         <h3 className="font-semibold mb-2 text-[#c1a875]">Type</h3>
-                                        <div className="flex flex-col gap-2 text-sm">
+                                        <div className="flex flex-col gap-2 text-sm dark:text-neutral-200">
                                             {[
                                                 { name: "T-Shirt", value: "t-shirt" },
                                                 { name: "Shirt", value: "shirt" },
@@ -196,12 +190,10 @@ export default function SearchResults() {
                                             )}
                                         </div>
                                     </div>
-                                    {/* Sizes */}
                                     <div>
                                         <h3 className="font-semibold mb-2 text-[#c1a875]">Sizes</h3>
-                                        {/* Adult Sizes */}
-                                        <div className="flex flex-col gap-2 text-sm">
-                                            <h4 className="font-bold text-xs text-[#888] mb-1">Adult Sizes</h4>
+                                        <div className="flex flex-col gap-2 text-sm dark:text-neutral-200">
+                                            <h4 className="font-bold text-xs text-[#888] dark:text-neutral-400 mb-1">Adult Sizes</h4>
                                             {[
                                                 { name: "XS", value: "XS" },
                                                 { name: "S", value: "S" },
@@ -216,11 +208,9 @@ export default function SearchResults() {
                                                 </label>
                                             )}
                                         </div>
-                                        {/* Separator */}
-                                        <hr className='border-gray-200 my-2' />
-                                        {/* Kids Sizes */}
-                                        <div className="flex flex-col gap-2 text-sm mt-2">
-                                            <h4 className="font-bold text-xs text-[#888] mb-1">Kids Sizes</h4>
+                                        <hr className='border-gray-200 dark:border-neutral-600 my-2' />
+                                        <div className="flex flex-col gap-2 text-sm mt-2 dark:text-neutral-200">
+                                            <h4 className="font-bold text-xs text-[#888] dark:text-neutral-400 mb-1">Kids Sizes</h4>
                                             {[
                                                 { name: "4", value: "4" },
                                                 { name: "6", value: "6" },
@@ -236,11 +226,10 @@ export default function SearchResults() {
                                     </div>
                                 </div>
                             </aside>
-                            {/* Products + Sort */}
+
                             <main className="flex-1 flex flex-col gap-6">
-                                {/* Sort Bar */}
                                 <div className="flex justify-end mb-2">
-                                    <select onChange={e => setSortBy(e.target.value)} className="rounded-2xl border border-gray-200 px-4 py-2 text-base bg-neutral-50 shadow-sm focus:ring-2 focus:ring-[#c1a875] focus:outline-none w-auto">
+                                    <select onChange={e => setSortBy(e.target.value)} className="rounded-2xl border border-gray-200 dark:border-neutral-700 px-4 py-2 text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 shadow-sm focus:ring-2 focus:ring-[#c1a875] focus:outline-none w-auto">
                                         {[
                                             { name: "Sort By: Featured", value: "featured" },
                                             { name: "Sort By: Newest Arrivals", value: "new" },
@@ -252,7 +241,6 @@ export default function SearchResults() {
                                     </select>
                                 </div>
 
-                                {/* Products Grid */}
                                 <div className="w-full">
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-12 gap-y-12">
                                         {loading
@@ -263,10 +251,10 @@ export default function SearchResults() {
                                                         <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
                                                     </div>
                                                     <div className="flex flex-col items-center w-full">
-                                                        <h3 className="font-prata text-base md:text-lg text-[#232323] mb-1 text-center">
+                                                        <h3 className="font-prata text-base md:text-lg text-[#232323] dark:text-neutral-100 mb-1 text-center">
                                                             {item.title.replace(/\b\w/g, l => l.toUpperCase())}
                                                         </h3>
-                                                        <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a]">
+                                                        <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a] dark:text-neutral-200">
                                                             ${item.price.toFixed(2)}
                                                         </p>
                                                     </div>
@@ -284,7 +272,6 @@ export default function SearchResults() {
 
             {/* Footer */}
             <Footer />
-        </div >
-
+        </div>
     )
 }

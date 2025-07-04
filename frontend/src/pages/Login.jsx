@@ -97,18 +97,18 @@ export default function Login() {
     }
 
     return (
-        <div className='min-h-screen bg-[#faf8f6]'>
+        <div className='min-h-screen bg-[#faf8f6] dark:bg-neutral-900'>
             <NavBar />
             <div className='flex justify-center items-center min-h-screen'>
-                <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 w-full max-w-md flex flex-col gap-7 items-center">
+                <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8 md:p-12 w-full max-w-md flex flex-col gap-7 items-center">
 
                     {/* Title */}
-                    <h1 className='font-prata font-bold text-4xl text-[#181818] mb-4 tracking-tight'>Login</h1>
+                    <h1 className='font-prata font-bold text-4xl text-[#181818] dark:text-neutral-100 mb-4 tracking-tight'>Login</h1>
 
                     {/* Email */}
                     <div className="w-full flex flex-col gap-1">
-                        <label htmlFor="email" className="font-semibold text-[#232323] text-sm mb-1">Email</label>
-                        <input id="email" onChange={e => setEmail(e.target.value)} value={email} type="email" placeholder='Email...' className='w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50' />
+                        <label htmlFor="email" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Email</label>
+                        <input id="email" onChange={e => setEmail(e.target.value)} value={email} type="email" placeholder='Email...' className='w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100' />
                         {error && email && error === "email" &&
                             <p className='text-xs text-red-500 pl-1 mt-1'>Invalid email format</p>
                         }
@@ -116,12 +116,12 @@ export default function Login() {
 
                     {/* Password */}
                     <div className="w-full flex flex-col gap-1">
-                        <label htmlFor="password" className="font-semibold text-[#232323] text-sm mb-1">Password</label>
+                        <label htmlFor="password" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Password</label>
                         <div className='relative'>
-                            <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} autoComplete='off' placeholder='Password...' className='w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50' />
+                            <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} autoComplete='off' placeholder='Password...' className='w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100' />
                             {password &&
                                 <button className='absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer' onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? <FiEye /> : <FiEyeOff />}
+                                    {showPassword ? <FiEye className='text-neutral-800 dark:text-neutral-100' /> : <FiEyeOff className='text-neutral-800 dark:text-neutral-100' />}
                                 </button>
                             }
                         </div>
@@ -141,7 +141,7 @@ export default function Login() {
                     </button>
 
                     {/* Register */}
-                    <Link to={"/register"} className='text-sm text-[#80715a] hover:text-[#c1a875] underline transition mt-1'>
+                    <Link to={"/register"} className='text-sm text-[#80715a] hover:text-[#c1a875] hover:underline transition mt-1'>
                         Don't have an account? Register
                     </Link>
                 </div>

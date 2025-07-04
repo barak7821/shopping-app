@@ -58,7 +58,7 @@ export default function Product() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6]">
+        <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6] dark:bg-neutral-900">
             <NavBar />
             <div className='flex justify-center py-10 gap-10 lg:flex-row flex-col'>
 
@@ -69,17 +69,21 @@ export default function Product() {
 
                 {/* Details section */}
                 <div className='flex flex-col max-w-md pl-5 justify-center'>
-                    <h1 className='text-4xl font-bold mb-4 text-nowrap'>{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h1>
+                    <h1 className='text-4xl font-bold mb-4 text-nowrap text-[#181818] dark:text-neutral-100'>
+                        {item.title.replace(/\b\w/g, l => l.toUpperCase())}
+                    </h1>
                     <div className='flex flex-col py-5'>
-                        <p className="text-gray-800 font-[#1a1a1a] font-bold text-3xl">${item.price}</p>
+                        <p className="text-gray-800 dark:text-neutral-200 font-[#1a1a1a] font-bold text-3xl">${item.price}</p>
                     </div>
-                    <p className="text-gray-600 mb-10">{item.description}</p>
+                    <p className="text-gray-600 dark:text-neutral-300 mb-10">{item.description}</p>
 
                     {/* Size */}
-                    <p className='text-gray-700'>Select Size</p>
+                    <p className='text-gray-700 dark:text-neutral-300'>Select Size</p>
                     <div className='flex gap-2 py-2'>
                         {item.sizes.map((item, index) =>
-                            <button key={index} onClick={e => setSize(e.target.value)} value={item} className={`bg-gray-200 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === item ? "bg-gray-500" : ""}`}>{item}</button>
+                            <button key={index} onClick={e => setSize(e.target.value)} value={item} className={`bg-gray-200 dark:bg-neutral-600 dark:text-neutral-100 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === item ? "bg-gray-500 dark:bg-neutral-800" : ""}`}>
+                                {item}
+                            </button>
                         )}
                     </div>
 
@@ -93,15 +97,15 @@ export default function Product() {
             </div>
 
             {/* description and reviews */}
-            <div className="max-w-5xl mx-auto mt-10 p-6 bg-white rounded shadow flex flex-col">
-                <div className="flex gap-2 mb-6 border-b border-gray-200 bg-white relative">
-                    <button onClick={e => setActiveTab(e.target.value)} value="description" className={`group relative px-6 py-3 text-xl font-semibold focus:outline-none transition-all cursor-pointer ${activeTab === "description" ? "text-[#c1a875]" : "text-gray-500 hover:text-[#c1a875]"}`} style={{ minWidth: 120 }}>
+            <div className="max-w-5xl mx-auto mt-10 p-6 bg-white dark:bg-neutral-800 rounded shadow flex flex-col">
+                <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 relative">
+                    <button onClick={e => setActiveTab(e.target.value)} value="description" className={`group relative px-6 py-3 text-xl font-semibold focus:outline-none transition-all cursor-pointer ${activeTab === "description" ? "text-[#c1a875]" : "text-gray-500 dark:text-neutral-300 hover:text-[#c1a875]"}`} style={{ minWidth: 120 }}>
                         Description
                         {activeTab === "description" &&
                             <span className="absolute left-4 right-4 bottom-[-2px] h-[3px] bg-[#c1a875] rounded-full" style={{ zIndex: 2 }} />
                         }
                     </button>
-                    <button onClick={e => setActiveTab(e.target.value)} value="reviews" className={`roup relative px-6 py-3 text-xl font-semibold focus:outline-none transition-all cursor-pointer ${activeTab === "reviews" ? "text-[#c1a875]" : "text-gray-500 hover:text-[#c1a875]"}`} style={{ minWidth: 120 }}>
+                    <button onClick={e => setActiveTab(e.target.value)} value="reviews" className={`group relative px-6 py-3 text-xl font-semibold focus:outline-none transition-all cursor-pointer ${activeTab === "reviews" ? "text-[#c1a875]" : "text-gray-500 dark:text-neutral-300 hover:text-[#c1a875]"}`} style={{ minWidth: 120 }}>
                         Reviews
                         {activeTab === "reviews" &&
                             <span className="absolute left-4 right-4 bottom-[-2px] h-[3px] bg-[#c1a875] rounded-full" style={{ zIndex: 2 }} />
@@ -111,26 +115,29 @@ export default function Product() {
 
                 <div className='flex'>
                     {activeTab === "description"
-                        ? <p className="text-gray-700">{item.description}</p>
+                        ? <p className="text-gray-700 dark:text-neutral-300">{item.description}</p>
                         : <div className="space-y-4 w-full my-5">
-                            {/* Example reviews, replace with real data if available */}
-                            <div className="border-b pb-2">
-                                <p className="font-semibold">Jane Doe <span className="text-yellow-500">★★★★★</span></p>
-                                <p className="text-gray-600">Great product! Highly recommend.</p>
+                            <div className="border-b pb-2 dark:border-neutral-700">
+                                <p className="font-semibold dark:text-neutral-100">Jane Doe <span className="text-yellow-500">★★★★★</span></p>
+                                <p className="text-gray-600 dark:text-neutral-300">Great product! Highly recommend.</p>
                             </div>
-                            <div className="border-b pb-2">
-                                <p className="font-semibold">John Smith <span className="text-yellow-500">★★★★☆</span></p>
-                                <p className="text-gray-600">Good quality, but shipping was slow.</p>
+                            <div className="border-b pb-2 dark:border-neutral-700">
+                                <p className="font-semibold dark:text-neutral-100">John Smith <span className="text-yellow-500">★★★★☆</span></p>
+                                <p className="text-gray-600 dark:text-neutral-300">Good quality, but shipping was slow.</p>
                             </div>
                             <div>
-                                <p className="font-semibold">Alice <span className="text-yellow-500">★★★★★</span></p>
-                                <p className="text-gray-600">Exactly as described. Will buy again!</p>
+                                <p className="font-semibold dark:text-neutral-100">Alice <span className="text-yellow-500">★★★★★</span></p>
+                                <p className="text-gray-600 dark:text-neutral-300">Exactly as described. Will buy again!</p>
                             </div>
                         </div>
                     }
                 </div>
             </div>
+
+            {/* About Section */}
             <AboutCard />
+
+            {/* Footer */}
             <Footer />
         </div>
     )

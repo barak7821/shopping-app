@@ -224,13 +224,13 @@ export default function Payment() {
     }
 
     const skeletonOrder = ( // loading state for order summary
-        <div className="flex items-center gap-7 border-b border-gray-200 pb-4 last:border-b-0 animate-pulse">
-            <div className="w-24 h-24 bg-gray-200 rounded-xl border border-[#f2e8db] shadow-sm" />
+        <div className="flex items-center gap-7 border-b border-gray-200 dark:border-neutral-700 pb-4 last:border-b-0 animate-pulse">
+            <div className="w-24 h-24 bg-gray-200 dark:bg-neutral-700 rounded-xl border border-[#f2e8db] dark:border-neutral-600 shadow-sm" />
             <div className="flex flex-col gap-1">
-                <div className="h-5 w-32 bg-gray-200 rounded mb-1" />
-                <div className="h-4 w-20 bg-gray-100 rounded mb-1" />
-                <div className="h-4 w-24 bg-gray-100 rounded mb-1" />
-                <div className="h-5 w-16 bg-gray-200 rounded" />
+                <div className="h-5 w-32 bg-gray-200 dark:bg-neutral-700 rounded mb-1" />
+                <div className="h-4 w-20 bg-gray-100 dark:bg-neutral-600 rounded mb-1" />
+                <div className="h-4 w-24 bg-gray-100 dark:bg-neutral-600 rounded mb-1" />
+                <div className="h-5 w-16 bg-gray-200 dark:bg-neutral-700 rounded" />
             </div>
         </div>
     )
@@ -238,29 +238,31 @@ export default function Payment() {
     const skeletonTotals = ( // loading state for totals
         <div className="pt-5 flex flex-col gap-2 text-lg animate-pulse">
             <div className="flex justify-between items-center">
-                <span className="w-20 h-5 bg-gray-100 rounded" />
-                <span className="w-16 h-5 bg-gray-200 rounded" />
+                <span className="w-20 h-5 bg-gray-100 dark:bg-neutral-600 rounded" />
+                <span className="w-16 h-5 bg-gray-200 dark:bg-neutral-700 rounded" />
             </div>
             <div className="flex justify-between items-center">
-                <span className="w-20 h-5 bg-gray-100 rounded" />
-                <span className="w-16 h-5 bg-gray-200 rounded" />
+                <span className="w-20 h-5 bg-gray-100 dark:bg-neutral-600 rounded" />
+                <span className="w-16 h-5 bg-gray-200 dark:bg-neutral-700 rounded" />
             </div>
             <div className="flex justify-between items-center text-xl pt-2">
-                <span className="w-20 h-6 bg-gray-200 rounded" />
-                <span className="w-20 h-6 bg-gray-300 rounded" />
+                <span className="w-20 h-6 bg-gray-200 dark:bg-neutral-700 rounded" />
+                <span className="w-20 h-6 bg-gray-300 dark:bg-neutral-600 rounded" />
             </div>
         </div>
     )
 
     return (
-        <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6]">
+        <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6] dark:bg-neutral-900">
             <NavBar />
 
             <div className="flex-1 py-14">
                 <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 px-4 md:px-8 items-start">
                     {/* Payment Section */}
                     <section className="w-full">
-                        <h1 className="text-3xl font-bold mb-7 font-prata text-[#181818]">Select Payment Method</h1>
+                        <h1 className="text-3xl font-bold mb-7 font-prata text-[#181818] dark:text-neutral-100">
+                            Select Payment Method
+                        </h1>
                         {/* Payment Methods */}
                         <div className="flex flex-wrap gap-4 mb-7">
                             {[
@@ -269,9 +271,9 @@ export default function Payment() {
                                 { method: "applePay", label: "Apple Pay", icon: <FaApplePay size={40} /> },
                                 { method: "googlePay", label: "Google Pay", icon: <FaGooglePay size={40} /> },
                             ].map(({ method, label, icon }) => (
-                                <button key={method} onClick={() => setPaymentMethod(method)} className={`flex items-center gap-2 px-6 py-3 rounded-xl border transition ${paymentMethod === method
-                                    ? "bg-[#c1a875]/10 border-[#c1a875] text-[#1a1a1a] font-bold shadow"
-                                    : "border-gray-300 text-gray-500 hover:border-[#c1a875] hover:text-[#c1a875]"}`}
+                                <button key={method} onClick={() => setPaymentMethod(method)} className={`flex items-center gap-2 px-6 py-3 rounded-xl border transition cursor-pointer ${paymentMethod === method
+                                    ? "bg-[#c1a875]/10 border-[#c1a875] text-[#1a1a1a] dark:text-neutral-100 font-bold shadow"
+                                    : "border-gray-300 dark:border-neutral-600 text-gray-500 dark:text-neutral-300 hover:border-[#c1a875] hover:text-[#c1a875]"}`}
                                     style={{ minWidth: 140 }}>
                                     {icon} <span className="text-sm">{label}</span>
                                 </button>
@@ -281,21 +283,21 @@ export default function Payment() {
                         <div className="flex flex-col gap-5 mb-10">
                             {paymentMethod === "creditCard" &&
                                 <>
-                                    <input onChange={e => setCreditCardNumber(e.target.value.replace(/[^0-9]/g, ""))} value={formatCardNumber(creditCardNumber)} type="text" inputMode="numeric" autoComplete="cc-number" maxLength={23} placeholder="Card Number" className="px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none bg-neutral-50 w-full md:flex-[2] min-w-0" />
+                                    <input onChange={e => setCreditCardNumber(e.target.value.replace(/[^0-9]/g, ""))} value={formatCardNumber(creditCardNumber)} type="text" inputMode="numeric" autoComplete="cc-number" maxLength={23} placeholder="Card Number" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 w-full md:flex-[2] min-w-0" />
                                     <div className="flex gap-4">
-                                        <input onChange={handleExpirationDate} value={creditCardExpirationDate} type="text" inputMode="numeric" maxLength={5} autoComplete="cc-exp" placeholder="MM/YY" className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none bg-neutral-50 w-full md:flex-1 min-w-0" />
-                                        <input onChange={e => setCreditCardCVV(e.target.value.replace(/[^0-9]/g, ""))} value={creditCardCVV} type="text" inputMode="numeric" maxLength={4} autoComplete="cc-csc" placeholder="CVV" className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none bg-neutral-50 w-full md:flex-1 min-w-0" />
+                                        <input onChange={handleExpirationDate} value={creditCardExpirationDate} type="text" inputMode="numeric" maxLength={5} autoComplete="cc-exp" placeholder="MM/YY" className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 w-full md:flex-1 min-w-0" />
+                                        <input onChange={e => setCreditCardCVV(e.target.value.replace(/[^0-9]/g, ""))} value={creditCardCVV} type="text" inputMode="numeric" maxLength={4} autoComplete="cc-csc" placeholder="CVV" className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 w-full md:flex-1 min-w-0" />
                                     </div>
-                                    <input onChange={e => setCreditCardHolderName(e.target.value.replace(/[^A-Za-z\s'-]/g, ""))} value={creditCardHolderName.replace(/\b\w/g, l => l.toUpperCase())} type="text" autoComplete="cc-name" placeholder="Name on Card" className="px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none bg-neutral-50 w-full" />
+                                    <input onChange={e => setCreditCardHolderName(e.target.value.replace(/[^A-Za-z\s'-]/g, ""))} value={creditCardHolderName.replace(/\b\w/g, l => l.toUpperCase())} type="text" autoComplete="cc-name" placeholder="Name on Card" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 w-full" />
                                 </>
                             }
                             {(paymentMethod === "paypal" || paymentMethod === "applePay" || paymentMethod === "googlePay") && (
-                                <div className="text-gray-500 text-sm py-6 text-center">
+                                <div className="text-gray-500 dark:text-neutral-300 text-sm py-6 text-center">
                                     You will be redirected to complete your payment.
                                 </div>
                             )}
                             {/* Pay Button */}
-                            <button onClick={handleClick} className="w-full mt-4 py-4 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-lg shadow-md transition hover:bg-white hover:text-black active:scale-95">
+                            <button onClick={handleClick} className="w-full mt-4 py-4 rounded-2xl bg-[#1a1a1a] text-white border font-semibold text-lg shadow-md transition hover:bg-white hover:text-black active:scale-95 cursor-pointer">
                                 {paymentMethod === "creditCard" && "Pay Now"}
                                 {paymentMethod === "paypal" && "Pay with PayPal"}
                                 {paymentMethod === "applePay" && "Pay with Apple Pay"}
@@ -306,18 +308,20 @@ export default function Payment() {
 
                     {/* Order Summary */}
                     <section className="w-full">
-                        <h1 className="text-3xl font-bold mb-7 font-prata text-[#181818]">Order Summary</h1>
-                        <div className="bg-white/80 rounded-2xl shadow-sm px-8 py-7 flex flex-col gap-4">
+                        <h1 className="text-3xl font-bold mb-7 font-prata text-[#181818] dark:text-neutral-100">
+                            Order Summary
+                        </h1>
+                        <div className="bg-white/80 dark:bg-neutral-800/80 rounded-2xl shadow-sm px-8 py-7 flex flex-col gap-4">
                             {loading
                                 ? skeletonOrder
                                 : fullCart.map(item =>
-                                    <div key={`${item.id}-${item.selectedSize}`} className="flex items-center gap-7 border-b border-gray-200 pb-4 last:border-b-0">
-                                        <img src={item.image} alt={item.title} className="w-24 h-24 object-cover rounded-xl border border-[#f2e8db] shadow-sm" />
+                                    <div key={`${item.id}-${item.selectedSize}`} className="flex items-center gap-7 border-b border-gray-200 dark:border-neutral-700 pb-4 last:border-b-0">
+                                        <img src={item.image} alt={item.title} className="w-24 h-24 object-cover rounded-xl border border-[#f2e8db] dark:border-neutral-600 shadow-sm" />
                                         <div className="flex flex-col gap-1">
-                                            <h3 className="font-semibold text-lg text-[#1a1a1a]">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
-                                            <p className="text-sm text-gray-500">Size: <span className="font-bold">{item.selectedSize?.toUpperCase()}</span></p>
-                                            <p className="font-base text-sm text-gray-500">Quantity: <span className="font-bold">{item.selectedQuantity}</span></p>
-                                            <p className="text-base font-black text-[#1a1a1a]">${(+item.price * item.selectedQuantity).toFixed(2)}</p>
+                                            <h3 className="font-semibold text-lg text-[#1a1a1a] dark:text-neutral-100">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                                            <p className="text-sm text-gray-500 dark:text-neutral-400">Size: <span className="font-bold">{item.selectedSize?.toUpperCase()}</span></p>
+                                            <p className="font-base text-sm text-gray-500 dark:text-neutral-400">Quantity: <span className="font-bold">{item.selectedQuantity}</span></p>
+                                            <p className="text-base font-black text-[#1a1a1a] dark:text-neutral-200">${(+item.price * item.selectedQuantity).toFixed(2)}</p>
                                         </div>
                                     </div>
                                 )}
@@ -327,18 +331,18 @@ export default function Payment() {
                                 ? skeletonTotals
                                 : <div className="pt-5 flex flex-col gap-2 text-lg">
                                     <div className="flex justify-between">
-                                        <span>Subtotal</span>
-                                        <span className="font-bold text-[#1a1a1a]">
+                                        <span className="dark:text-neutral-300">Subtotal</span>
+                                        <span className="font-bold text-[#1a1a1a] dark:text-neutral-200">
                                             ${(+fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0)).toFixed(2)}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span>Shipping</span>
-                                        <span className="font-bold text-[#1a1a1a]">${shippingPrice.toFixed(2)}</span>
+                                        <span className="dark:text-neutral-300">Shipping</span>
+                                        <span className="font-bold text-[#1a1a1a] dark:text-neutral-200">${shippingPrice.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-xl pt-2">
-                                        <span className="font-bold">Total</span>
-                                        <span className="font-bold text-[#1a1a1a]">
+                                        <span className="font-bold dark:text-neutral-300">Total</span>
+                                        <span className="font-bold text-[#1a1a1a] dark:text-neutral-200">
                                             ${(fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0) + +shippingPrice).toFixed(2)}
                                         </span>
                                     </div>
@@ -354,6 +358,5 @@ export default function Payment() {
             {/* Footer */}
             <Footer />
         </div>
-
     )
 }

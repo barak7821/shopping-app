@@ -63,8 +63,7 @@ export default function SearchBar({ setSearchOpen }) {
                     <div className="max-w-screen-xl mx-auto flex items-center gap-2 px-24 py-3 relative">
                         {/* Search */}
                         <form className="flex flex-1 gap-2 items-center" onSubmit={e => (e.preventDefault(), searchInput.trim().length > 0 && nav(`/search?q=${encodeURIComponent(searchInput)}`), setSearchOpen(false))}>
-                            <input type="text" autoFocus placeholder="Search for products, categories, etc…" value={searchInput} onChange={e => setSearchInput(e.target.value)} className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 px-4 py-2 text-base bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#c1a875] transition"
-                            />
+                            <input type="text" autoFocus placeholder="Search for products, categories, etc…" value={searchInput} onChange={e => setSearchInput(e.target.value)} className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 px-4 py-2 text-base bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#c1a875] transition dark:placeholder-neutral-400 dark:text-white" />
                         </form>
                         {/* Close */}
                         {setSearchOpen &&
@@ -73,13 +72,13 @@ export default function SearchBar({ setSearchOpen }) {
                             </button>
                         }
                     </div>
-                    <hr className="border-[#e6dfd2]" />
+                    <hr className="border-[#e6dfd2] dark:border-neutral-700" />
                     {searchResults.length > 0 && (
                         <div className="absolute left-0 right-0 top-full mx-auto w-full max-w-2xl bg-white dark:bg-neutral-800 shadow-xl rounded-b-xl z-50 max-h-192 overflow-y-auto border-t border-neutral-200 dark:border-neutral-700">
                             {searchResults.map((product, index) => (
-                                <div key={index} onClick={() => nav(`/product/${product._id}`)} className="flex items-center gap-4 border-b last:border-b-0 py-3 px-4 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition">
+                                <div key={index} onClick={() => nav(`/product/${product._id}`)} className="flex items-center gap-4 border-b dark:border-neutral-700 last:border-b-0 py-3 px-4 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition">
                                     <img src={product.image} alt={product.title} className="w-16 h-16 object-cover rounded-lg" />
-                                    <h3 className="text-lg font-semibold">{product.title}</h3>
+                                    <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">{product.title}</h3>
                                 </div>
                             ))}
                         </div>

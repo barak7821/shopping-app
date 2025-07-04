@@ -182,37 +182,37 @@ export default function Profile() {
     }
 
     return (
-        <div className="min-h-screen bg-[#faf8f6] flex flex-col font-montserrat">
+        <div className="min-h-screen bg-[#faf8f6] dark:bg-neutral-900 flex flex-col font-montserrat">
             <NavBar />
             <div className="flex-1 flex flex-col items-center py-12">
-                <h1 className="text-4xl md:text-5xl font-prata font-bold text-[#1a1a1a] mb-10 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-prata font-bold text-[#1a1a1a] dark:text-neutral-100 mb-10 tracking-tight">
                     Profile
                 </h1>
 
                 {/* User Details */}
-                <div className="bg-white/90 rounded-2xl shadow-xl p-7 md:p-12 flex flex-col gap-7 max-w-2xl w-full">
+                <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 md:p-12 flex flex-col gap-7 max-w-2xl w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
                         {/* Name */}
                         <div className="flex flex-col gap-2">
-                            <label className="font-semibold text-[#232323] text-sm">Name</label>
-                            <input onChange={(e) => setName(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={name.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Full Name" className="px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Name</label>
+                            <input onChange={(e) => setName(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={name.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Full Name" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
                         </div>
 
                         {/* Email */}
                         <div className="flex flex-col gap-2">
-                            <label className="font-semibold text-[#232323] text-sm">Email</label>
-                            <input onChange={(e) => setEmail(e.target.value)} value={email} type="email" placeholder="Email" className="px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Email</label>
+                            <input onChange={(e) => setEmail(e.target.value)} value={email} type="email" placeholder="Email" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
                         </div>
 
                         {/* Phone */}
                         <div className="flex flex-col gap-2">
-                            <label className="font-semibold text-[#232323] text-sm">Phone</label>
+                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Phone</label>
                             <div className="flex items-center gap-3">
-                                <input onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" maxLength={10} value={phone} type="tel" placeholder="Phone" className="px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 flex-1" />
+                                <input onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" maxLength={10} value={phone} type="tel" placeholder="Phone" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 flex-1" />
 
                                 {/* Remove Phone Button */}
                                 {phone &&
-                                    <button onClick={() => setPhone("")} className="flex items-center pl-5 pr-6 py-2 rounded-xl border border-red-300 bg-red-50 text-red-500 font-medium shadow-sm transition hover:bg-red-100 active:scale-95 gap-2.5">
+                                    <button onClick={() => setPhone("")} className="flex items-center pl-5 pr-6 py-2 rounded-xl border border-red-300 dark:border-red-500 bg-red-50 dark:bg-red-900/20 text-red-500 font-medium shadow-sm transition hover:bg-red-100 dark:hover:bg-red-900/30 active:scale-95 gap-2.5">
                                         <FiX className="w-5 h-5" />
                                         Remove
                                     </button>
@@ -223,7 +223,7 @@ export default function Profile() {
 
                     {/* Address Button */}
                     {!Address && (
-                        <button onClick={() => setAddress(prev => !prev)} className="mx-auto mt-4 px-6 py-2 rounded-xl border border-[#c1a875] bg-white text-[#c1a875] font-medium transition hover:bg-[#c1a875]/10 hover:text-[#1a1a1a] shadow-sm">
+                        <button onClick={() => setAddress(prev => !prev)} className="mx-auto mt-4 px-6 py-2 rounded-xl border border-[#c1a875] text-[#c1a875] font-medium transition bg-white dark:bg-neutral-700 dark:text-[#c1a875] hover:bg-[#c1a875]/10 hover:text-[#1a1a1a] dark:hover:bg-[#c1a875]/20 shadow-sm cursor-pointer">
                             {street || city || zip || country ? "Update Shipping Address" : "Add Shipping Address"}
                         </button>
                     )}
@@ -233,26 +233,26 @@ export default function Profile() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
                             {/* Street */}
                             <div className="flex flex-col gap-2">
-                                <label className="font-semibold text-[#232323] text-sm">Street</label>
-                                <input onChange={(e) => setStreet(e.target.value)} value={street.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Street" className="px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+                                <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Street</label>
+                                <input onChange={(e) => setStreet(e.target.value)} value={street.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Street" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
                             </div>
 
                             {/* City */}
                             <div className="flex flex-col gap-2">
-                                <label className="font-semibold text-[#232323] text-sm">City</label>
-                                <input onChange={(e) => setCity(e.target.value)} value={city.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="City" className="px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+                                <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">City</label>
+                                <input onChange={(e) => setCity(e.target.value)} value={city.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="City" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
                             </div>
 
                             {/* Zip Code */}
                             <div className="flex flex-col gap-2">
-                                <label className="font-semibold text-[#232323] text-sm">Zip Code</label>
-                                <input onChange={(e) => setZip(e.target.value)} value={zip} type="text" placeholder="Zip Code" className="px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+                                <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Zip Code</label>
+                                <input onChange={(e) => setZip(e.target.value)} value={zip} type="text" placeholder="Zip Code" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
                             </div>
 
                             {/* Country */}
                             <div className="flex flex-col gap-2">
-                                <label className="font-semibold text-[#232323] text-sm">Country</label>
-                                <input onChange={(e) => setCountry(e.target.value)} value={country.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Country" className="px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50" />
+                                <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Country</label>
+                                <input onChange={(e) => setCountry(e.target.value)} value={country.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Country" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
 
                                 {/* Matched country */}
                                 {matchCountry && (
@@ -268,7 +268,7 @@ export default function Profile() {
                             </div>
 
                             {/* Remove Address Button */}
-                            <button onClick={removeAddress} className="flex items-center pl-5 pr-6 py-2 rounded-xl border border-red-300 bg-red-50 text-red-500 font-medium shadow-sm transition hover:bg-red-100 active:scale-95 gap-2.5 whitespace-nowrap">
+                            <button onClick={removeAddress} className="flex items-center pl-5 pr-6 py-2 rounded-xl border border-red-300 dark:border-red-500 bg-red-50 dark:bg-red-900/20 text-red-500 font-medium shadow-sm transition hover:bg-red-100 dark:hover:bg-red-900/30 active:scale-95 gap-2.5 whitespace-nowrap cursor-pointer">
                                 <FiX className="w-5 h-5" />
                                 Delete Shipping Address
                             </button>
@@ -284,15 +284,15 @@ export default function Profile() {
 
             {/*  Modal for password verification */}
             {verifyByPassword &&
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full flex flex-col p-8 gap-5 animate-fadeIn">
-                        <h2 className="text-2xl font-prata font-bold text-[#232323] mb-2 text-center">
+                <div onClick={() => setVerifyByPassword(false)} className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col p-8 gap-5 animate-fadeIn">
+                        <h2 className="text-2xl font-prata font-bold text-[#232323] dark:text-neutral-100 mb-2 text-center">
                             Confirm Your Password
                         </h2>
-                        <p className="text-base text-[#666] text-center mb-2">
+                        <p className="text-base text-[#666] dark:text-neutral-300 text-center mb-2">
                             For security, please enter your password to update your details.
                         </p>
-                        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="border border-gray-200 rounded-xl px-4 py-3 text-base font-montserrat bg-neutral-50 focus:ring-2 focus:ring-[#c1a875] focus:outline-none" autoFocus />
+                        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="border border-gray-200 dark:border-neutral-700 rounded-xl px-4 py-3 text-base font-montserrat bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 focus:ring-2 focus:ring-[#c1a875] focus:outline-none" autoFocus />
                         {errorPassword && (
                             <p className='text-sm text-red-500 text-center'>
                                 {errorPassword}
@@ -300,23 +300,16 @@ export default function Profile() {
                         )}
 
                         <div className="flex gap-4 mt-4">
-                            <button
-                                onClick={() => setVerifyByPassword(false)}
-                                className="flex-1 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 font-semibold transition hover:bg-gray-100 hover:text-black active:scale-95"
-                            >
+                            <button onClick={() => setVerifyByPassword(false)} className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-700 text-gray-700 dark:text-neutral-100 font-semibold transition hover:bg-gray-100 dark:hover:bg-neutral-600 hover:text-black active:scale-95 cursor-pointer">
                                 Cancel
                             </button>
-                            <button
-                                onClick={handlePasswordConfirm}
-                                className="flex-1 py-3 rounded-xl bg-[#c1a875] text-white font-semibold shadow-sm border border-[#c1a875] transition hover:bg-[#a68c5a] hover:text-white active:scale-95"
-                            >
+                            <button onClick={handlePasswordConfirm} className="flex-1 py-3 rounded-xl bg-[#c1a875] text-white font-semibold shadow-sm border border-[#c1a875] transition hover:bg-[#a68c5a] hover:text-white active:scale-95 cursor-pointer">
                                 Confirm & Update
                             </button>
                         </div>
                     </div>
                 </div>
             }
-
 
             {/* About Section */}
             <AboutCard />
