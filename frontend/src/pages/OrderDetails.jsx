@@ -63,66 +63,66 @@ export default function OrderDetails() {
       <NavBar />
 
       <div className="flex-1 flex flex-col items-center py-12 px-4">
+        {/* Title */}
         <h1 className="text-4xl md:text-5xl font-prata font-bold text-[#1a1a1a] dark:text-neutral-100 mb-10 tracking-tight">
           Order Details
         </h1>
 
-        <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 md:p-12 flex flex-col gap-7 max-w-3xl w-full">
-          {/* Order Info */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-            <div>
-              <div className="text-xs font-semibold text-[#c1a875] mb-2">Order ID</div>
-              <div className="text-sm font-mono break-all mb-2 dark:text-neutral-300">{order._id}</div>
-              <div className="text-xs font-semibold text-[#c1a875]">Order Date</div>
-              <div className="text-sm mb-2 dark:text-neutral-300">{new Date(order.createdAt).toLocaleString("en-GB")}</div>
+        {/* Order Card */}
+        <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-8 md:p-12 flex flex-col gap-8 max-w-5xl w-full">
+          {/* Top Info */}
+          <div className="flex flex-col md:flex-row md:justify-between gap-6">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-[#c1a875] font-semibold text-sm">Order ID</h3>
+              <p className="text-sm dark:text-neutral-300">{order._id}</p>
+
+              <h3 className="text-[#c1a875] font-semibold text-sm mt-4">Order Date</h3>
+              <p className="text-sm dark:text-neutral-300">{new Date(order.createdAt).toLocaleString("en-GB")}</p>
             </div>
-            <div>
-              <div className="text-xs font-semibold text-[#c1a875]">Status</div>
-              <div className="font-bold text-base mb-2">
-                <span className={`capitalize ${order.status === "pending" ? "text-yellow-500" : order.status === "completed" ? "text-green-500" : "text-gray-800 dark:text-neutral-100"}`}>
-                  {order.status.replace(/\b\w/g, l => l.toUpperCase())}
-                </span>
-              </div>
-              <div className="text-xs font-semibold text-[#c1a875]">Payment Method</div>
-              <div className="text-sm capitalize dark:text-neutral-300">{order.paymentMethod.replace(/\b\w/g, l => l.toUpperCase())}</div>
+
+            <div className="flex flex-col gap-2">
+              <h3 className="text-sm font-semibold text-[#c1a875]">Status</h3>
+              <p className={`dark:text-neutral-300 ${order.status === "delivered" ? "text-green-600" : ""}`}>
+                {order.status.replace(/\b\w/g, l => l.toUpperCase())}
+              </p>
+              <h3 className="text-sm font-semibold text-[#c1a875] mt-4">Payment Method</h3>
+              <p className="text-sm dark:text-neutral-300">{order.paymentMethod.replace(/\b\w/g, l => l.toUpperCase())}</p>
             </div>
           </div>
 
-          {/* Shipping Address */}
+          {/* Shipping Info */}
           <div>
-            <div className="text-xs font-semibold text-[#c1a875] mb-2">Shipping Information</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
-              <div>
-                <div className="text-sm dark:text-neutral-300"><span className="font-bold">Name:</span> {order.shippingAddress.name.replace(/\b\w/g, l => l.toUpperCase())}</div>
-                <div className="text-sm dark:text-neutral-300"><span className="font-bold">Email:</span> {order.shippingAddress.email}</div>
-                <div className="text-sm dark:text-neutral-300"><span className="font-bold">Phone:</span> {order.shippingAddress.phone}</div>
+            <h3 className="text-sm font-semibold text-[#c1a875] mb-3">Shipping Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1 text-sm dark:text-neutral-300">
+                <p><span className="font-bold">Name:</span> {order.shippingAddress.name.replace(/\b\w/g, l => l.toUpperCase())}</p>
+                <p><span className="font-bold">Email:</span> {order.shippingAddress.email}</p>
+                <p><span className="font-bold">Phone:</span> {order.shippingAddress.phone}</p>
               </div>
-              <div>
-                <div className="text-sm dark:text-neutral-300"><span className="font-bold">Address:</span></div>
-                <div className="text-sm dark:text-neutral-300">{order.shippingAddress.street}, {order.shippingAddress.city}, {order.shippingAddress.zip}, {order.shippingAddress.country}</div>
+              <div className="flex flex-col gap-1 text-sm dark:text-neutral-300">
+                <p><span className="font-bold">Address:</span></p>
+                <p>{order.shippingAddress.street}, {order.shippingAddress.city}, {order.shippingAddress.zip}, {order.shippingAddress.country}</p>
               </div>
             </div>
           </div>
 
-          {/* Order Items */}
+          {/* Items */}
           <div>
-            <div className="text-xs font-semibold text-[#c1a875] mb-2">Items</div>
+            <h3 className="text-sm font-semibold text-[#c1a875] mb-3">Items</h3>
             <div className="flex flex-col gap-5">
-              {order.orderItems.map((item) => {
-                const product = productsList.find(product => product._id === item.itemId)
+              {order.orderItems.map(item => {
+                const product = productsList.find(p => p._id === item.itemId)
                 return (
-                  <div key={`${item._id}-${item.size}`} className="flex items-center gap-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl p-3">
-                    <img src={product ? product.image : ""} alt={product ? product.title : "Unknown"} className="w-20 h-20 object-cover rounded-lg border dark:border-neutral-600" />
+                  <div key={`${item._id}-${item.size}`} className="flex items-center gap-5 bg-white/70 dark:bg-neutral-700 rounded-2xl p-5 shadow-sm">
+                    <img src={product?.image} alt={product?.title} className="w-24 h-24 object-cover rounded-xl border border-[#f0e6d8] dark:border-neutral-600" />
                     <div className="flex flex-col gap-1">
-                      <div className="font-semibold text-[#1a1a1a] dark:text-neutral-100">{product ? product.title.replace(/\b\w/g, l => l.toUpperCase()) : "Unknown"}</div>
-                      <div className="text-sm text-gray-600 dark:text-neutral-300">Size: <span className="font-bold">{item.selectedSize?.toUpperCase()}</span></div>
-                      <div className="text-sm text-gray-600 dark:text-neutral-300">Quantity: <span className="font-bold">{item.selectedQuantity}</span></div>
+                      <p className="font-medium text-[#232323] dark:text-neutral-100">{product?.title.replace(/\b\w/g, l => l.toUpperCase())}</p>
+                      <p className="text-sm text-gray-600 dark:text-neutral-400">Size: <b>{item.selectedSize?.toUpperCase()}</b></p>
+                      <p className="text-sm text-gray-600 dark:text-neutral-400">Quantity: <b>{item.selectedQuantity}</b></p>
                     </div>
-                    <div className="ml-auto flex flex-col items-end gap-1">
-                      <div className="text-xs text-gray-400 dark:text-neutral-400">Unit Price</div>
-                      <div className="font-bold text-[#1a1a1a] dark:text-neutral-100">${item.itemPricePerUnit.toFixed(2)}</div>
-                      <div className="text-xs text-gray-400 dark:text-neutral-400">Total</div>
-                      <div className="font-bold text-[#c1a875]">${(item.itemPricePerUnit * item.selectedQuantity).toFixed(2)}</div>
+                    <div className="ml-auto text-right">
+                      <p className="text-xs text-gray-500 dark:text-neutral-400">Total</p>
+                      <p className="font-bold text-[#c1a875]">${(item.itemPricePerUnit * item.selectedQuantity).toFixed(2)}</p>
                     </div>
                   </div>
                 )
@@ -130,11 +130,11 @@ export default function OrderDetails() {
             </div>
           </div>
 
-          {/* Total Price */}
-          <div className="flex justify-end mt-4">
-            <div className="text-lg font-bold dark:text-neutral-100">
-              Total: <span className="text-[#c1a875]">${order.orderItems.reduce((acc, item) => acc + item.itemPricePerUnit * item.selectedQuantity, 0).toFixed(2)}</span>
-            </div>
+          {/* Total */}
+          <div className="flex justify-end mt-6">
+            <h3 className="text-lg font-bold dark:text-neutral-100">
+              Total: <span className="text-[#c1a875]">${order.orderItems.reduce((acc, i) => acc + i.itemPricePerUnit * i.selectedQuantity, 0).toFixed(2)}</span>
+            </h3>
           </div>
         </div>
       </div>

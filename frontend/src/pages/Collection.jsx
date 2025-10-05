@@ -223,7 +223,7 @@ export default function Collection() {
                         <main className="flex-1 flex flex-col gap-6">
                             {/* Sort Bar */}
                             <div className="flex justify-end mb-2">
-                                <select onChange={e => setSortBy(e.target.value)} className="rounded-2xl border border-gray-200 dark:border-neutral-700 px-4 py-2 text-base bg-neutral-50 dark:bg-neutral-800 shadow-sm focus:ring-2 focus:ring-[#c1a875] focus:outline-none w-auto">
+                                <select onChange={e => setSortBy(e.target.value)} className="rounded-2xl border border-gray-200 dark:border-neutral-700 px-4 py-2 text-base bg-neutral-50 dark:bg-neutral-800 shadow-sm focus:ring-2 focus:ring-[#c1a875] focus:outline-none w-auto dark:text-white">
                                     {[
                                         { name: "Sort By: Featured", value: "featured" },
                                         { name: "Sort By: Newest Arrivals", value: "new" },

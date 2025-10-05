@@ -24,7 +24,7 @@ export default function Checkout() {
   const [zip, setZip] = useState("")
   const [country, setCountry] = useState("")
   const [matchCountry, setMatchCountry] = useState("")
-  const { setAddress } = useCart()
+  const { setAddress, cart } = useCart()
   const { isAuthenticated } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
@@ -62,6 +62,21 @@ export default function Checkout() {
     getUserData()
   }, [isAuthenticated])
 
+  // Verify there is cart before continue with checkout page
+  useEffect(() => {
+    setLoading(true)
+    if (!cart || Object.keys(cart).length === 0) {
+      notyf.error("Please add placeholder something about add to cart")
+      log("Please add shipping address first")
+      nav("/")
+      return
+    } else {
+      setLoading(false)
+    }
+
+    log(cart)
+  }, [cart])
+
   const handleClick = () => {
     // Input validation
     if (!name || !email || !phone || !street || !city || !zip || !country) {
@@ -79,6 +94,12 @@ export default function Checkout() {
 
     // Check if email is valid
     if (!email.includes("@")) {
+      notyf.error("Invalid email format")
+      log("Invalid email format")
+      return
+    }
+
+    if (/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email) === false) {
       notyf.error("Invalid email format")
       log("Invalid email format")
       return
@@ -205,7 +226,7 @@ export default function Checkout() {
               {/* City */}
               <div className="flex flex-col gap-2">
                 <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">City</label>
-                <input onChange={(e) => setCity(e.target.value)} value={city} type="text" placeholder="City" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                <input onChange={(e) => setCity(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={city.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="City" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
               </div>
 
               {/* Zip Code */}
@@ -217,7 +238,7 @@ export default function Checkout() {
               {/* Country */}
               <div className="flex flex-col gap-2">
                 <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Country</label>
-                <input onChange={(e) => setCountry(e.target.value)} value={country} type="text" placeholder="Country" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                <input onChange={(e) => setCountry(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={country.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, "")} type="text" placeholder="Country" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
                 {/* Matched country */}
                 {matchCountry && (
                   <div className="flex gap-2 items-center mt-1">

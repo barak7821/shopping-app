@@ -60,12 +60,16 @@ export default function Orders() {
             <NavBar />
 
             <div className="flex-1 flex flex-col items-center py-12 px-4">
-                <h1 className="text-4xl md:text-5xl font-prata font-bold text-[#1a1a1a] dark:text-neutral-100 mb-10 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-prata font-bold text-[#1a1a1a] dark:text-neutral-100 mb-2 tracking-tight">
                     My Orders
                 </h1>
+                <p className="text-sm md:text-lg text-[#555] font-montserrat text-center mb-10 max-w-xs md:max-w-md">
+                    Track and manage your recent orders easily.
+                </p>
+
 
                 {/* Orders List */}
-                <div className="w-full max-w-5xl flex flex-col gap-7">
+                <div className="w-full max-w-5xl flex flex-col gap-10 md:gap-12">
                     {ordersList.length === 0 ?
                         <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow p-7 flex flex-col items-center">
                             <p className="text-gray-600 dark:text-neutral-300 text-lg">No orders found.</p>
@@ -120,10 +124,7 @@ export default function Orders() {
 
                                 {/* More Details Button */}
                                 <div className="flex justify-end mt-2">
-                                    <button
-                                        onClick={() => nav(`/orders/${order._id}`)}
-                                        className="px-6 py-2 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-base shadow-md transition hover:bg-white hover:text-black active:scale-95"
-                                    >
+                                    <button onClick={() => nav(`/orders/${order._id}`)} className="px-6 py-2 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-base shadow-md transition hover:bg-white hover:text-black active:scale-95 cursor-pointer">
                                         More Details
                                     </button>
                                 </div>

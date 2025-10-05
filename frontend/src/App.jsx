@@ -16,6 +16,7 @@ import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
 import SearchResults from './pages/SearchResults.jsx';
+import OrderSuccess from './pages/OrderSuccess.jsx';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
       <Route path='/collection' element={<Collection />} />
       <Route path='/checkout' element={<Checkout />} />
       <Route path='/payment' element={<Payment />} />
+      <Route path='/orderSuccess' element={<OrderSuccess />} />
       <Route path='/product/:productId' element={<Product />} />
       <Route path='/about' element={<About />} />
       <Route path='/contact' element={<Contact />} />

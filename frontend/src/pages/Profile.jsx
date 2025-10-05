@@ -11,6 +11,7 @@ import AboutCard from '../components/AboutCard';
 import Footer from '../components/Footer';
 import { FiX } from "react-icons/fi"
 import { fetchUserData, handleUpdateUser, verifyPassword } from '../utils/api'
+import { FiEye, FiEyeOff } from "react-icons/fi"
 
 export default function Profile() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top', }, })
@@ -30,6 +31,8 @@ export default function Profile() {
     const [verifyByPassword, setVerifyByPassword] = useState(false)
     const [password, setPassword] = useState("")
     const [errorPassword, setErrorPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
+    const [error, setError] = useState("")
 
 
     // get user data from server on load
@@ -99,7 +102,7 @@ export default function Profile() {
         if (name.length < 3) {
             notyf.error("Name must be at least 3 characters long")
             errorLog("Name must be at least 3 characters long")
-            setError(true)
+            setError("name")
             return
         }
 
@@ -107,7 +110,7 @@ export default function Profile() {
         if (!email.includes("@")) {
             notyf.error("Invalid email format")
             errorLog("Invalid email format")
-            setError(true)
+            setError("email")
             return
         }
 
@@ -164,15 +167,24 @@ export default function Profile() {
         }
     }
 
-    // Function to remove saved address
-    const removeAddress = () => {
-        setStreet("")
-        setCity("")
-        setZip("")
-        setCountry("")
+    const closeModal = () => {
+        setVerifyByPassword(false)
+        setPassword("")
+        setErrorPassword("")
+        setError("")
+    }
 
-        log("Removing address")
-        setAddress(prev => !prev)
+    const handleUpdateBtn = () => {
+        if (name && email) {
+            setVerifyByPassword(true)
+        } else {
+            if (!name && !email) {
+                setError("name&email")
+                return
+            }
+            if (!name) setError("name")
+            if (!email) setError("email")
+        }
     }
 
     if (loading) {
@@ -192,16 +204,19 @@ export default function Profile() {
                 {/* User Details */}
                 <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 md:p-12 flex flex-col gap-7 max-w-2xl w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+
                         {/* Name */}
                         <div className="flex flex-col gap-2">
-                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Name</label>
+                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Name <span className="text-red-500">{error === "name" || error === "name&email" ? "*" : ""}</span></label>
                             <input onChange={(e) => setName(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={name.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Full Name" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                            <p className={`text-xs mt-1 ${error === "name" || error === "name&email" ? "text-red-500" : "text-black"}`}>* Required</p>
                         </div>
 
                         {/* Email */}
                         <div className="flex flex-col gap-2">
-                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Email</label>
+                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Email <span className="text-red-500">{error === "email" || error === "name&email" ? "*" : ""}</span></label>
                             <input onChange={(e) => setEmail(e.target.value)} value={email} type="email" placeholder="Email" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                            <p className={`text-xs mt-1 ${error === "email" || error === "name&email" ? "text-red-500" : "text-black"}`}>* Required</p>
                         </div>
 
                         {/* Phone */}
@@ -209,14 +224,6 @@ export default function Profile() {
                             <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Phone</label>
                             <div className="flex items-center gap-3">
                                 <input onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" maxLength={10} value={phone} type="tel" placeholder="Phone" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 flex-1" />
-
-                                {/* Remove Phone Button */}
-                                {phone &&
-                                    <button onClick={() => setPhone("")} className="flex items-center pl-5 pr-6 py-2 rounded-xl border border-red-300 dark:border-red-500 bg-red-50 dark:bg-red-900/20 text-red-500 font-medium shadow-sm transition hover:bg-red-100 dark:hover:bg-red-900/30 active:scale-95 gap-2.5">
-                                        <FiX className="w-5 h-5" />
-                                        Remove
-                                    </button>
-                                }
                             </div>
                         </div>
                     </div>
@@ -266,17 +273,11 @@ export default function Profile() {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Remove Address Button */}
-                            <button onClick={removeAddress} className="flex items-center pl-5 pr-6 py-2 rounded-xl border border-red-300 dark:border-red-500 bg-red-50 dark:bg-red-900/20 text-red-500 font-medium shadow-sm transition hover:bg-red-100 dark:hover:bg-red-900/30 active:scale-95 gap-2.5 whitespace-nowrap cursor-pointer">
-                                <FiX className="w-5 h-5" />
-                                Delete Shipping Address
-                            </button>
                         </div>
                     }
 
                     {/* Update Button */}
-                    <button onClick={() => setVerifyByPassword(true)} className="w-full mt-4 py-4 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-lg shadow-md transition hover:bg-white hover:text-black active:scale-95">
+                    <button onClick={handleUpdateBtn} className="w-full mt-4 py-4 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-lg shadow-md transition hover:bg-white hover:text-black active:scale-95 cursor-pointer">
                         Update
                     </button>
                 </div>
@@ -284,15 +285,24 @@ export default function Profile() {
 
             {/*  Modal for password verification */}
             {verifyByPassword &&
-                <div onClick={() => setVerifyByPassword(false)} className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col p-8 gap-5 animate-fadeIn">
+                <div onClick={closeModal} className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                    <div onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col p-8 gap-5 animate-fadeIn">
                         <h2 className="text-2xl font-prata font-bold text-[#232323] dark:text-neutral-100 mb-2 text-center">
                             Confirm Your Password
                         </h2>
                         <p className="text-base text-[#666] dark:text-neutral-300 text-center mb-2">
                             For security, please enter your password to update your details.
                         </p>
-                        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="border border-gray-200 dark:border-neutral-700 rounded-xl px-4 py-3 text-base font-montserrat bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 focus:ring-2 focus:ring-[#c1a875] focus:outline-none" autoFocus />
+
+                        <div className='relative'>
+                            <input type={showPassword ? "text" : "password"} placeholder='Password...' value={password} onChange={e => setPassword(e.target.value)} autoComplete='off' className="border border-gray-200 dark:border-neutral-700 rounded-xl w-full px-4 py-3 text-base font-montserrat bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 focus:ring-2 focus:ring-[#c1a875] focus:outline-none" autoFocus />
+                            {password &&
+                                <button className='absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer' onClick={() => setShowPassword(!showPassword)}>
+                                    {showPassword ? <FiEye className='text-neutral-800 dark:text-neutral-100' /> : <FiEyeOff className='text-neutral-800 dark:text-neutral-100' />}
+                                </button>
+                            }
+                        </div>
+
                         {errorPassword && (
                             <p className='text-sm text-red-500 text-center'>
                                 {errorPassword}
@@ -300,7 +310,7 @@ export default function Profile() {
                         )}
 
                         <div className="flex gap-4 mt-4">
-                            <button onClick={() => setVerifyByPassword(false)} className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-700 text-gray-700 dark:text-neutral-100 font-semibold transition hover:bg-gray-100 dark:hover:bg-neutral-600 hover:text-black active:scale-95 cursor-pointer">
+                            <button onClick={closeModal} className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-700 text-gray-700 dark:text-neutral-100 font-semibold transition hover:bg-gray-100 dark:hover:bg-neutral-600 hover:text-black active:scale-95 cursor-pointer">
                                 Cancel
                             </button>
                             <button onClick={handlePasswordConfirm} className="flex-1 py-3 rounded-xl bg-[#c1a875] text-white font-semibold shadow-sm border border-[#c1a875] transition hover:bg-[#a68c5a] hover:text-white active:scale-95 cursor-pointer">
