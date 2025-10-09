@@ -5,7 +5,7 @@ export const localSchema = Joi.object(
     {
         name: Joi.string().min(2).max(20).required(),
         email: Joi.string().email().required(),
-        password: Joi.string().min(6).max(20).required(),
+        password: Joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/).required(),
         role: Joi.string().default("user"),
         provider: Joi.string().valid("local").default("local"),
         lastLogin: Joi.date()

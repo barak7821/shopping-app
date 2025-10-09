@@ -42,10 +42,10 @@ export default function Login() {
         }
 
         // Check if email is valid
-        if (!email.includes("@")) {
-            notyf.error("Invalid email format")
-            errorLog("Invalid email format")
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/
+        if (!emailRegex.test(email)) {
             setError("email")
+            log("Invalid email format")
             return
         }
 
@@ -107,7 +107,7 @@ export default function Login() {
 
                     {/* Email */}
                     <div className="w-full flex flex-col gap-1">
-                        <label htmlFor="email" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Email</label>
+                        <label htmlFor="email" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Email{error && email && error === "email" && <span className="text-red-500">*</span>}</label>
                         <input id="email" onChange={e => setEmail(e.target.value)} value={email} type="email" placeholder='Email...' className='w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100' />
                         {error && email && error === "email" &&
                             <p className='text-xs text-red-500 pl-1 mt-1'>Invalid email format</p>
@@ -116,7 +116,7 @@ export default function Login() {
 
                     {/* Password */}
                     <div className="w-full flex flex-col gap-1">
-                        <label htmlFor="password" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Password</label>
+                        <label htmlFor="password" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Password  {error && password && error === "password" && <span className="text-red-500">*</span>}</label>
                         <div className='relative'>
                             <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} autoComplete='off' placeholder='Password...' className='w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100' />
                             {password &&

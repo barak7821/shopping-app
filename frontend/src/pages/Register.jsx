@@ -47,40 +47,29 @@ export default function Home() {
 
     // Check if name is less than 3 characters
     if (name.length < 3) {
-      notyf.error("Name must be at least 3 characters long")
       errorLog("Name must be at least 3 characters long")
       setError(true)
       return
     }
 
     // Check if email is valid
-    if (!email.includes("@")) {
-      notyf.error("Invalid email format")
-      errorLog("Invalid email format")
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/
+    if (!emailRegex.test(email)) {
       setError(true)
-      return
-    }
-
-    // Check if password is at least 6 characters long
-    if (password.length < 6) {
-      notyf.error("Password must be at least 6 characters long")
-      errorLog("Password must be at least 6 characters long")
-      setError(true)
+      log("Invalid email format")
       return
     }
 
     // Check if password contains at least one uppercase letter, one lowercase letter, and one number
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$/
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/
     if (!passwordRegex.test(password)) {
-      notyf.error("Password must contain at least one uppercase letter, one lowercase letter, and one number")
-      errorLog("Password must contain at least one uppercase letter, one lowercase letter, and one number")
+      errorLog("Password must contain at least one uppercase letter, one lowercase letter, one number, and be 6-20 characters long")
       setError(true)
       return
     }
 
     // Check if passwords match
     if (password !== confirmPassword) {
-      notyf.error("Passwords do not match")
       errorLog("Passwords do not match")
       setError(true)
       return
@@ -142,7 +131,7 @@ export default function Home() {
 
           {/* Name */}
           <div className="w-full flex flex-col gap-1">
-            <label htmlFor="name" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Full Name</label>
+            <label htmlFor="name" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Full Name {error && name.length < 3 && <span className="text-red-500">*</span>}</label>
             <input id="name" onChange={e => setName(e.target.value)} value={name} type="text" placeholder="Name..." className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
             {error && name && name.length < 3 ?
               <p className="text-xs text-red-500 pl-1 mt-1">Name must be at least 3 characters long</p>
@@ -152,9 +141,9 @@ export default function Home() {
 
           {/* Email */}
           <div className="w-full flex flex-col gap-1">
-            <label htmlFor="email" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Email</label>
+            <label htmlFor="email" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Email {error && !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email) && <span className="text-red-500">*</span>}</label>
             <input id="email" onChange={e => setEmail(e.target.value)} value={email} type="email" placeholder="Email..." className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
-            {error && email && !email.includes("@") ?
+            {error && email && !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email) ?
               <p className="text-xs text-red-500 pl-1 mt-1">Invalid email format</p>
               : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter a valid email address.</p>
             }
@@ -162,7 +151,7 @@ export default function Home() {
 
           {/* Password */}
           <div className="w-full flex flex-col gap-1">
-            <label htmlFor="password" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Password</label>
+            <label htmlFor="password" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Password {error && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/.test(password) && <span className="text-red-500">*</span>}</label>
             <div className="relative">
               <input id="password" onChange={e => setPassword(e.target.value)} value={password} type={showPassword ? "text" : "password"} autoComplete='off' placeholder="Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
               {password &&
@@ -181,7 +170,7 @@ export default function Home() {
 
           {/* Confirm Password */}
           <div className="w-full flex flex-col gap-1">
-            <label htmlFor="confirmPassword" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Confirm Password</label>
+            <label htmlFor="confirmPassword" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm mb-1">Confirm Password {error && password !== confirmPassword && <span className="text-red-500">*</span>}</label>
             <div className="relative">
               <input id="confirmPassword" onChange={e => setConfirmPassword(e.target.value)} value={confirmPassword} type={showConfirmPassword ? "text" : "password"} autoComplete="off" placeholder="Confirm Password..." className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
               {confirmPassword &&

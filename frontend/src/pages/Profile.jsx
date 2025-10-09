@@ -9,7 +9,6 @@ import { getNames } from 'country-list';
 import stringSimilarity from 'string-similarity';
 import AboutCard from '../components/AboutCard';
 import Footer from '../components/Footer';
-import { FiX } from "react-icons/fi"
 import { fetchUserData, handleUpdateUser, verifyPassword } from '../utils/api'
 import { FiEye, FiEyeOff } from "react-icons/fi"
 
@@ -32,7 +31,7 @@ export default function Profile() {
     const [password, setPassword] = useState("")
     const [errorPassword, setErrorPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
-    const [error, setError] = useState("")
+    const [error, setError] = useState(false)
 
 
     // get user data from server on load
@@ -98,52 +97,6 @@ export default function Profile() {
             return
         }
 
-        // Check if name is less than 3 characters
-        if (name.length < 3) {
-            notyf.error("Name must be at least 3 characters long")
-            errorLog("Name must be at least 3 characters long")
-            setError("name")
-            return
-        }
-
-        // Check if email is valid
-        if (!email.includes("@")) {
-            notyf.error("Invalid email format")
-            errorLog("Invalid email format")
-            setError("email")
-            return
-        }
-
-        // If phone number is provided, check if it is valid
-        if (phone && phone.length !== 10) {
-            notyf.error("Invalid phone number format")
-            log("Invalid phone number format")
-            return
-        }
-
-        if (phone && !phone.match(/^[0-9]+$/)) {
-            notyf.error("Invalid phone number format")
-            log("Invalid phone number format")
-            return
-        }
-
-        // If zip code is provided, check if it is valid
-        if (zip && zip.length < 4) {
-            notyf.error("Invalid zip code format")
-            log("Invalid zip code format")
-            return
-        }
-
-        // If country is provided, check if it is valid
-        if (country && match.bestMatch.rating < 0.7) {
-            setMatchCountry(match.bestMatch.target)
-            notyf.error("Invalid country")
-            log("Invalid country")
-            return
-        } else {
-            setMatchCountry("")
-        }
-
         // Set object to update user data
         const userData = {}
 
@@ -175,16 +128,55 @@ export default function Profile() {
     }
 
     const handleUpdateBtn = () => {
-        if (name && email) {
-            setVerifyByPassword(true)
-        } else {
-            if (!name && !email) {
-                setError("name&email")
-                return
-            }
-            if (!name) setError("name")
-            if (!email) setError("email")
+
+        // Input validation
+        if (!name || !email) {
+            notyf.error("Name and Email are required")
+            setError(true)
+            errorLog("Name and Email are required")
+            return
         }
+
+        // Check if name is less than 3 characters
+        if (name.length < 3) {
+            errorLog("Name must be at least 3 characters long")
+            setError(true)
+            return
+        }
+
+        // Check if email is valid
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/
+        if (!emailRegex.test(email)) {
+            setError(true)
+            log("Invalid email format")
+            return
+        }
+
+        // If phone number is provided, check if it is valid
+        if (phone && !/^\d{10}$/.test(phone)) {
+            setError(true)
+            log("Invalid phone number format")
+            return
+        }
+
+        // If zip code is provided, check if it is valid
+        if (zip && zip.length < 4) {
+            setError(true)
+            log("Invalid zip code format")
+            return
+        }
+
+        // If country is provided, check if it is valid
+        if (country && match.bestMatch.rating < 0.7) {
+            setMatchCountry(match.bestMatch.target)
+            setError(true)
+            log("Invalid country")
+            return
+        } else {
+            setMatchCountry("")
+        }
+
+        setVerifyByPassword(true)
     }
 
     if (loading) {
@@ -197,9 +189,7 @@ export default function Profile() {
         <div className="min-h-screen bg-[#faf8f6] dark:bg-neutral-900 flex flex-col font-montserrat">
             <NavBar />
             <div className="flex-1 flex flex-col items-center py-12">
-                <h1 className="text-4xl md:text-5xl font-prata font-bold text-[#1a1a1a] dark:text-neutral-100 mb-10 tracking-tight">
-                    Profile
-                </h1>
+                <h1 className="text-4xl md:text-5xl font-prata font-bold text-[#1a1a1a] dark:text-neutral-100 mb-10 tracking-tight">Profile</h1>
 
                 {/* User Details */}
                 <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 md:p-12 flex flex-col gap-7 max-w-2xl w-full">
@@ -207,24 +197,36 @@ export default function Profile() {
 
                         {/* Name */}
                         <div className="flex flex-col gap-2">
-                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Name <span className="text-red-500">{error === "name" || error === "name&email" ? "*" : ""}</span></label>
-                            <input onChange={(e) => setName(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={name.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Full Name" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
-                            <p className={`text-xs mt-1 ${error === "name" || error === "name&email" ? "text-red-500" : "text-black"}`}>* Required</p>
+                            <label htmlFor='name' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Name {error && name.length < 3 && <span className="text-red-500">*</span>}</label>
+                            <input onChange={(e) => setName(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={name.replace(/\b\w/g, l => l.toUpperCase())} id='name' type="text" placeholder="Full Name" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                            {error && name.length < 3 ?
+                                <p className="text-xs text-red-500 pl-1 mt-1">Name must be at least 3 characters long</p>
+                                : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter your full name. It should be at least 3 characters long.</p>
+                            }
                         </div>
 
                         {/* Email */}
                         <div className="flex flex-col gap-2">
-                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Email <span className="text-red-500">{error === "email" || error === "name&email" ? "*" : ""}</span></label>
-                            <input onChange={(e) => setEmail(e.target.value)} value={email} type="email" placeholder="Email" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
-                            <p className={`text-xs mt-1 ${error === "email" || error === "name&email" ? "text-red-500" : "text-black"}`}>* Required</p>
+                            <label htmlFor='email' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Email {error && !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email) && <span className="text-red-500">*</span>}</label>
+                            <input onChange={(e) => setEmail(e.target.value)} value={email} id='email' type="email" placeholder="Email" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                            {error && !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email) ?
+                                <p className="text-xs text-red-500 pl-1 mt-1">Invalid email format</p>
+                                : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter a valid email address.</p>
+                            }
                         </div>
 
                         {/* Phone */}
                         <div className="flex flex-col gap-2">
-                            <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Phone</label>
-                            <div className="flex items-center gap-3">
-                                <input onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" maxLength={10} value={phone} type="tel" placeholder="Phone" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 flex-1" />
-                            </div>
+                            <label htmlFor='phone' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Phone
+                                {error && phone && !/^\d{10}$/.test(phone)
+                                    ? <span className="text-red-500">* <span className="font-normal italic text-black dark:text-white"> - Optional</span></span>
+                                    : <span className="font-normal italic"> - Optional</span>
+                                }</label>
+                            <input onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ""))} id='phone' inputMode="numeric" maxLength={10} value={phone} type="tel" placeholder="Phone" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 flex-1" />
+                            {error && phone && !/^\d{10}$/.test(phone)
+                                ? <p className="text-xs text-red-500 pl-1 mt-1">Invalid phone number format</p>
+                                : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter a valid phone number.</p>
+                            }
                         </div>
                     </div>
 
@@ -240,38 +242,50 @@ export default function Profile() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
                             {/* Street */}
                             <div className="flex flex-col gap-2">
-                                <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Street</label>
-                                <input onChange={(e) => setStreet(e.target.value)} value={street.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Street" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                                <label htmlFor='street' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Street <span className="font-normal italic"> - Optional</span></label>
+                                <input onChange={(e) => setStreet(e.target.value)} value={street.replace(/\b\w/g, l => l.toUpperCase())} id='street' type="text" placeholder="Street" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
                             </div>
 
                             {/* City */}
                             <div className="flex flex-col gap-2">
-                                <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">City</label>
-                                <input onChange={(e) => setCity(e.target.value)} value={city.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="City" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                                <label htmlFor='city' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">City <span className="font-normal italic"> - Optional</span></label>
+                                <input onChange={(e) => setCity(e.target.value)} value={city.replace(/\b\w/g, l => l.toUpperCase())} id='city' type="text" placeholder="City" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
                             </div>
 
                             {/* Zip Code */}
                             <div className="flex flex-col gap-2">
-                                <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Zip Code</label>
-                                <input onChange={(e) => setZip(e.target.value)} value={zip} type="text" placeholder="Zip Code" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                                <label htmlFor='zip' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Zip Code
+                                    {error && zip && zip.length < 4
+                                        ? <span className="text-red-500">* <span className="font-normal italic text-black dark:text-white"> - Optional</span></span>
+                                        : <span className="font-normal italic"> - Optional</span>
+                                    }
+                                </label>
+                                <input onChange={(e) => setZip(e.target.value)} value={zip} id='zip' type="text" placeholder="Zip Code" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                                {error && zip && zip.length < 4
+                                    ? <p className="text-xs text-red-500 pl-1 mt-1">Invalid zip code format</p>
+                                    : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter a zip code number.</p>
+                                }
                             </div>
 
                             {/* Country */}
                             <div className="flex flex-col gap-2">
-                                <label className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Country</label>
-                                <input onChange={(e) => setCountry(e.target.value)} value={country.replace(/\b\w/g, l => l.toUpperCase())} type="text" placeholder="Country" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                                <label htmlFor='country' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Country
+                                    {error && country && match.bestMatch.rating < 0.7
+                                        ? <span className="text-red-500">* <span className="font-normal italic text-black dark:text-white"> - Optional</span></span>
+                                        : <span className="font-normal italic"> - Optional</span>
+                                    }
+                                </label>
+                                <input onChange={(e) => setCountry(e.target.value)} value={country.replace(/\b\w/g, l => l.toUpperCase())} id='country' type="text" placeholder="Country" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
 
                                 {/* Matched country */}
-                                {matchCountry && (
+                                {matchCountry &&
                                     <div className="flex gap-2 items-center mt-1">
                                         <p className="text-xs text-[#c1a875]">
                                             Did you mean: <span className="font-semibold">{matchCountry}</span>?
                                         </p>
-                                        <button onClick={() => setCountry(matchCountry)} className="text-xs underline text-[#c1a875]">
-                                            Use suggestion
-                                        </button>
+                                        <button onClick={() => setCountry(matchCountry)} className="text-xs underline text-[#c1a875] cursor-pointer hover:text-[#7d6d4d] ">Use suggestion</button>
                                     </div>
-                                )}
+                                }
                             </div>
                         </div>
                     }
