@@ -160,7 +160,7 @@ export default function Home() {
                 </button>
               }
             </div>
-            {error && password && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$/.test(password) ?
+            {error && password && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/.test(password) ?
               password.length < 6 ?
                 <p className="text-xs text-red-500 pl-1 mt-1">Password must be at least 6 characters long</p>
                 : <p className="text-xs text-red-500 pl-1 mt-1">Password must contain at least one uppercase letter, one lowercase letter, and one number</p>

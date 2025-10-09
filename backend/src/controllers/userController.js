@@ -69,16 +69,16 @@ export const deleteUser = async (req, res) => {
 }
 
 export const changePassword = async (req, res) => {
-    const { password, oldPassword } = req.body
+    const { password, currentPassword } = req.body
     try {
         // Validate input fields
-        if (!password || !oldPassword) return res.status(400).json({ message: "All fields are required" })
+        if (!password || !currentPassword) return res.status(400).json({ message: "All fields are required" })
 
         // Validate input against Joi schema
         await updatePasswordSchemaJoi.validateAsync({ password })
 
         // check if new password is the same as the old password
-        if (password === oldPassword) {
+        if (password === currentPassword) {
             return res.status(400).json({ code: "same", message: "New password cannot be the same as the old password" })
         }
 
@@ -87,7 +87,7 @@ export const changePassword = async (req, res) => {
         if (!user) return res.status(400).json({ code: "!exist", message: "User don't exists" })
 
         // Verify the password
-        const isPasswordValid = await checkPassword(oldPassword, user.password)
+        const isPasswordValid = await checkPassword(currentPassword, user.password)
         if (!isPasswordValid) return res.status(400).json({ code: "invalid_pass", message: "Invalid password" })
 
         // hash the new password
