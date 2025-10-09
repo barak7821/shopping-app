@@ -141,7 +141,7 @@ export default function NavBar() {
                                     </MenuItem>
                                 ))}
                                 <MenuItem as="div">
-                                    <button onClick={logout} aria-label='Logout' className="w-full text-left block px-4 py-2 text-sm text-neutral-700 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-gray-900">
+                                    <button onClick={logout} aria-label='Logout' className="w-full text-left block px-4 py-2 text-sm text-neutral-700 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-gray-900 cursor-pointer">
                                         Logout
                                     </button>
                                 </MenuItem>
