@@ -6,15 +6,28 @@ import userRoutes from "./routes/userRoutes.js"
 import orderRoutes from "./routes/orderRoutes.js"
 import productRoutes from "./routes/productRoutes.js"
 import connectToDB from "./utils/dbConfig.js"
-import { errorLog } from "./utils/log.js"
+import { errorLog, log } from "./utils/log.js"
+import helmet from "helmet"
+import apicache from "apicache"
+import compression from "compression"
+import morgan from "morgan"
 
 dotenv.config()
-
 const app = Express()
-app.use(Express.json())
-app.use(cors({
+const cache = apicache.middleware
+
+// Middleware
+app.use(cors({ 
     origin: process.env.CORS_ORIGIN || "*"
 }))
+app.use(helmet())
+app.use(Express.json({ limit: "10mb" }))
+app.use(compression())
+app.use(morgan("dev"))
+
+// Caching for frequently used routes
+app.use("/api/products", cache("5 minutes"))
+app.use("/api/order", cache("5 minutes"))
 
 // Define route handlers
 app.use("/api/auth", authRoutes) // authentication routes (eg. register, login)
@@ -30,7 +43,7 @@ const PORT = process.env.PORT || 3000
 try {
     await connectToDB()
     app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`)
+        log(`Server is running on port ${PORT}`)
     })
 
 } catch (error) {
