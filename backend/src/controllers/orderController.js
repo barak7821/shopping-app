@@ -62,7 +62,6 @@ export const createOrderForUser = async (req, res) => {
 export const getOrdersById = async (req, res) => {
     try {
         const orders = await Order.find({ userId: req.user.id }) // Find orders by user ID
-        if (!orders) return res.status(404).json({ message: "Orders not found" })
 
         log("Orders found successfully")
         res.status(200).json(orders) // Send the orders as a response
