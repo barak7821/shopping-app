@@ -159,3 +159,17 @@ export const findProductsQuery = async (query) => {
     log("Search results:", data)
     return data
 }
+
+// Function to delete the user
+export const handleDeleteUser = async () => {
+    if (!token) {
+        log("No token found")
+        return
+    }
+
+    const { data } = await axios.delete(`${baseApiUrl}/user`, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    log("Delete user response:", data)
+    return data
+}   

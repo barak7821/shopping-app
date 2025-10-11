@@ -9,7 +9,7 @@ import { getNames } from 'country-list';
 import stringSimilarity from 'string-similarity';
 import AboutCard from '../components/AboutCard';
 import Footer from '../components/Footer';
-import { fetchUserData, handleUpdateUser, verifyPassword } from '../utils/api'
+import { fetchUserData, handleDeleteUser, handleUpdateUser, verifyPassword } from '../utils/api'
 import { FiEye, FiEyeOff } from "react-icons/fi"
 
 export default function Profile() {
@@ -32,6 +32,7 @@ export default function Profile() {
     const [errorPassword, setErrorPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState(false)
+    const [isDeleteBtn, setIsDeleteBtn] = useState(false)
 
 
     // get user data from server on load
@@ -78,18 +79,22 @@ export default function Profile() {
             }
             setVerifyByPassword(false)
             setPassword("")
-            await handleClick()
+
+            // Check if delete button is clicked
+            isDeleteBtn === true
+                ? await handleDeleteAccountBtn() // If delete button is clicked, delete user
+                : await handleUpdateUserInfo() // If update button is clicked, update user
+
         } catch (error) {
             errorLog("Error in handlePasswordConfirm", error)
-            notyf.error("Something went wrong. Please try again.")
-            setErrorPassword("Something went wrong. Please try again.")
+            setErrorPassword(true)
         }
         setLoading(false)
     }
 
 
     // Function to update user data in server
-    const handleClick = async () => {
+    const handleUpdateUserInfo = async () => {
         log("Updating user data", name, email, phone, street, city, zip, country)
 
         if (!isAuthenticated) {
@@ -123,7 +128,7 @@ export default function Profile() {
     const closeModal = () => {
         setVerifyByPassword(false)
         setPassword("")
-        setErrorPassword("")
+        setErrorPassword(false)
         setError("")
     }
 
@@ -177,6 +182,25 @@ export default function Profile() {
         }
 
         setVerifyByPassword(true)
+    }
+
+    const handleDeleteAccountBtn = async () => {
+        if (!isAuthenticated) {
+            setLoading(false)
+            return
+        }
+
+        try {
+            log("Deleting account")
+            const data = await handleDeleteUser()
+            notyf.success("Account deleted successfully!")
+            log("Account deleted successfully", data)
+            window.location.reload()
+        } catch (error) {
+            errorLog("Error in handleDeleteAccount", error)
+            notyf.error("Something went wrong. Please try again.")
+        }
+
     }
 
     if (loading) {
@@ -294,6 +318,11 @@ export default function Profile() {
                     <button onClick={handleUpdateBtn} className="w-full mt-4 py-4 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-lg shadow-md transition hover:bg-white hover:text-black active:scale-95 cursor-pointer">
                         Update
                     </button>
+
+                    {/* Delete Account Button */}
+                    <button onClick={() => { setVerifyByPassword(true); setIsDeleteBtn(true) }} className="w-full mt-4 py-4 rounded-2xl border border-red-500 text-red-600 font-semibold text-lg shadow-md transition hover:bg-red-500 hover:text-white active:scale-95 cursor-pointer">
+                        Delete Account
+                    </button>
                 </div>
             </div>
 
@@ -318,9 +347,7 @@ export default function Profile() {
                         </div>
 
                         {errorPassword && (
-                            <p className='text-sm text-red-500 text-center'>
-                                {errorPassword}
-                            </p>
+                            <p className='text-sm text-red-500 text-center'>Something went wrong. Please try again.</p>
                         )}
 
                         <div className="flex gap-4 mt-4">
