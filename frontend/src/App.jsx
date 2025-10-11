@@ -1,22 +1,22 @@
 import { Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
+import Home from './pages/Home.jsx';
 import NotFound from './pages/NotFound';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import Product from './pages/Product';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Payment from './pages/Payment';
-import Profile from './pages/Profile';
-import Password from './pages/Password';
-import Orders from './pages/Orders';
-import OrderDetails from './pages/OrderDetails';
-import Collection from './pages/Collection';
+import Register from './pages/Register.jsx';
+import Login from './pages/Login.jsx';
+import Product from './pages/Product.jsx';
+import Cart from './pages/Cart.jsx';
+import Checkout from './pages/Checkout.jsx';
+import Payment from './pages/Payment.jsx';
+import Profile from './pages/Profile.jsx';
+import Password from './pages/Password.jsx';
+import Orders from './pages/Orders.jsx';
+import OrderDetails from './pages/OrderDetails.jsx';
+import Collection from './pages/Collection.jsx';
 import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import SearchResults from './pages/SearchResults';
-import OrderSuccess from './pages/OrderSuccess';
+import About from './pages/About.jsx';
+import Contact from './pages/Contact.jsx';
+import SearchResults from './pages/SearchResults.jsx';
+import OrderSuccess from './pages/OrderSuccess.jsx';
 
 function App() {
   return (
