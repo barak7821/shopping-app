@@ -141,6 +141,11 @@ export default function Login() {
                     </button>
 
                     {/* Register */}
+                    <Link to={"/resetPassword"} className='text-sm text-[#80715a] hover:text-[#c1a875] hover:underline transition mt-1'>
+                        Forgot your password?
+                    </Link>
+
+                    {/* Register */}
                     <Link to={"/register"} className='text-sm text-[#80715a] hover:text-[#c1a875] hover:underline transition mt-1'>
                         Don't have an account? Register
                     </Link>

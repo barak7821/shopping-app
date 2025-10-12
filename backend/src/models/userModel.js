@@ -65,8 +65,9 @@ const userSchema = new mongoose.Schema(
         city: String,
         zip: String,
         country: String,
-        otpCode: String, // One-time password for verification
-        otpExpiresAt: Date // Expiration time for the OTP
+        otpCode: { type: String, select: false }, // One-time password for verification
+        otpExpiresAt: { type: Date, select: false }, // Expiration time for the OTP
+        lastLogin: Date
     },
     { timestamps: true }  // Automatically adds 'createdAt' and 'updatedAt' fields
 )

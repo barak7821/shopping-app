@@ -179,8 +179,8 @@ export default function Home() {
                 </button>
               }
             </div>
-            {error && confirmPassword && confirmPassword !== password ?
-              <p className="text-xs text-red-500 pl-1 mt-1">Passwords do not match</p>
+            {error && confirmPassword && confirmPassword !== password
+              ? <p className="text-xs text-red-500 pl-1 mt-1">Passwords do not match</p>
               : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please confirm your password.</p>
             }
           </div>

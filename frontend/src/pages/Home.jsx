@@ -26,6 +26,7 @@ export default function Home() {
         } catch (error) {
             errorLog("Error in getProducts", error)
             notyf.error("Something went wrong. Please try again later.")
+            nav("*")
         } finally {
             setLoading(false)
         }

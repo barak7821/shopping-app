@@ -17,6 +17,7 @@ import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
 import SearchResults from './pages/SearchResults.jsx';
 import OrderSuccess from './pages/OrderSuccess.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
       <Route path="*" element={<NotFound />} />
       <Route path='/register' element={<Register />} />
       <Route path='/login' element={<Login />} />
+      <Route path='/resetPassword' element={<ResetPassword />} />
       <Route path='/cart' element={<Cart />} />
       <Route path='/collection' element={<Collection />} />
       <Route path='/checkout' element={<Checkout />} />

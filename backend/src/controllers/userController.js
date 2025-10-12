@@ -68,6 +68,8 @@ export const deleteUser = async (req, res) => {
     }
 }
 
+
+// Controller to change password
 export const changePassword = async (req, res) => {
     const { password, currentPassword } = req.body
     try {
@@ -103,6 +105,7 @@ export const changePassword = async (req, res) => {
     }
 }
 
+// Controller to verify password
 export const verifyPassword = async (req, res) => {
     const { password } = req.body
     try {

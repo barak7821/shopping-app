@@ -173,3 +173,24 @@ export const handleDeleteUser = async () => {
     log("Delete user response:", data)
     return data
 }   
+
+// Function to send Otp
+export const handleSendOtp = async (email) => {
+    const { data } = await axios.post(`${baseApiUrl}/auth/otp`, { email })
+    log("Otp response:", data)
+    return data
+}
+
+// Function to verify Otp
+export const handleVerifyOtp = async (email, otp) => {
+    const { data } = await axios.post(`${baseApiUrl}/auth/verifyOtp`, { email, otp })
+    log("Verify otp response:", data)
+    return data
+}
+
+// Function to reset password
+export const handleResetPassword = async (email, newPassword) => {
+    const { data } = await axios.post(`${baseApiUrl}/auth/resetPassword`, { email, newPassword })
+    log("Reset password response:", data)
+    return data
+}
