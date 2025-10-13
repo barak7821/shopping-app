@@ -1,22 +1,24 @@
 import jwt from "jsonwebtoken"
-import User, { localSchema } from "../models/userModel.js"
+import User, { localSchema, updatePasswordSchemaJoi } from "../models/userModel.js"
 import { checkPassword, hashPassword } from "../utils/passwordUtils.js"
 import { log, errorLog } from "../utils/log.js"
 import { sendOtpEmail } from "../utils/sendOtpEmail.js"
+import { generate6DigitOtp, hashOtp, verifyOtpHash } from "../utils/otpUtils.js"
 
+
+// Controller to register
 export const register = async (req, res) => {
     const { name, email, password } = req.body
     const provider = "local"
+    if (!name || !email || !password) return res.status(400).json({ message: "All fields are required" })
+
     try {
-        // Validate input fields
-        if (!name || !email || !password) return res.status(400).json({ message: "All fields are required" })
-
-        // Validate input against Joi schema
-        await localSchema.validateAsync({ name, email, password, provider })
-
         // Check if email already exists
         const userExists = await User.findOne({ email: email.toLowerCase() })
         if (userExists) return res.status(400).json({ code: "exist", message: "User already exists" })
+
+        // Validate input against Joi schema
+        await localSchema.validateAsync({ name, email, password, provider })
 
         // Hash the password
         const hashedPassword = await hashPassword(password)
@@ -43,18 +45,18 @@ export const register = async (req, res) => {
     }
 }
 
+// Controller to login
 export const login = async (req, res) => {
     const { email, password } = req.body
-    try {
-        // Validate input fields
-        if (!email || !password) return res.status(400).json({ message: "All fields are required" })
+    if (!email || !password) return res.status(400).json({ message: "All fields are required" })
 
-        // Check if user exists
-        const userExists = await User.findOne({ email: email.toLowerCase() }).select("+password")
-        if (!userExists) return res.status(400).json({ code: "!exist", message: "User don't exists" })
+    try {
+        // Find user by email
+        const user = await User.findOne({ email: email.toLowerCase() }).select("+password")
+        if (!user) return res.status(400).json({ code: "!exist", message: "User don't exists" })
 
         // Verify the password
-        const isPasswordValid = await checkPassword(password, userExists.password)
+        const isPasswordValid = await checkPassword(password, user.password)
         if (!isPasswordValid) return res.status(400).json({ code: "invalid_pass", message: "Invalid password" })
 
         // Ensure JWT_SECRET is defined in the environment variables
@@ -63,8 +65,8 @@ export const login = async (req, res) => {
         }
 
         // Generate a JWT token
-        const token = jwt.sign({ id: userExists._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
-        await User.findByIdAndUpdate(userExists._id, { lastLogin: new Date() })
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
+        await User.findByIdAndUpdate(user._id, { lastLogin: new Date() })
 
         log(`${email} logged in successfully`)
         res.status(200).json({ message: `${email} logged in successfully`, token, exist: false })
@@ -85,40 +87,45 @@ export const sendOtp = async (req, res) => {
     if (!email) return res.status(400).json({ code: "!email", message: "Email is required" })
 
     try {
-        // Check if user exists by email
-        const user = await User.findOne({ email: email.toLowerCase() })
-        if (!user) return res.status(400).json({ code: "!exist", message: "User not found" }) // If user doesn't exist, return error
+        // Find user by email
+        const user = await User.findOne({ email: email.toLowerCase() }).select("+otpCode +otpExpiresAt +otpLastSentAt +otpAttempts +otpBlockedUntil")
 
+        // Always return a neutral response for non-existing accounts
+        if (!user) return res.status(400).json({ message: "If an account exists, OTP was sent" })
 
-        // Check if OTP already sent and still valid
-        if (user.otpExpiresAt && user.otpExpiresAt > Date.now()) return res.status(429).json({ message: "OTP already sent. Please wait a few minutes." })
+        // Check if the user is temporarily blocked
+        if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ message: "Too many requests, Try again later." })
 
-        // Generate a 6-digit random OTP code
-        const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
+        // Prevent spamming (limit: 1 request every 2 minutes)
+        if (user.otpLastSentAt && Date.now() - user.otpLastSentAt < 2 * 60 * 1000) return res.status(429).json({ message: "Please wait before requesting another code" })
 
-        // Hash the OTP code
-        const hashedOtp = await hashPassword(otpCode)
+        // If a valid OTP already exists, do not create a new one
+        if (user.otpExpiresAt && user.otpExpiresAt > Date.now()) return res.status(429).json({ message: "OTP already sent. Please check your email" })
 
-        // set OTP expiration to 5 minutes from now
-        const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000)
+        // Generate and hash new OTP
+        const otpCode = generate6DigitOtp()
+        const hashedOtp = hashOtp(otpCode, user._id)
 
-        // Save OTP to user
+        // Save OTP data to user
         user.otpCode = hashedOtp
-        user.otpExpiresAt = otpExpiresAt
-        await user.save()
+        user.otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000) // valid for 5 minutes
+        user.otpLastSentAt = new Date()
+        user.otpAttempts = 0
+        await user.save({ validateBeforeSave: false })
 
         // Try to send email
         try {
-            await sendOtpEmail(email, otpCode)
+            await sendOtpEmail(user.email, otpCode)
         } catch (emailError) {
             user.otpCode = undefined
             user.otpExpiresAt = undefined
-            await user.save()
-            throw new Error("Failed to send OTP email")
+            await user.save({ validateBeforeSave: false })
+            errorLog("Email sending failed", emailError.message)
+            return res.status(500).json({ message: "Failed to send OTP email. Please try again later." })
         }
 
-        log("OTP sent successfully")
-        res.status(200).json({ message: "OTP sent successfully" })
+        log(`OTP sent successfully to ${user.email}`)
+        res.status(200).json({ message: "OTP sent successfully if the account exists" })
     } catch (error) {
         errorLog("Error in sendOtp controller", error.message)
         res.status(500).json({ message: error.message || "Internal Server Error" })
@@ -131,27 +138,30 @@ export const verifyOtp = async (req, res) => {
     if (!email || !otp) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
     try {
-        log(email, otp)
-
         // Find user by email
-        const user = await User.findOne({ email: email.toLowerCase() }).select("+otpCode +otpExpiresAt")
+        const user = await User.findOne({ email: email.toLowerCase() }).select("+otpCode +otpExpiresAt +otpAttempts +otpBlockedUntil")
 
-        // // Check if user exists and has valid OTP and expiration
-        if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(400).json({ code: "!exist", message: "Invalid or expired OTP or user not found" })
+        // Neutral response for invalid users or missing OTP
+        if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(400).json({ code: "otp", message: "Invalid or expired OTP" })
 
-        // Validate OTP code
-        const isOtpValid = await checkPassword(otp, user.otpCode)
-        if (!isOtpValid) return res.status(400).json({ code: "otp", message: "Invalid OTP" })
+        // Check if the user is temporarily blocked
+        if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ message: "Too many requests, Try again later." })
 
-        // Validate OTP expiration
+        // Check OTP expiration
         if (user.otpExpiresAt < Date.now()) return res.status(400).json({ code: "otpExpired", message: "OTP has expired" })
 
-        // Clear OTP
-        user.otpCode = undefined
-        user.otpExpiresAt = undefined
-        await user.save()
+        // Verify OTP hash
+        const isValid = verifyOtpHash(otp, user._id, user.otpCode)
+        if (!isValid) {
+            user.otpAttempts = (user.otpAttempts || 0) + 1
+            if (user.otpAttempts >= 5)
+                user.otpBlockedUntil = Date.now() + 15 * 60 * 1000 // 15 minutes block
+            await user.save({ validateBeforeSave: false })
+            return res.status(400).json({ code: "otp", message: "Invalid or expired OTP" })
+        }
 
-        log("OTP verified successfully")
+        // OTP verified successfully (fields cleared in resetPassword controller)
+        log(`OTP verified successfully for ${user.email}`)
         res.status(200).json({ message: "OTP verified successfully" })
     } catch (error) {
         errorLog("Error in verifyOtp controller", error.message)
@@ -161,30 +171,53 @@ export const verifyOtp = async (req, res) => {
 
 // Controller to reset password
 export const resetPassword = async (req, res) => {
-    const { email, newPassword } = req.body
-    if (!email || !newPassword) return res.status(400).json({ code: "!field", message: "All fields are required" })
+    const { email, otp, newPassword } = req.body
+    if (!email || !otp || !newPassword) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
     try {
-        // Check if user exists by email
-        const user = await User.findOne({ email: email.toLowerCase() }).select("+password")
-        if (!user) return res.status(400).json({ code: "!exist", message: "User not found" }) // If user doesn't exist, return error
+        // Find user by email
+        const user = await User.findOne({ email: email.toLowerCase() }).select("+password +otpCode +otpExpiresAt +otpAttempts +otpBlockedUntil")
 
-        // Check if password contains at least one uppercase letter, one lowercase letter, and one number
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/
-        if (!passwordRegex.test(newPassword)) return res.status(400).json({ code: "invalid_pass", message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and be 6-20 characters long" })
+        // Neutral response for invalid users or missing OTP
+        if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(400).json({ code: "otp", message: "Invalid or expired OTP" })
+
+        // Check if user is temporarily blocked
+        if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ message: "Too many requests, Try again later." })
+
+        // Check OTP expiration
+        if (user.otpExpiresAt < Date.now()) return res.status(400).json({ code: "otpExpired", message: "OTP has expired" })
+
+        // Verify OTP hash
+        const isOtpValid = verifyOtpHash(otp, user._id, user.otpCode)
+        if (!isOtpValid) {
+            user.otpAttempts = (user.otpAttempts || 0) + 1
+            if (user.otpAttempts >= 5)
+                user.otpBlockedUntil = Date.now() + 15 * 60 * 1000 // 15 minutes block
+            await user.save({ validateBeforeSave: false })
+            return res.status(400).json({ code: "otp", message: "Invalid or expired OTP" })
+        }
+
+        // Validate input against Joi schema
+        await updatePasswordSchemaJoi.validateAsync({ password: newPassword })
 
         // check if new password is the same as the old password
-        const isPasswordValid = await checkPassword(newPassword, user.password)
-        if (isPasswordValid) return res.status(400).json({ code: "samePass", message: "New password cannot be the same as the current password" })
+        const isSamePassword = await checkPassword(newPassword, user.password)
+        if (isSamePassword) return res.status(400).json({ code: "samePass", message: "New password cannot be the same as the current password" })
 
-        // Hash the new password
+        // Hash and save new password
         const hashedPassword = await hashPassword(newPassword)
-
-        // Save new password to user
         user.password = hashedPassword
-        await user.save()
 
-        log("Password reset successfully")
+        // Clear all OTP-related fields
+        user.otpCode = undefined
+        user.otpExpiresAt = undefined
+        user.otpAttempts = undefined
+        user.otpBlockedUntil = undefined
+        user.otpLastSentAt = undefined
+        user.passwordChangedAt = Date.now()
+        await user.save({ validateBeforeSave: false })
+
+        log(`Password reset successfully for ${user.email}`)
         res.status(200).json({ message: "Password reset successfully" })
     } catch (error) {
         errorLog("Error in resetPassword controller", error.message)

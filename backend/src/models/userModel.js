@@ -1,43 +1,36 @@
 import mongoose from "mongoose"
 import Joi from "joi"
 
-export const localSchema = Joi.object(
-    {
-        name: Joi.string().min(2).max(20).required(),
-        email: Joi.string().email().required(),
-        password: Joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/).required(),
-        role: Joi.string().default("user"),
-        provider: Joi.string().valid("local").default("local"),
-        lastLogin: Joi.date()
-    }
-)
-export const googleSchema = Joi.object(
-    {
-        name: Joi.string().min(2).max(20).required(),
-        email: Joi.string().email().min(5).max(30).required(),
-        role: Joi.string().default("user"),
-        provider: Joi.string().valid("google").default("google"),
-        lastLogin: Joi.date()
-    }
-)
+export const localSchema = Joi.object({
+    name: Joi.string().min(2).max(20).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/).required(),
+    role: Joi.string().default("user"),
+    provider: Joi.string().valid("local").default("local"),
+    lastLogin: Joi.date()
+})
 
-export const updateUserSchemaJoi = Joi.object(
-    {
-        name: Joi.string().min(2).max(20),
-        email: Joi.string().email(),
-        phone: Joi.string().pattern(/^\d{9,15}$/).allow(""),
-        street: Joi.string().allow(""),
-        city: Joi.string().allow(""),
-        zip: Joi.string().allow(""),
-        country: Joi.string().allow("")
-    }
-)
+export const googleSchema = Joi.object({
+    name: Joi.string().min(2).max(20).required(),
+    email: Joi.string().email().min(5).max(30).required(),
+    role: Joi.string().default("user"),
+    provider: Joi.string().valid("google").default("google"),
+    lastLogin: Joi.date()
+})
 
-export const updatePasswordSchemaJoi = Joi.object(
-    {
-        password: Joi.string().min(6).max(20).required()
-    }
-)
+export const updateUserSchemaJoi = Joi.object({
+    name: Joi.string().min(2).max(20),
+    email: Joi.string().email(),
+    phone: Joi.string().pattern(/^\d{9,15}$/).allow(""),
+    street: Joi.string().allow(""),
+    city: Joi.string().allow(""),
+    zip: Joi.string().allow(""),
+    country: Joi.string().allow("")
+})
+
+export const updatePasswordSchemaJoi = Joi.object({
+    password: Joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/).required()
+})
 
 const userSchema = new mongoose.Schema(
     {
@@ -65,8 +58,27 @@ const userSchema = new mongoose.Schema(
         city: String,
         zip: String,
         country: String,
-        otpCode: { type: String, select: false }, // One-time password for verification
-        otpExpiresAt: { type: Date, select: false }, // Expiration time for the OTP
+        otpCode: { // Hashed OTP (HMAC with pepper)
+            type: String,
+            select: false
+        },
+        otpExpiresAt: { // Expiration time for OTP
+            type: Date,
+            select: false
+        },
+        otpLastSentAt: { // Prevents frequent OTP sending
+            type: Date,
+            select: false
+        },
+        otpAttempts: { // Counts failed OTP attempts
+            type: Number,
+            default: 0,
+            select: false
+        },
+        otpBlockedUntil: { // Temporary block after too many attempts
+            type: Date,
+            select: false
+        },
         lastLogin: Date
     },
     { timestamps: true }  // Automatically adds 'createdAt' and 'updatedAt' fields

@@ -7,7 +7,7 @@ import { handleResetPassword } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { FiEye, FiEyeOff } from "react-icons/fi"
 
-export default function ResetPasswordStep({ email }) {
+export default function ResetPasswordStep({ email, otp }) {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const nav = useNavigate()
     const [error, setError] = useState("")
@@ -21,6 +21,9 @@ export default function ResetPasswordStep({ email }) {
     const handleClick = async () => {
         // Check if email is exist
         if (!email) return notyf.error("Email is required. Please fill it in.")
+
+        // Check if OTP if exist
+        if (!otp) return notyf.error("OTP is required. Please fill it in.")
 
         // Check if password is exist
         if (!password) return notyf.error("Password is required. Please fill it in.")
@@ -42,7 +45,7 @@ export default function ResetPasswordStep({ email }) {
         // If all validations pass, proceed
         setLoading(true)
         try {
-            await handleResetPassword(email, password)
+            await handleResetPassword(email, otp, password)
             notyf.success("Password reset successfully")
             log("Password reset successfully")
             nav("/")
@@ -55,7 +58,19 @@ export default function ResetPasswordStep({ email }) {
 
             if (error.response && error.response.status === 400 && error.response.data.code === "!exists") {
                 notyf.error("An error occurred while processing your request. Please try again later.")
-                errorLog("User not found", error)
+                errorLog("Invalid or expired OTP or user not found", error)
+                return
+            }
+
+            if (error.response && error.response.status === 400 && error.response.data.code === "otp") {
+                notyf.error("An error occurred while processing your request. Please try again later.")
+                errorLog("Invalid OTP", error)
+                return
+            }
+
+            if (error.response && error.response.status === 400 && error.response.data.code === "otpExpired") {
+                notyf.error("An error occurred while processing your request. Please try again later.")
+                errorLog("OTP has expired", error)
                 return
             }
 

@@ -43,11 +43,6 @@ export default function OtpStep({ onNext }) {
                 errorLog("Email is required", error)
                 return
             }
-            if (error.response && error.response.status === 400 && error.response.data.code === "!exist") {
-                notyf.error("User does not exist. Please register first.")
-                errorLog("User does not exist", error)
-                return
-            }
             notyf.error("An error occurred while processing your request. Please try again later.")
             errorLog("Error during handleSendOtp", error)
         } finally {
