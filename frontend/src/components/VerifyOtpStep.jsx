@@ -1,19 +1,53 @@
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import { errorLog, log } from '../utils/log';
+import { log } from '../utils/log';
 import Loading from './Loading';
-import { useState } from 'react';
-import { handleVerifyOtp } from '../utils/api';
+import { useEffect, useState } from 'react';
+import { handleSendOtp, handleVerifyOtp } from '../utils/api';
+import { useApiErrorHandler } from "../utils/useApiErrorHandler";
+import OTPInput from "otp-input-react";
 
 export default function VerifyOtpStep({ email, onNext }) {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const [otp, setOtp] = useState("")
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
+    const { handleApiError } = useApiErrorHandler()
+    const [timer, setTimer] = useState(30)
+    const [disabled, setDisabled] = useState(true)
 
+    useEffect(() => {
+        if (!disabled) return
+
+        const interval = setInterval(() => {
+            setTimer(prev => {
+                if (prev <= 1) {
+                    clearInterval(interval)
+                    setDisabled(false)
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+
+        return () => clearInterval(interval)
+    }, [disabled])
+
+    const handleTimerClick = async () => {
+        if (!email) return notyf.error("An unexpected error occurred. Please try again later.") // If there is no email, this is an internal bug
+
+        try {
+            setTimer(30)
+            setDisabled(true)
+            await handleSendOtp(email)
+            log("OTP sent successfully")
+        } catch (error) {
+            const { code } = handleApiError(error, "handleResetPassword")
+        }
+    }
     const handleClick = async () => {
         // Check if email is exist
-        if (!email) return notyf.error("Email is required. Please fill it in.")
+        if (!email) return notyf.error("An unexpected error occurred. Please try again later.")
 
         // Check if otp is exist
         if (!otp) return notyf.error("OTP is required. Please fill it in.")
@@ -26,30 +60,9 @@ export default function VerifyOtpStep({ email, onNext }) {
             log("Code verified successfully")
             onNext(otp)
         } catch (error) {
-            if (error.response && error.response.status === 400 && error.response.data.code === "!field") {
-                notyf.error("An error occurred while processing your request. Please try again later.")
-                errorLog("Email not provide", error)
-                return
-            }
+            const { code } = handleApiError(error, "handleVerifyOtp")
 
-            if (error.response && error.response.status === 400 && error.response.data.code === "!exist") {
-                notyf.error("An error occurred while processing your request. Please try again later.")
-                errorLog("Invalid or expired OTP or user not found", error)
-                return
-            }
-
-            if (error.response && error.response.status === 400 && error.response.data.code === "otpExpired") {
-                notyf.error("OTP is expired")
-                errorLog("OTP is expired", error)
-                return
-            }
-                        if (error.response && error.response.status === 400 && error.response.data.code === "otp") {
-                notyf.error("OTP is not valid")
-                errorLog("OTP is not valid", error)
-                return
-            }
-            notyf.error("An error occurred while processing your request. Please try again later.")
-            errorLog("error during handleVerifyOtp", error)
+            if (["otp_invalid", "otp_expired", "!field"].includes(code)) setError("otp")
         } finally {
             setLoading(false)
         }
@@ -65,19 +78,28 @@ export default function VerifyOtpStep({ email, onNext }) {
         <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8 md:p-12 w-full max-w-md flex flex-col gap-7 items-center">
 
             {/* Title */}
-            <h1 className='font-prata font-bold text-4xl text-[#181818] dark:text-neutral-100 tracking-tight mb-4'>Verify Code</h1>
+            <h1 className='font-prata font-bold text-4xl text-[#181818] dark:text-neutral-100 tracking-tight mb-1'>Verify Code</h1>
+
+            {/* Subtitle */}
+            <p className="text-sm text-[#555] dark:text-neutral-300 text-center mb-2">
+                Enter the 6-digit code we sent to your email.
+            </p>
 
             {/* OTP */}
-            <div className="w-full flex flex-col gap-1">
-                <label htmlFor="otp" className="text-[#232323] dark:text-neutral-100 text-sm mb-1">Enter the 6-digit code we sent to your otp {error && error === "otp" && <span className="text-red-500">*</span>}</label>
-                <input id="otp" onChange={e => setOtp(e.target.value)} value={otp} type="number" placeholder='Code...' className='w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100' />
+            <div className="flex flex-col gap-2 w-full">
+                <OTPInput value={otp} onChange={setOtp} autoFocus OTPLength={6} otpType="number" disabled={false} inputClassName="rounded-xl border border-gray-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-center text-2xl font-semibold tracking-widest text-[#1a1a1a] dark:text-neutral-100 focus:ring-2 focus:ring-[#c1a875] focus:outline-none appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none transition-transform duration-150 focus:scale-105 scale-125" className="flex justify-center" />
                 {error && otp && error === "otp" &&
-                    <p className='text-xs text-red-500 pl-1 mt-1'>Invalid otp format</p>
+                    <p className='text-sm text-red-500 mt-1'>Invalid code</p>
                 }
             </div>
 
+            {/* Resend OTP */}
+            <button onClick={handleTimerClick} disabled={disabled} className={`text-sm font-medium underline-offset-4 transition ${disabled ? "text-gray-400 cursor-not-allowed" : "text-[#c1a875] hover:text-[#1a1a1a] dark:hover:text-[#c1a875]/80 cursor-pointer"}`}>
+                {disabled ? `resend available in ${timer}s` : "Resend OTP"}
+            </button>
+
             {/* Verify */}
-            <button onClick={handleClick} className='w-full py-3 mt-3 rounded-xl font-semibold text-base bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer'>Verify</button>
+            <button onClick={handleClick} className='w-full py-3 rounded-xl font-semibold text-base bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer'>Verify</button>
         </div>
     )
 }

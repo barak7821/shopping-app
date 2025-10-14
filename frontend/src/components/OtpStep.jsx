@@ -4,12 +4,14 @@ import { errorLog, log } from '../utils/log';
 import Loading from './Loading';
 import { useState } from 'react';
 import { handleSendOtp } from '../utils/api';
+import { useApiErrorHandler } from "../utils/useApiErrorHandler";
 
 export default function OtpStep({ onNext }) {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const [email, setEmail] = useState("")
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
+    const { handleApiError } = useApiErrorHandler()
 
     const handleClick = async () => {
 
@@ -32,19 +34,12 @@ export default function OtpStep({ onNext }) {
         setLoading(true)
         try {
             await handleSendOtp(email)
-            notyf.success("OTP sent successfully")
+            notyf.success("A verification code has been sent if the account exists.")
             log("OTP sent successfully")
             setEmail("")
             onNext(email)
         } catch (error) {
-            if (error.response && error.response.status === 400 && error.response.data.code === "!email") {
-                notyf.error("Email is required")
-                setError("email")
-                errorLog("Email is required", error)
-                return
-            }
-            notyf.error("An error occurred while processing your request. Please try again later.")
-            errorLog("Error during handleSendOtp", error)
+            const { code } = handleApiError(error, "handleResetPassword")
         } finally {
             setLoading(false)
         }

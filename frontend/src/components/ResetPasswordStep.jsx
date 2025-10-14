@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { handleResetPassword } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { FiEye, FiEyeOff } from "react-icons/fi"
+import { useApiErrorHandler } from "../utils/useApiErrorHandler";
+
 
 export default function ResetPasswordStep({ email, otp }) {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
@@ -16,7 +18,7 @@ export default function ResetPasswordStep({ email, otp }) {
     const [confirmPassword, setConfirmPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-
+    const { handleApiError } = useApiErrorHandler()
 
     const handleClick = async () => {
         // Check if email is exist
@@ -34,7 +36,7 @@ export default function ResetPasswordStep({ email, otp }) {
         // Check if password contains at least one uppercase letter, one lowercase letter, and one number
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/
         if (!passwordRegex.test(password)) {
-            errorLog("Password must contain at least one uppercase letter, one lowercase letter, one number, and be 6-20 characters long")
+            errorLog("Weak password format")
             setError(true)
             return
         }
@@ -50,43 +52,10 @@ export default function ResetPasswordStep({ email, otp }) {
             log("Password reset successfully")
             nav("/")
         } catch (error) {
-            if (error.response && error.response.status === 400 && error.response.data.code === "!field") {
-                notyf.error("An error occurred while processing your request. Please try again later.")
-                errorLog("Email or Password is not provided", error)
-                return
-            }
+            const { code } = handleApiError(error, "handleResetPassword")
 
-            if (error.response && error.response.status === 400 && error.response.data.code === "!exists") {
-                notyf.error("An error occurred while processing your request. Please try again later.")
-                errorLog("Invalid or expired OTP or user not found", error)
-                return
-            }
-
-            if (error.response && error.response.status === 400 && error.response.data.code === "otp") {
-                notyf.error("An error occurred while processing your request. Please try again later.")
-                errorLog("Invalid OTP", error)
-                return
-            }
-
-            if (error.response && error.response.status === 400 && error.response.data.code === "otpExpired") {
-                notyf.error("An error occurred while processing your request. Please try again later.")
-                errorLog("OTP has expired", error)
-                return
-            }
-
-            if (error.response && error.response.status === 400 && error.response.data.code === "invalid_pass") {
-                notyf.error("Password must contain at least one uppercase letter, one lowercase letter, one number, and be 6-20 characters long")
-                errorLog("Invalid password", error)
-                return
-            }
-
-            if (error.response && error.response.status === 400 && error.response.data.code === "samePass") {
-                notyf.error("New password cannot be the same as the current password. Please try again")
-                errorLog("new password and old password are the same", error)
-                return
-            }
-            notyf.error("An error occurred while processing your request. Please try again later.")
-            errorLog("error during handleResetPassword", error)
+            if (["otp_invalid", "otp_expired"].includes(code)) setError("otp")
+            if (["invalid_pass", "same_pass"].includes(code)) setError("password")
         } finally {
             setLoading(false)
         }

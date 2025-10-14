@@ -140,7 +140,7 @@ export default function Login() {
                         Login
                     </button>
 
-                    {/* Register */}
+                    {/* Reset Password */}
                     <Link to={"/resetPassword"} className='text-sm text-[#80715a] hover:text-[#c1a875] hover:underline transition mt-1'>
                         Forgot your password?
                     </Link>
