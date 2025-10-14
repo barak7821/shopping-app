@@ -60,6 +60,9 @@ export default function Password() {
             const data = await handleChangePassword(userData)
             notyf.success("Password changed successfully!")
             log("Password changed successfully", data)
+            setPassword("")
+            setConfirmPassword("")
+            setCurrentPassword("")
         } catch (error) {
             if (error.response && error.response.status === 400 && error.response.data.code === "invalid_pass") {
                 notyf.error("New password cannot be the same as the old password")

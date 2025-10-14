@@ -62,7 +62,6 @@ export default function Login() {
             setEmail("") // Clear email input
             setPassword("") // Clear password input
 
-
             if (redirect) {
                 nav(redirect) // Navigate to the specified route
                 window.location.reload()
@@ -70,6 +69,7 @@ export default function Login() {
             } else {
                 nav("/") // Navigate to home page
                 window.location.reload()
+                return
             }
         } catch (error) {
             if (error.response && error.response.status === 400 && error.response.data.code === "!exist") {
