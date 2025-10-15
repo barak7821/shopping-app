@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar'
 import Loading from '../components/Loading'
 import { errorLog, log } from '../utils/log'
@@ -6,6 +6,9 @@ import { Notyf } from 'notyf'
 import 'notyf/notyf.min.css'
 import { handleChangePassword } from '../utils/api'
 import { FiEye, FiEyeOff } from "react-icons/fi"
+import { useAuth } from '../utils/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import { useApiErrorHandler } from '../utils/useApiErrorHandler'
 
 export default function Password() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top', }, })
@@ -17,16 +20,26 @@ export default function Password() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [showCurrentPassword, setShowCurrentPassword] = useState(false)
     const [error, setError] = useState(false)
+    const { provider } = useAuth()
+    const nav = useNavigate()
+    const { handleApiError } = useApiErrorHandler()
+
+    useEffect(() => {
+        // If user logged in via Google, redirect (password change not allowed)
+        if (provider === "google") {
+            nav("/")
+        }
+    }, [provider])
 
     const handlePassword = async () => {
-        // Check if all fields are filled
+        // Ensure all required fields are filled
         if (!password || !confirmPassword || !currentPassword) {
             notyf.error("All fields are required")
             errorLog("All fields are required")
             return
         }
 
-        // Check if password contains at least one uppercase letter, one lowercase letter, and one number
+        // Password must have upper/lowercase letters, a number, and 6–20 chars
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/
         if (!passwordRegex.test(password)) {
             setError(true)
@@ -49,35 +62,28 @@ export default function Password() {
             return
         }
 
-        const userData = {
-            password,
-            currentPassword
-        }
+        const userData = { password, currentPassword }
 
         setLoading(true) // Set loading state to true
-        // Send request to change password
         try {
+            // Send request to change password
             const data = await handleChangePassword(userData)
             notyf.success("Password changed successfully!")
             log("Password changed successfully", data)
+
             setPassword("")
             setConfirmPassword("")
             setCurrentPassword("")
         } catch (error) {
-            if (error.response && error.response.status === 400 && error.response.data.code === "invalid_pass") {
-                notyf.error("New password cannot be the same as the old password")
-                errorLog("Invalid password", error)
-                setError("password")
-                return
-            }
-            errorLog("Error in handlePassword", error)
-            notyf.error("An error occurred while processing your request. Please try again later.")
-            setLoading(false)
+            const { code } = handleApiError(error, "handleRegister")
+
+            if (["invalid_pass"].includes(code)) setError("password")
         } finally {
             setLoading(false)
         }
     }
 
+    // Show loading screen during API request
     if (loading) {
         return (
             <Loading />
@@ -94,7 +100,7 @@ export default function Password() {
                 <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 md:p-12 flex flex-col gap-7 max-w-2xl w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
 
-                        {/* Password */}
+                        {/* New Password */}
                         <div className="flex flex-col gap-2">
                             <label htmlFor="password" className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">New Password  {error && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/.test(password) && <span className="text-red-500">*</span>}</label>
                             <div className='relative'>
@@ -152,6 +158,7 @@ export default function Password() {
                         </div>
 
                     </div>
+
                     {/* Button */}
                     <button onClick={handlePassword} className="w-full mt-4 py-4 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-lg shadow-md transition hover:bg-white hover:text-black active:scale-95 cursor-pointer">
                         Update

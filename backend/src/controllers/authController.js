@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken"
-import User, { localSchema, updatePasswordSchemaJoi } from "../models/userModel.js"
+import User, { googleSchema, localSchema, updatePasswordSchemaJoi } from "../models/userModel.js"
 import { checkPassword, hashPassword } from "../utils/passwordUtils.js"
 import { log, errorLog } from "../utils/log.js"
 import { sendOtpEmail } from "../utils/sendOtpEmail.js"
 import { generate6DigitOtp, hashOtp, verifyOtpHash } from "../utils/otpUtils.js"
-
+import axios from "axios"
 
 // Controller to register
 export const register = async (req, res) => {
@@ -60,12 +60,12 @@ export const login = async (req, res) => {
         if (!isPasswordValid) return res.status(400).json({ code: "invalid_pass", message: "Invalid password" })
 
         // Ensure JWT_SECRET is defined in the environment variables
-        if (!process.env.JWT_SECRET) {
-            throw new Error("JWT_SECRET is not defined")
-        }
+        if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined")
 
         // Generate a JWT token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
+
+        // Update last login
         await User.findByIdAndUpdate(user._id, { lastLogin: new Date() })
 
         log(`${email} logged in successfully`)
@@ -78,7 +78,12 @@ export const login = async (req, res) => {
 
 // Controller for checking if the user is authenticated based on the JWT token
 export const checkAuth = async (req, res) => {
-    res.status(200).json({ exist: true })
+    try {
+        res.status(200).json({ exist: true, provider: req.user.provider })
+    } catch (error) {
+        errorLog("Error in checkAuth controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
 }
 
 // Controller to send OTP
@@ -93,14 +98,17 @@ export const sendOtp = async (req, res) => {
         // Always return a neutral response for non-existing accounts
         if (!user) return res.status(400).json({ code: "otp_sent", message: "If an account exists, OTP was sent" })
 
+        // Check if user google sign-in account 
+        if (user.provider === "google") return res.status(400).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
+
         // Check if the user is temporarily blocked
-        // if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ code: "blocked", message: "Too many requests, Try again later." })
+        if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ code: "blocked", message: "Too many requests, Try again later." })
 
         // Prevent spamming (limit: 1 request every 2 minutes)
-        // if (user.otpLastSentAt && Date.now() - user.otpLastSentAt < 2 * 60 * 1000) return res.status(429).json({ code: "too_fast", message: "Please wait before requesting another code" })
+        if (user.otpLastSentAt && Date.now() - user.otpLastSentAt < 2 * 60 * 1000) return res.status(429).json({ code: "too_fast", message: "Please wait before requesting another code" })
 
         // If a valid OTP already exists, do not create a new one
-        // if (user.otpExpiresAt && user.otpExpiresAt > Date.now()) return res.status(429).json({ code: "otp_active", message: "OTP already sent. Please check your email" })
+        if (user.otpExpiresAt && user.otpExpiresAt > Date.now()) return res.status(429).json({ code: "otp_active", message: "OTP already sent. Please check your email" })
 
         // Generate and hash new OTP
         const otpCode = generate6DigitOtp()
@@ -144,6 +152,9 @@ export const verifyOtp = async (req, res) => {
         // Neutral response for invalid users or missing OTP
         if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(400).json({ code: "otp_invalid", message: "Invalid or expired OTP" })
 
+        // Check if user google sign-in account 
+        if (user.provider === "google") return res.status(400).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
+
         // Check if the user is temporarily blocked
         if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ code: "blocked", message: "Too many requests, Try again later." })
 
@@ -180,6 +191,9 @@ export const resetPassword = async (req, res) => {
 
         // Neutral response for invalid users or missing OTP
         if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(400).json({ code: "otp_invalid", message: "Invalid or expired OTP or user not found" })
+
+        // Check if user google sign-in account 
+        if (user.provider === "google") return res.status(400).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
 
         // Check if user is temporarily blocked
         if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ code: "blocked", message: "Too many requests, Try again later." })
@@ -221,6 +235,48 @@ export const resetPassword = async (req, res) => {
         res.status(200).json({ message: "Password reset successfully" })
     } catch (error) {
         errorLog("Error in resetPassword controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to login/register with Google
+export const google = async (req, res) => {
+    const { token } = req.body
+    if (!token) return
+
+    try {
+        if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined") // Ensure JWT_SECRET is defined in the environment variables
+
+        const { data } = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+
+        const { email, name, provider } = data
+
+        // Validate input against Joi schema
+        await googleSchema.validateAsync({ name, email, provider })
+
+        // Find user by email
+        let user = await User.findOne({ email: email.toLowerCase() })
+        if (!user) {
+            user = await User.create({
+                email: email.toLowerCase(),
+                name: name.toLowerCase(),
+                provider: "google",
+                lastLogin: new Date()
+            })
+        }
+
+        // Update last login
+        await User.findByIdAndUpdate(user._id, { lastLogin: new Date() })
+
+        // Generate a JWT token
+        const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
+
+        log(`${email} logged in successfully`)
+        res.status(200).json({ token: jwtToken, exist: true, provider: user.provider })
+    } catch (error) {
+        errorLog("Error in google controller", error.message)
         res.status(500).json({ message: error.message || "Internal Server Error" })
     }
 }

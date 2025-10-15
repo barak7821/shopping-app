@@ -5,15 +5,18 @@ import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './utils/AuthContext.jsx'
 import { CartProvider } from './utils/CartContext.jsx'
+import { GoogleOAuthProvider } from "@react-oauth/google"
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <CartProvider>
-      <AuthProvider>
-        <StrictMode>
-          <App />
-        </StrictMode>
-      </AuthProvider>
-    </CartProvider>
-  </BrowserRouter>
+  <StrictMode>
+    <BrowserRouter>
+      <CartProvider>
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </GoogleOAuthProvider>
+      </CartProvider>
+    </BrowserRouter>
+  </StrictMode>
 )

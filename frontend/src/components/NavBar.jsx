@@ -3,7 +3,6 @@ import { NavLink, Link } from 'react-router-dom'
 import { useAuth } from '../utils/AuthContext';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { FiUser, FiSearch, FiShoppingCart, FiMenu, FiX } from "react-icons/fi"
-import { log } from '../utils/log';
 import { useCart } from '../utils/CartContext';
 import Theme from './Theme';
 import SearchBar from './SearchBar';
@@ -12,7 +11,7 @@ export default function NavBar() {
     const [cartCount, setCartCount] = useState(0)
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
-    const { isAuthenticated, isAdmin } = useAuth()
+    const { isAuthenticated, isAdmin, provider } = useAuth()
     const { cart } = useCart()
 
     useEffect(() => {
@@ -77,9 +76,18 @@ export default function NavBar() {
                                     <FiUser size={20} alt="Menu" className="w-5 cursor-pointer text-neutral-800 dark:text-white" />
                                 </MenuButton>
                                 <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-neutral-800 shadow-lg ring-1 ring-neutral-200 dark:ring-neutral-700 ring-opacity-5 focus:outline-none z-50">
-                                    {[{ text: "My Profile", link: "/profile", aria: "Profile" },
-                                    { text: "My Orders", link: "/orders", aria: "Orders" },
-                                    { text: "Change Password", link: "/password", aria: "Change-Password" }].map((item, index) => (
+                                    {(
+                                        provider === "google"
+                                            ? [
+                                                { text: "My Profile", link: "/profile", aria: "Profile" },
+                                                { text: "My Orders", link: "/orders", aria: "Orders" },
+                                            ]
+                                            : [
+                                                { text: "My Profile", link: "/profile", aria: "Profile" },
+                                                { text: "My Orders", link: "/orders", aria: "Orders" },
+                                                { text: "Change Password", link: "/password", aria: "Change-Password" }
+                                            ]
+                                    ).map((item, index) => (
                                         <MenuItem key={index} as="div">
                                             <Link to={item.link} aria-label={item.aria} className="block px-4 py-2 text-sm text-neutral-700 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-gray-900">
                                                 {item.text}

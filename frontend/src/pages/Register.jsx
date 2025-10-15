@@ -11,6 +11,7 @@ import NavBar from '../components/NavBar';
 import { FiEye, FiEyeOff } from "react-icons/fi"
 import { useEffect } from 'react';
 import { handleRegister } from '../utils/api.js';
+import { useApiErrorHandler } from '../utils/useApiErrorHandler.js';
 
 export default function Home() {
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
@@ -24,6 +25,7 @@ export default function Home() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const { setIsAuthenticated, isAuthenticated } = useAuth()
+  const { handleApiError } = useApiErrorHandler()
 
   // if user already logged in then redirect to home
   useEffect(() => {
@@ -100,13 +102,7 @@ export default function Home() {
       window.location.reload()
     } catch (error) {
       setError(true)
-      if (error.response && error.response.status === 400 && error.response.data.code === "exist") {
-        notyf.error("An account with this email already exists.")
-        errorLog("An account with this email already exists.")
-        return
-      }
-      errorLog("Error during registration:", error)
-      notyf.error("An error occurred while processing your request. Please try again later.")
+      const { code } = handleApiError(error, "handleRegister")
     } finally {
       setLoading(false)
     }

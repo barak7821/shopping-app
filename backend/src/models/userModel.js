@@ -12,7 +12,7 @@ export const localSchema = Joi.object({
 
 export const googleSchema = Joi.object({
     name: Joi.string().min(2).max(20).required(),
-    email: Joi.string().email().min(5).max(30).required(),
+    email: Joi.string().email().required(),
     role: Joi.string().default("user"),
     provider: Joi.string().valid("google").default("google"),
     lastLogin: Joi.date()

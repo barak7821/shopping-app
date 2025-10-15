@@ -194,3 +194,10 @@ export const handleResetPassword = async (email, otp, newPassword) => {
     log("Reset password response:", data)
     return data
 }
+
+// Function to register/login with Google
+export const handleGoogle = async (token) => {
+    const { data } = await axios.post(`${baseApiUrl}/auth/google`, { token })
+    log("Google response:", data)
+    return data
+}

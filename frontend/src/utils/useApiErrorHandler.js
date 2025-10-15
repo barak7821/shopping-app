@@ -3,7 +3,7 @@ import 'notyf/notyf.min.css';
 import { errorLog } from "../utils/log"
 
 export const useApiErrorHandler = () => {
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+  const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
 
   const handleApiError = (error, context = "API request") => {
     const status = error?.response?.status
@@ -24,7 +24,9 @@ export const useApiErrorHandler = () => {
       "email_fail": "Failed to send verification code. Try again later.",
       "invalid_pass": "Password must meet security requirements.",
       "same_pass": "New password cannot match the old one.",
-      "server_error": "A server error occurred. Please try again later."
+      "server_error": "A server error occurred. Please try again later.",
+      "google_user": "Password reset is not available for Google sign-in accounts.",
+      "exist": "User already exists.",
     }
 
     if (code && errorMap[code]) message = errorMap[code]

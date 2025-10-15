@@ -54,12 +54,6 @@ export default function Cart() {
         log(`fullCart:${fullCart}`)
     }, [cart, productsList])
 
-    // if (loading) {
-    //     return (
-    //         <Loading />
-    //     )
-    // }
-
     const skeleton = ( // Loading skeleton for cart items
         <div className="flex items-center justify-between gap-8 bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-md p-5 animate-pulse">
             <div className="flex items-center gap-6">

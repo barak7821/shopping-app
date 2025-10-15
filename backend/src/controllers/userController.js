@@ -84,9 +84,12 @@ export const changePassword = async (req, res) => {
             return res.status(400).json({ code: "same", message: "New password cannot be the same as the old password" })
         }
 
-        // find user
+        // Find user by email
         const user = await User.findById(req.user.id).select("+password")
         if (!user) return res.status(400).json({ code: "!exist", message: "User don't exists" })
+
+        // Check if user google sign-in account 
+        if (user.provider === "google") return res.status(400).json({ code: "google_user", message: "Google users cannot change passwords because they sign in with Google." })
 
         // Verify the password
         const isPasswordValid = await checkPassword(currentPassword, user.password)
