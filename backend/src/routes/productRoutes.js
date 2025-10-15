@@ -1,4 +1,5 @@
 import Express from 'express';
+import apicache from "apicache";
 import { addMultipleProducts, addProduct, findProducts, findProductsQuery, getProducts } from '../controllers/productController.js';
 
 const router = Express.Router()
