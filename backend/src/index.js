@@ -8,13 +8,11 @@ import productRoutes from "./routes/productRoutes.js"
 import connectToDB from "./utils/dbConfig.js"
 import { errorLog, log } from "./utils/log.js"
 import helmet from "helmet"
-import apicache from "apicache"
 import compression from "compression"
 import morgan from "morgan"
 
 dotenv.config()
 const app = Express()
-const cache = apicache.middleware
 
 // Middleware
 app.use(cors({ 
@@ -24,10 +22,6 @@ app.use(helmet())
 app.use(Express.json({ limit: "10mb" }))
 app.use(compression())
 app.use(morgan("dev"))
-
-// Caching for frequently used routes
-app.use("/api/products", cache("5 minutes"))
-app.use("/api/order", cache("5 minutes"))
 
 // Define route handlers
 app.use("/api/auth", authRoutes) // authentication routes (eg. register, login)
