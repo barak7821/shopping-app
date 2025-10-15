@@ -1,15 +1,13 @@
 import Express from 'express';
-import apicache from "apicache";
 import { addMultipleProducts, addProduct, findProducts, findProductsQuery, getProducts } from '../controllers/productController.js';
+import cache from '../middlewares/cacheMiddleware.js';
 
 const router = Express.Router()
-const cache = apicache.middleware
 
 // Caching for frequently used routes
-
 router.get('/', cache("10 minutes"), getProducts)
 
-// Routes without caching
+// Define route handlers
 router.post('/', addProduct)
 router.post('/batch', addMultipleProducts)
 router.post('/search', findProducts)

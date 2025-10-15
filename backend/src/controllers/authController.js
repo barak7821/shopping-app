@@ -192,10 +192,10 @@ export const resetPassword = async (req, res) => {
         // Neutral response for invalid users or missing OTP
         if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(400).json({ code: "otp_invalid", message: "Invalid or expired OTP or user not found" })
 
-        // Check if user google sign-in account 
+        // Block password reset for Google-authenticated users
         if (user.provider === "google") return res.status(400).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
 
-        // Check if user is temporarily blocked
+        // Check if user is temporarily blocked due to multiple failed attempts
         if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ code: "blocked", message: "Too many requests, Try again later." })
 
         // Check OTP expiration
@@ -206,7 +206,7 @@ export const resetPassword = async (req, res) => {
         if (!isOtpValid) {
             user.otpAttempts = (user.otpAttempts || 0) + 1
             if (user.otpAttempts >= 5)
-                user.otpBlockedUntil = Date.now() + 15 * 60 * 1000 // 15 minutes block
+                user.otpBlockedUntil = Date.now() + 15 * 60 * 1000 // Block for 15 minutes
             await user.save({ validateBeforeSave: false })
             return res.status(400).json({ code: "otp_invalid", message: "Invalid or expired OTP" })
         }
@@ -230,6 +230,9 @@ export const resetPassword = async (req, res) => {
         user.otpLastSentAt = undefined
         user.passwordChangedAt = Date.now()
         await user.save({ validateBeforeSave: false })
+
+        // Clear cached data for the current user
+        apicache.clear(req.user?.id)
 
         log(`Password reset successfully for ${user.email}`)
         res.status(200).json({ message: "Password reset successfully" })
