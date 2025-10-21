@@ -43,8 +43,16 @@ export default function Orders() {
 
     useEffect(() => {
         const run = async () => {
-            await getOrders()
-            await getProducts()
+            try {
+                await getOrders()
+                await getProducts()
+            } catch (error) {
+                errorLog("Error in useEffect", error)
+                notyf.error("Something went wrong. Please try again later.")
+                nav("/")
+            } finally {
+                setLoading(false)
+            }
         }
         run()
     }, [])
