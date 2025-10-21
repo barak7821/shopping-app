@@ -195,7 +195,6 @@ export default function Profile() {
             const data = await handleDeleteUser()
             notyf.success("Account deleted successfully!")
             log("Account deleted successfully", data)
-            window.location.reload()
         } catch (error) {
             errorLog("Error in handleDeleteAccount", error)
             notyf.error("Something went wrong. Please try again.")

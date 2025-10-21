@@ -1,4 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
+import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
+import ProtectedRouteAdmin from './utils/ProtectedRouteAdmin';
 import Home from './pages/Home.jsx';
 import NotFound from './pages/NotFound';
 import Register from './pages/Register.jsx';
@@ -12,12 +14,12 @@ import Password from './pages/Password.jsx';
 import Orders from './pages/Orders.jsx';
 import OrderDetails from './pages/OrderDetails.jsx';
 import Collection from './pages/Collection.jsx';
-import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
 import SearchResults from './pages/SearchResults.jsx';
 import OrderSuccess from './pages/OrderSuccess.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+import Admin from './pages/Admin.jsx';
 
 function App() {
   return (
@@ -42,6 +44,8 @@ function App() {
       <Route path='/orders' element={<ProtectedRouteAuth><Orders /></ProtectedRouteAuth>} />
       <Route path='/orders/:orderId' element={<ProtectedRouteAuth><OrderDetails /></ProtectedRouteAuth>} />
       <Route path='/password' element={<ProtectedRouteAuth><Password /></ProtectedRouteAuth>} />
+      {/* Protected Admin Routes */}
+      <Route path='/admin' element={<ProtectedRouteAdmin><Admin /></ProtectedRouteAdmin>} />
     </Routes>
   )
 }

@@ -33,7 +33,7 @@ const authMiddleware = async (req, res, next) => {
 
         // Find the user in the database based on the decoded ID
         const user = await User.findById(decoded.id)
-        if (!user) return res.status(404).json({ message: "User not found" })
+        if (!user) return res.status(200).json({ exist: false }) // Not an error — just means the user doesn't exist
 
         req.user.role = user.role
         req.user.provider = user.provider
@@ -41,7 +41,7 @@ const authMiddleware = async (req, res, next) => {
         next()
     } catch (error) {
         errorLog("Token verification error:", error.message)
-        res.status(403).json({ message: "Unauthorized" })
+        res.status(200).json({ message: "Unauthorized", exist: false })  // Not an error — just means the user doesn't exist
     }
 }
 

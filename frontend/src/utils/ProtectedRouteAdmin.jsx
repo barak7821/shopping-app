@@ -13,12 +13,12 @@ export default function ProtectedRoute({ children }) {
     if (!isAuthenticated) {
         // If the user is not authenticated, remove the token from local storage and redirect to the login page
         localStorage.removeItem("token")
-        return <Navigate to="/" replace />
+        return <Navigate to="/" />
     }
 
-    return (
-        <>
-            {children}
-        </>
-    )
+    if (user?.role !== "admin") {
+        return <Navigate to="/" />
+    }
+
+    return { children }
 }

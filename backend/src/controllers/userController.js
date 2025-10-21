@@ -1,6 +1,7 @@
 import User, { updatePasswordSchemaJoi, updateUserSchemaJoi } from "../models/userModel.js"
 import { log, errorLog } from "../utils/log.js"
 import { checkPassword, hashPassword } from "../utils/passwordUtils.js"
+import apicache from "apicache"
 
 // Controller to get the logged-in user's details
 export const getUser = async (req, res) => {
@@ -59,6 +60,10 @@ export const deleteUser = async (req, res) => {
         // Check if user exists and delete it
         const user = await User.findByIdAndDelete(req.user.id)
         if (!user) return res.status(404).json({ message: "User not found" })
+
+        // Clear cache
+        apicache.clear(req.user.id)
+        apicache.clear(`/api/user:${req.user.id}`)
 
         log("User deleted successfully")
         res.status(200).json({ message: "User deleted successfully" })
