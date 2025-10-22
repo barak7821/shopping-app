@@ -88,6 +88,8 @@ export default function Profile() {
         } catch (error) {
             errorLog("Error in handlePasswordConfirm", error)
             setErrorPassword(true)
+        } finally {
+            setLoading(false)
         }
     }
 

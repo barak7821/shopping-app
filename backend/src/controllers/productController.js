@@ -139,3 +139,16 @@ export const findProductsQuery = async (req, res) => {
         res.status(500).json({ message: error.message || "Internal Server Error" })
     }
 }
+
+// temp controller for delete all products - SHOULD ONLY BE USED FOR TESTING!!!
+export const deleteAllProducts = async (req, res) => {
+    try {
+        await Product.deleteMany({})
+
+        log("All products deleted")
+        res.status(200).json({ message: "All products deleted" })
+    } catch (error) {
+        errorLog("Error in deleteAllProducts controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
