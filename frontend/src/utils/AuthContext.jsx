@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { errorLog } from "./log";
-import { checkUserAdmin, checkUserAuth } from "./api";
+import { errorLog, log } from "./log";
+import { checkUserAuth } from "./api";
 
 // Create a global context to share authentication state across the app
 const AuthContext = createContext()
@@ -30,10 +30,17 @@ export const AuthProvider = ({ children }) => {
                 setIsAuthenticated(data.exist) // true/false from backend
 
                 if (data.provider) setProvider(data.provider) // If provide exist, send it
+                if (data.role === "admin") { // Check if user is admin
+                    setIsAdmin(true)
+                } else {
+                    setIsAdmin(false)
+                }
+
             } catch (error) {
                 errorLog("Error in checkAuth:", error)
                 setIsAuthenticated(false) // If fails, reset auth state
                 setProvider(null) // Same for provider
+                setIsAdmin(false) // Same for admin
                 return
             }
         }
@@ -41,23 +48,8 @@ export const AuthProvider = ({ children }) => {
         checkAuth()
     }, [token]) // re-run when token changes (e.g. login/logout)
 
-    // Check if the user is admin
-    const checkAdmin = async () => {
-        if (!isAuthenticated) {
-            setIsAdmin(false)
-            return
-        }
-        try {
-            const data = await checkUserAdmin()
-            setIsAdmin(data.isAdmin)
-        } catch (error) {
-            errorLog("Failed to check admin status", error)
-            setIsAdmin(false)
-        }
-    }
-
     return (
-        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, isAdmin, setIsAdmin, checkAdmin, provider }}>
+        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, isAdmin, setIsAdmin, provider }}>
             {children}
         </AuthContext.Provider>
     )

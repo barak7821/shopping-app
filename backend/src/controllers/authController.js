@@ -79,7 +79,7 @@ export const login = async (req, res) => {
 // Controller for checking if the user is authenticated based on the JWT token
 export const checkAuth = async (req, res) => {
     try {
-        res.status(200).json({ exist: true, provider: req.user.provider })
+        res.status(200).json({ exist: true, provider: req.user.provider, role: req.user.role })
     } catch (error) {
         errorLog("Error in checkAuth controller", error.message)
         res.status(500).json({ message: error.message || "Internal Server Error" })

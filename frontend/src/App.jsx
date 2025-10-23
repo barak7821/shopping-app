@@ -44,8 +44,6 @@ function App() {
       <Route path='/orders' element={<ProtectedRouteAuth><Orders /></ProtectedRouteAuth>} />
       <Route path='/orders/:orderId' element={<ProtectedRouteAuth><OrderDetails /></ProtectedRouteAuth>} />
       <Route path='/password' element={<ProtectedRouteAuth><Password /></ProtectedRouteAuth>} />
-      {/* Protected Admin Routes */}
-      <Route path='/admin' element={<ProtectedRouteAdmin><Admin /></ProtectedRouteAdmin>} />
     </Routes>
   )
 }

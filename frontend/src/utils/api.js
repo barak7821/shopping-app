@@ -58,19 +58,6 @@ export const checkUserAuth = async () => {
     return data
 }
 
-// Function to check if a user is admin
-export const checkUserAdmin = async () => {
-    if (!token) {
-        log("No token found")
-        return
-    }
-    const { data } = await axios.get(`${baseApiUrl}/admin/check`, {
-        headers: { Authorization: `Bearer ${token}` }
-    })
-    log("Check user admin response:", data.isAdmin)
-    return data
-}
-
 // Function to fetch user data from the server
 export const fetchUserData = async () => {
     if (!token) {

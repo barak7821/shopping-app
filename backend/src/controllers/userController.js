@@ -5,7 +5,7 @@ import { checkPassword, hashPassword } from "../utils/passwordUtils.js"
 // Controller to get the logged-in user's details
 export const getUser = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id)
+        const user = await User.findById(req.user.id).select("-password -__v -createdAt -updatedAt  -_id")
         if (!user) return res.status(404).json({ message: "User not found" })
 
         res.status(200).json(user)
