@@ -4,9 +4,9 @@ import { Navigate } from 'react-router-dom'
 import Loading from '../components/Loading';
 
 export default function ProtectedRoute({ children }) {
-    const { isAuthenticated } = useAuth()
+    const { isAuthenticated, loading } = useAuth()
 
-    if (isAuthenticated === null) {
+    if (loading) {
         return <Loading />
     }
 

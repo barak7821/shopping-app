@@ -11,7 +11,6 @@ interface AuthResponse {
 interface AdminAuthContextType {
   isAuthenticated: boolean | null
   isAdmin: boolean | null
-  provider: string | null
   loading: boolean
   token: string | null
 }
@@ -26,7 +25,6 @@ interface AdminAuthProviderProps {
 export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [provider, setProvider] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [token, setToken] = useState<string | null>(
     () => (typeof window !== "undefined" ? localStorage.getItem("token") : null)
@@ -51,7 +49,6 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
       // No token = user is not logged in
       if (!token) {
         setIsAuthenticated(false)
-        setProvider(null)
         setIsAdmin(false)
         setLoading(false)
         return
@@ -63,7 +60,14 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
 
         if (!data.exist) { // If user does not exist, reset auth state
           setIsAuthenticated(false)
-          setProvider(null)
+          setIsAdmin(false)
+          setLoading(false)
+          return
+        }
+
+        if (data.provider && data.provider !== "local") {
+          // If user logged in via 3rd party provider, set as non-admin
+          setIsAuthenticated(true)
           setIsAdmin(false)
           setLoading(false)
           return
@@ -71,12 +75,10 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
 
         setIsAuthenticated(data.exist) // Check if user exist
         setIsAdmin(data.role === "admin") // Check if user is admin
-        setProvider(data.provider || null) // Set provider if exist
         return
       } catch (error) {
         errorLog("Error in checkAuth:", error)
         setIsAuthenticated(false) // If fails, reset auth state
-        setProvider(null) // Same for provider
         setIsAdmin(false) // Same for admin
         return
       } finally {
@@ -88,7 +90,7 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
   }, [token]) // re-run when token changes (e.g. login/logout)
 
   return (
-    <AdminAuthContext.Provider value={{ isAuthenticated, isAdmin, provider, loading, token }}>
+    <AdminAuthContext.Provider value={{ isAuthenticated, isAdmin, loading, token }}>
       {children}
     </AdminAuthContext.Provider>
   )

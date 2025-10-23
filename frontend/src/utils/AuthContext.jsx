@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(null)
     const [isAdmin, setIsAdmin] = useState(null)
     const [provider, setProvider] = useState(null)
+    const [loading, setLoading] = useState(true)
 
     // Get token from local storage
     const token = localStorage.getItem("token")
@@ -27,21 +28,27 @@ export const AuthProvider = ({ children }) => {
                 // Ask backend if token is valid
                 const data = await checkUserAuth()
 
-                setIsAuthenticated(data.exist) // true/false from backend
-
-                if (data.provider) setProvider(data.provider) // If provide exist, send it
-                if (data.role === "admin") { // Check if user is admin
-                    setIsAdmin(true)
-                } else {
+                if (!data.exist) { // If user does not exist, reset auth state
+                    setIsAuthenticated(false)
+                    setProvider(null)
                     setIsAdmin(false)
+                    setLoading(false)
+                    return
                 }
 
+                setIsAuthenticated(data.exist) // true/false from backend
+                setProvider(data.provider || null) // Set provider if exist
+                setIsAdmin(data.provider === "local" ? data.role === "admin" : false) // Check if user is admin
+                setLoading(false)
+                return
             } catch (error) {
                 errorLog("Error in checkAuth:", error)
                 setIsAuthenticated(false) // If fails, reset auth state
                 setProvider(null) // Same for provider
                 setIsAdmin(false) // Same for admin
                 return
+            } finally {
+                setLoading(false) // Set loading to false
             }
         }
 
@@ -49,7 +56,7 @@ export const AuthProvider = ({ children }) => {
     }, [token]) // re-run when token changes (e.g. login/logout)
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, isAdmin, setIsAdmin, provider }}>
+        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, isAdmin, setIsAdmin, provider, loading }}>
             {children}
         </AuthContext.Provider>
     )
