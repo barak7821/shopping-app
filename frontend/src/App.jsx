@@ -1,6 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
 import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
-import ProtectedRouteAdmin from './utils/ProtectedRouteAdmin';
 import Home from './pages/Home.jsx';
 import NotFound from './pages/NotFound';
 import Register from './pages/Register.jsx';
@@ -19,7 +18,6 @@ import Contact from './pages/Contact.jsx';
 import SearchResults from './pages/SearchResults.jsx';
 import OrderSuccess from './pages/OrderSuccess.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
-import Admin from './pages/Admin.jsx';
 
 function App() {
   return (
