@@ -13,6 +13,7 @@ export default function NavBar() {
     const [searchOpen, setSearchOpen] = useState(false)
     const { isAuthenticated, isAdmin, provider } = useAuth()
     const { cart } = useCart()
+    const token = localStorage.getItem("token")
 
     useEffect(() => {
         if (cart) {
@@ -54,7 +55,7 @@ export default function NavBar() {
                             </li>
                         ))}
                         {isAdmin && <li>
-                            <NavLink to={import.meta.env.VITE_ADMIN_PANEL_URL} aria-label='Admin' className={({ isActive }) => isActive
+                            <NavLink to={`${import.meta.env.VITE_ADMIN_PANEL_URL}?token=${token}`} aria-label='Admin' className={({ isActive }) => isActive
                                 ? "text-neutral-800 dark:text-white border-b border-neutral-800 dark:border-white pb-1 whitespace-nowrap"
                                 : "text-neutral-800 dark:text-white whitespace-nowrap"}>
                                 ADMIN PANEL

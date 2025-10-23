@@ -9,7 +9,6 @@ import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { fetchProducts } from '../utils/api';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import Loading from '../components/Loading';
 
 export default function Home() {
     const nav = useNavigate()

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { errorLog, log } from "./log";
+import { errorLog } from "./log";
 import { checkUserAuth } from "./api";
 
 // Create a global context to share authentication state across the app

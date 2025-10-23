@@ -15,8 +15,8 @@ dotenv.config()
 const app = Express()
 
 // Middleware
-app.use(cors({ 
-    origin: process.env.CORS_ORIGIN || "*"
+app.use(cors({
+    origin: [process.env.CORS_ORIGIN, process.env.ADMIN_CORS_ORIGIN] || "*"
 }))
 app.use(helmet())
 app.use(Express.json({ limit: "10mb" }))
