@@ -9,6 +9,34 @@ import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 
+function getPageNumbers(totalPages, currentPage) {
+    const delta = 2
+    const range = []
+    const rangeWithDots = []
+    let last = null
+
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+            range.push(i)
+        }
+    }
+
+    for (let i of range) {
+        if (last) {
+            if (i - last === 2) {
+                rangeWithDots.push(last + 1)
+            } else if (i - last > 2) {
+                rangeWithDots.push("...")
+            }
+        }
+        rangeWithDots.push(i)
+        last = i
+    }
+
+    return rangeWithDots
+}
+
+
 export default function Collection() {
     const nav = useNavigate()
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
@@ -19,6 +47,8 @@ export default function Collection() {
     const [selectedSubCategories, setSelectedSubCategories] = useState([])
     const [selectedSizes, setSelectedSizes] = useState([])
     const [sortBy, setSortBy] = useState("featured")
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 20
 
     const getProducts = async () => {
         setLoading(true)
@@ -89,6 +119,10 @@ export default function Collection() {
     }
 
     useEffect(() => {
+        setCurrentPage(1)
+    }, [selectedCategories, selectedSubCategories, selectedSizes, sortBy])
+
+    useEffect(() => {
         let filtered = productsList
 
         if (selectedCategories.length > 0) {
@@ -120,6 +154,17 @@ export default function Collection() {
 
         setSortedList(filtered)
     }, [productsList, selectedCategories, selectedSubCategories, selectedSizes, sortBy])
+
+    const totalPages = Math.ceil(sortedList.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const currentProducts = sortedList.slice(startIndex, startIndex + itemsPerPage)
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page)
+            window.scrollTo({ top: 0, behavior: "smooth" })
+        }
+    }
 
     return (
         <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6] dark:bg-neutral-900">
@@ -240,23 +285,58 @@ export default function Collection() {
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-12 gap-y-12">
                                     {loading
                                         ? Array.from({ length: 20 }).map((_, i) => <LoadingSkeleton key={i} />)
-                                        : sortedList
-                                            .map(item =>
-                                                <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
-                                                    <div className="w-[170px] h-[210px] md:w-[140px] md:h-[280px] lg:w-[180px] xl:[220px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
-                                                        <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
-                                                    </div>
-                                                    <div className="flex flex-col items-center w-full">
-                                                        <h3 className="font-prata text-base md:text-lg text-[#232323] dark:text-neutral-100 mb-1 text-center">
-                                                            {item.title.replace(/\b\w/g, l => l.toUpperCase())}
-                                                        </h3>
-                                                        <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a] dark:text-neutral-200">
-                                                            ${item.price.toFixed(2)}
-                                                        </p>
-                                                    </div>
+                                        : currentProducts.map(item =>
+                                            <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
+                                                <div className="w-[170px] h-[210px] md:w-[140px] md:h-[280px] lg:w-[180px] xl:[220px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
+                                                    <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
                                                 </div>
-                                            )}
+                                                <div className="flex flex-col items-center w-full">
+                                                    <h3 className="font-prata text-base md:text-lg text-[#232323] dark:text-neutral-100 mb-1 text-center">
+                                                        {item.title.replace(/\b\w/g, l => l.toUpperCase())}
+                                                    </h3>
+                                                    <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a] dark:text-neutral-200">
+                                                        ${item.price.toFixed(2)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
                                 </div>
+
+                                {/* Pagination Controls */}
+                                {!loading && totalPages > 1 && (
+                                    <div className="flex justify-center items-center mt-10 gap-2 flex-wrap">
+
+                                        {/* Prev */}
+                                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
+                                            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                                <polyline points="15 18 9 12 15 6" />
+                                            </svg>
+                                        </button>
+
+                                        {/* Page Numbers */}
+                                        {getPageNumbers(totalPages, currentPage).map((page, i) =>
+                                            page === "..."
+                                                ? <span key={`dots-${i}`} className="px-3 text-[#999] dark:text-neutral-400">
+                                                    ...
+                                                </span>
+                                                : <button key={`page-${page}`} onClick={() => handlePageChange(page)} className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${currentPage === page
+                                                    ? "bg-[#c1a875] text-white"
+                                                    : "bg-[#eee] dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-200 hover:bg-[#c1a875]/30"
+                                                    }`}>
+                                                    {page}
+                                                </button>
+                                        )}
+
+
+                                        {/* Next */}
+                                        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
+                                            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                                <polyline points="9 18 15 12 9 6" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+
                             </div>
                         </main>
                     </div>
