@@ -1,5 +1,5 @@
 import Express from 'express';
-import { addMultipleProducts, addProduct, findProducts, findProductsQuery, getProducts, deleteAllProducts } from '../controllers/productController.js';
+import { findProducts, findProductsQuery, getProducts } from '../controllers/productController.js';
 
 const router = Express.Router()
 
@@ -7,10 +7,7 @@ const router = Express.Router()
 router.get('/', getProducts)
 
 // Define route handlers
-router.post('/', addProduct)
-router.post('/batch', addMultipleProducts)
 router.post('/search', findProducts)
 router.get('/query', findProductsQuery)
-router.delete('/delete-all', deleteAllProducts)
 
 export default router

@@ -17,10 +17,9 @@ export const getUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
     const { name, email, phone, street, city, zip, country } = req.body
-    try {
-        // Check if data is provided
-        if (Object.keys(req.body).length === 0) return res.status(400).json({ message: "No data provided" })
+    if (Object.keys(req.body).length === 0) return res.status(400).json({ code: "!field", message: "No data provided" })
 
+    try {
         // Validate against Joi schema
         await updateUserSchemaJoi.validateAsync({ name, email, phone, street, city, zip, country })
 
@@ -38,12 +37,8 @@ export const updateUser = async (req, res) => {
         if (Object.keys(updateFields).length === 0) return res.status(400).json({ message: "No fields provided" })
 
         // Update user data
-        const updateUser = await User.findByIdAndUpdate(
-            { _id: req.user.id },
-            updateFields,
-            { new: true }
-        )
-        if (!updateUser) return res.status(404).json({ message: "User not found" })
+        const user = await User.findByIdAndUpdate({ _id: req.user.id }, updateFields, { new: true })
+        if (!user) return res.status(400).json({code: "exist", message: "User not found" })
 
         log("User data updated successfully")
         res.status(200).json({ message: "User data updated successfully" })
@@ -86,7 +81,7 @@ export const changePassword = async (req, res) => {
 
         // Find user by email
         const user = await User.findById(req.user.id).select("+password")
-        if (!user) return res.status(400).json({ code: "!exist", message: "User don't exists" })
+        if (!user) return res.status(400).json({ code: "exist", message: "User don't exists" })
 
         // Check if user google sign-in account 
         if (user.provider === "google") return res.status(400).json({ code: "google_user", message: "Google users cannot change passwords because they sign in with Google." })
@@ -118,7 +113,7 @@ export const verifyPassword = async (req, res) => {
 
         // Find user
         const user = await User.findById(req.user.id).select("+password")
-        if (!user) return res.status(400).json({ code: "!exist", message: "User don't exists" })
+        if (!user) return res.status(400).json({ code: "exist", message: "User don't exists" })
 
         // Verify the password
         const isPasswordValid = await checkPassword(password, user.password)

@@ -10,12 +10,12 @@ import axios from "axios"
 export const register = async (req, res) => {
     const { name, email, password } = req.body
     const provider = "local"
-    if (!name || !email || !password) return res.status(400).json({ message: "All fields are required" })
+    if (!name || !email || !password) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
     try {
         // Check if email already exists
-        const userExists = await User.findOne({ email: email.toLowerCase() })
-        if (userExists) return res.status(400).json({ code: "exist", message: "User already exists" })
+        const user = await User.findOne({ email: email.toLowerCase() })
+        if (user) return res.status(400).json({ code: "exist", message: "User already exists" })
 
         // Validate input against Joi schema
         await localSchema.validateAsync({ name, email, password, provider })
@@ -48,12 +48,12 @@ export const register = async (req, res) => {
 // Controller to login
 export const login = async (req, res) => {
     const { email, password } = req.body
-    if (!email || !password) return res.status(400).json({ message: "All fields are required" })
+    if (!email || !password) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
     try {
         // Find user by email
         const user = await User.findOne({ email: email.toLowerCase() }).select("+password")
-        if (!user) return res.status(400).json({ code: "!exist", message: "User don't exists" })
+        if (!user) return res.status(400).json({ code: "exist", message: "User don't exists" })
 
         // Verify the password
         const isPasswordValid = await checkPassword(password, user.password)

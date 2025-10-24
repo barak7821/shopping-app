@@ -102,7 +102,7 @@ export default function Home() {
       window.location.reload()
     } catch (error) {
       setError(true)
-      const { code } = handleApiError(error, "handleRegister")
+      handleApiError(error, "handleRegister")
     } finally {
       setLoading(false)
     }

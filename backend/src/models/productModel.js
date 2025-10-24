@@ -16,6 +16,21 @@ export const productSchemaJoi = Joi.object(
     }
 )
 
+export const updateProductSchemaJoi = Joi.object(
+    {
+        title: Joi.string().min(2).max(30).allow(""),
+        category: Joi.string().min(2).max(20).allow(""),
+        price: Joi.number().allow(""),
+        image: Joi.string().allow(""),
+        description: Joi.string().allow(""),
+        sizes: Joi.array().allow(""),
+        type: Joi.string().valid(
+            "t-shirt", "shirt", "hoodie", "dress", "pants",
+            "shorts", "skirt", "jacket", "leggings"
+        ).allow("")
+    }
+)
+
 const productSchema = new mongoose.Schema(
     {
         title: String,

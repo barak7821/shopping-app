@@ -79,12 +79,17 @@ export default function Product() {
 
                     {/* Size */}
                     <p className='text-gray-700 dark:text-neutral-300'>Select Size</p>
-                    <div className='flex gap-2 py-2'>
-                        {item.sizes.map((item, index) =>
-                            <button key={index} onClick={e => setSize(e.target.value)} value={item} className={`bg-gray-200 dark:bg-neutral-600 dark:text-neutral-100 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === item ? "bg-gray-500 dark:bg-neutral-800" : ""}`}>
-                                {item}
-                            </button>
-                        )}
+                    <div className='flex flex-wrap gap-2 py-2 items-center'>
+                        {item.sizes.includes("outOfStock")
+                            ? <p className="text-red-600 dark:text-red-400 font-semibold text-sm flex items-center gap-2">
+                                Currently out of stock
+                            </p>
+                            : item.sizes.map((item, index) => (
+                                <button key={index} onClick={e => setSize(e.target.value)} value={item} className={`bg-gray-200 dark:bg-neutral-600 dark:text-neutral-100 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === item ? "bg-gray-500 dark:bg-neutral-800" : ""}`}>
+                                    {item}
+                                </button>
+                            )
+                            )}
                     </div>
 
                     {/* Add to cart */}

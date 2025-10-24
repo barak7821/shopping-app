@@ -10,6 +10,8 @@ import { errorLog, log } from "./utils/log.js"
 import helmet from "helmet"
 import compression from "compression"
 import morgan from "morgan"
+import adminRoutes from "./routes/adminRoutes.js"
+
 
 dotenv.config()
 const app = Express()
@@ -28,6 +30,7 @@ app.use("/api/auth", authRoutes) // authentication routes (eg. register, login)
 app.use("/api/user", userRoutes) // user routes (eg. get, update or remove user details)
 app.use("/api/order", orderRoutes) // order routes (eg. create, get, update or remove order details)
 app.use("/api/products", productRoutes) // product routes (eg. add, get, update or remove product details)
+app.use("/api/admin", adminRoutes) // admin routes (eg. admin authentication)
 
 // Define a simple ping endpoint to check if the server is running
 app.get("/api/ping", (req, res) => res.send("Running"))
