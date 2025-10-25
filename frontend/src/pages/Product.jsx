@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
@@ -9,6 +9,7 @@ import 'notyf/notyf.min.css';
 import { useCart } from '../utils/CartContext';
 import Loading from '../components/Loading';
 import { fetchProducts } from '../utils/api';
+import NotFound from './NotFound';
 
 export default function Product() {
     const { productId } = useParams()
@@ -56,6 +57,12 @@ export default function Product() {
     if (loading) {
         return (
             <Loading />
+        )
+    }
+
+    if (!item) {
+        return (
+            <NotFound />
         )
     }
 
