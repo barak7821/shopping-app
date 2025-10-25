@@ -18,6 +18,8 @@ export default function Product() {
     const [activeTab, setActiveTab] = useState("description")
     const [item, setItem] = useState({})
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
+
 
     const getProducts = async () => {
         setLoading(true)
@@ -41,7 +43,7 @@ export default function Product() {
     // Function to add the product to the cart
     const handleClick = () => {
         if (!size) { // Check if size is selected
-            notyf.error("Please select a size")
+            setError("size")
             errorLog("Please select a size")
             return
         }
@@ -78,7 +80,7 @@ export default function Product() {
                     <p className="text-gray-600 dark:text-neutral-300 mb-10">{item.description}</p>
 
                     {/* Size */}
-                    <p className='text-gray-700 dark:text-neutral-300'>Select Size</p>
+                    <p className={`text-gray-700 dark:text-neutral-300 ${!size && error === "size" && "text-red-500"}`}>Select Size {!size && error === "size" && <span className="text-red-500">*</span>}</p>
                     <div className='flex flex-wrap gap-2 py-2 items-center'>
                         {item.sizes.includes("outOfStock")
                             ? <p className="text-red-600 dark:text-red-400 font-semibold text-sm flex items-center gap-2">
@@ -94,7 +96,7 @@ export default function Product() {
 
                     {/* Add to cart */}
                     <div className='pt-10'>
-                        <button onClick={handleClick} className="px-10 py-4 border bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition rounded-2xl shadow-md font-semibold font-montserrat text-lg active:scale-95 cursor-pointer">
+                        <button onClick={handleClick} disabled={item.sizes.includes("outOfStock")} className="px-10 py-4 border bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition rounded-2xl shadow-md font-semibold font-montserrat text-lg active:scale-95 cursor-pointer disabled:bg-neutral-600 disabled:text-neutral-100 disabled:cursor-not-allowed disabled:active:scale-100">
                             Add to Cart
                         </button>
                     </div>
