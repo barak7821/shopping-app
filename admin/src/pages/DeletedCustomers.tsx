@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
 import Loading from "../components/Loading";
-import { useAdminAuth } from "../utils/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import { log } from "../utils/log";
-import { deleteUserById, fetchUsers } from "../utils/api";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
+import { errorLog, log } from "../utils/log";
+import { fetchDeletedUsers } from "../utils/api";
 
 interface User {
   _id: string
   name: string
   email: string
   role: string
-  lastLogin: string
+  deletedAt: string
   createdAt: string
   provider: string
 }
@@ -47,24 +45,23 @@ function getPageNumbers(totalPages: number, currentPage: number) {
   return rangeWithDots
 }
 
-export default function Customers() {
+export default function DeletedCustomers() {
   const nav = useNavigate()
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
   const [usersList, setUsersList] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
-  const { token } = useAdminAuth()
-  const { handleApiError } = useApiErrorHandler()
 
   const getUsers = async () => {
     setLoading(true)
     try {
-      const data = await fetchUsers()
+      const data = await fetchDeletedUsers()
       setUsersList(data)
       log("Users:", data)
     } catch (error) {
-      handleApiError(error as ApiError, "getUsers")
+      errorLog("Error in getUsers", error)
+      notyf.error("Something went wrong. Please try again later.")
     } finally {
       setLoading(false)
     }
@@ -82,30 +79,6 @@ export default function Customers() {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }
-
-  const handleDeleteBtn = async (userId: string, email: string, role: string) => {
-    if (!token) {
-      notyf.error("You must be logged in to delete products.")
-      return
-    }
-
-    if (role === "admin") {
-      notyf.error("You can't delete an admin account.")
-      return
-    }
-
-    try {
-      const data = await deleteUserById(userId) // Call API to delete product
-
-      const updatedUsers = currentUsers.filter(user => user._id !== userId) // Update local state
-      setUsersList(updatedUsers) // Save updated list to state
-
-      log(`Deleted user ID ${userId}:`, data)
-      notyf.success(`User ${email} deleted successfully.`)
-    } catch (error) {
-      handleApiError(error as ApiError, "handleDeleteBtn")
     }
   }
 
@@ -139,7 +112,7 @@ export default function Customers() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-[#f5f2ee] dark:bg-neutral-700/40">
                 <tr>
-                  {["Name", "Email", "Role", "Last Login", "Register Date", "Provider", "Actions"].map((title) => (
+                  {["Name", "Email", "Role", "Deleted On", "Register Date", "Provider", "Actions"].map((title) => (
                     <th key={title} className="px-6 py-3 text-sm font-semibold text-[#c1a875] uppercase tracking-wide">
                       {title}
                     </th>
@@ -166,23 +139,15 @@ export default function Customers() {
                       {user.role}
                     </td>
 
-                    {/* Last Login */}
+                    {/* Deleted On */}
                     <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
-                      {user.lastLogin
-                        ? new Date(user.lastLogin).toLocaleString('he-IL', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })
-                        : new Date(user.createdAt).toLocaleString('he-IL', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                      {new Date(user.deletedAt).toLocaleString('he-IL', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                     </td>
 
                     {/* Register Date */}
@@ -204,18 +169,10 @@ export default function Customers() {
                     {/* Actions */}
                     <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
                       <div className="flex items-center gap-3">
-                        <button onClick={() => nav(`/customers/edit/${user._id}`)} title="Edit" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer">
+                        <button onClick={() => nav(`/deletedCustomers/edit/${user._id}`)} title="Edit" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer">
                           <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                             <path d="M12 20h9" />
                             <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
-                          </svg>
-                        </button>
-                        <button onClick={() => handleDeleteBtn(user._id, user.email, user.role)} title="Delete" className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 transition cursor-pointer">
-                          <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 0V4a2 2 0 012-2h0a2 2 0 012 2v2" />
-                            <line x1="10" y1="11" x2="10" y2="17" />
-                            <line x1="14" y1="11" x2="14" y2="17" />
                           </svg>
                         </button>
                       </div>

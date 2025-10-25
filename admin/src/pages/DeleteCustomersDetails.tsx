@@ -3,10 +3,10 @@ import SideBar from "../components/SideBar"
 import { useParams } from "react-router-dom"
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import Loading from "../components/Loading";
-import { getUserById } from "../utils/api";
+import { getDeletedUserById } from "../utils/api";
 import { log } from "../utils/log";
 
-export default function EditCustomers() {
+export default function EditDeletedCustomers() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [role, setRole] = useState("")
@@ -19,6 +19,7 @@ export default function EditCustomers() {
   const [zip, setZip] = useState("")
   const [phone, setPhone] = useState("")
   const [street, setStreet] = useState("")
+  const [deleteOn, setDeleteOn] = useState("")
   const [loading, setLoading] = useState(true)
   const { handleApiError } = useApiErrorHandler()
   const { id } = useParams()
@@ -28,7 +29,7 @@ export default function EditCustomers() {
       if (!id) return
       setLoading(true)
       try {
-        const data = await getUserById(id)
+        const data = await getDeletedUserById(id)
         log(data)
         setName(data.name)
         setEmail(data.email)
@@ -42,6 +43,7 @@ export default function EditCustomers() {
         setZip(data.zip)
         setPhone(data.phone)
         setStreet(data.street)
+        setDeleteOn(data.deletedAt)
       } catch (error) {
         handleApiError(error as ApiError, "fetchUserById")
       } finally {
@@ -70,7 +72,7 @@ export default function EditCustomers() {
         <div className="flex-1 bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-10">
           {/* Header */}
           <h1 className="text-3xl font-prata text-[#181818] dark:text-neutral-100 mb-10 tracking-tight">
-            Edit Customer Details
+            Customer Details
           </h1>
 
           {/* Grid Layout */}
@@ -115,6 +117,12 @@ export default function EditCustomers() {
             <div>
               <label htmlFor="lastUpdated" className="block text-sm font-semibold text-[#c1a875] mb-1">Last Updated</label>
               <input value={new Date(lastUpdated).toLocaleString("en-GB")} id="lastUpdated" type="text" disabled className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-not-allowed" />
+            </div>
+
+            {/* Delete On */}
+            <div>
+              <label htmlFor="deleteOn" className="block text-sm font-semibold text-[#c1a875] mb-1">Delete On</label>
+              <input value={new Date(deleteOn).toLocaleString("en-GB")} id="deleteOn" type="text" disabled className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-not-allowed" />
             </div>
 
             {/* Address */}

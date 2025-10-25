@@ -16,7 +16,8 @@ export default function SideBar() {
                             { text: "Dashboard", link: "/", aria: "Dashboard" },
                             { text: "Products", link: "/products", aria: "Products" },
                             { text: "Orders", link: "/orders", aria: "Orders" },
-                            { text: "Customers", link: "/customers", aria: "Customers" }
+                            { text: "Customers", link: "/customers", aria: "Customers" },
+                            { text: "Deleted Customers", link: "/deletedCustomers", aria: "Deleted Customers" },
                         ].map((item, index) => (
                             <li key={index}>
                                 <NavLink

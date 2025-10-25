@@ -7,7 +7,9 @@ import Orders from './pages/Orders';
 import Customers from './pages/Customers';
 import AddProduct from './pages/AddProduct';
 import EditProduct from './pages/EditProduct';
-import EditCustomers from './pages/EditCustomers';
+import CustomersDetails from './pages/CustomersDetails.tsx';
+import DeletedCustomers from './pages/DeletedCustomers';
+import DeleteCustomersDetails from './pages/DeleteCustomersDetails.tsx';
 
 function App() {
     return (
@@ -20,7 +22,9 @@ function App() {
             <Route path="/products/edit/:id" element={<ProtectedRouteAdmin><EditProduct /></ProtectedRouteAdmin>} />
             <Route path="/orders" element={<ProtectedRouteAdmin><Orders /></ProtectedRouteAdmin>} />
             <Route path="/customers" element={<ProtectedRouteAdmin><Customers /></ProtectedRouteAdmin>} />
-            <Route path="/customers/edit/:id" element={<ProtectedRouteAdmin><EditCustomers /></ProtectedRouteAdmin>} />
+            <Route path="/customers/edit/:id" element={<ProtectedRouteAdmin><CustomersDetails /></ProtectedRouteAdmin>} />
+            <Route path="/deletedCustomers" element={<ProtectedRouteAdmin><DeletedCustomers /></ProtectedRouteAdmin>} />
+            <Route path="/deletedCustomers/edit/:id" element={<ProtectedRouteAdmin><DeleteCustomersDetails /></ProtectedRouteAdmin>} />
         </Routes>
     )
 }

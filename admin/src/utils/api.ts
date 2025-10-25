@@ -90,7 +90,7 @@ export const updateProductById = async (product: any) => {
 }
 
 // Function to delete user by ID
-export const deleteUserById = async (userId: number) => {
+export const deleteUserById = async (userId: string) => {
     const token = localStorage.getItem("token")
     if (!token) {
         throw new Error("No token found")
@@ -140,5 +140,73 @@ export const getUserById = async (userId: string) => {
     })
 
     log("Get user by id response:", data)
+    return data
+}
+
+// Function to fetch deleted users from the server
+export const fetchDeletedUsers = async () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+
+    const { data } = await axios.get(`${baseApiUrl}/admin/deletedUsers`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Users:", data)
+    return data
+}
+
+// Function to get deleted user by id
+export const getDeletedUserById = async (userId: string) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+
+    const { data } = await axios.get(`${baseApiUrl}/admin/getDeletedUserById?id=${userId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Get user by id response:", data)
+    return data
+}
+
+// Function to make admin
+export const makeAdmin = async (userId: string) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+
+    const { data } = await axios.patch(`${baseApiUrl}/admin/makeAdmin`, { id: userId }, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Make admin response:", data)
+    return data
+}
+
+// Function to remove admin
+export const removeAdmin = async (userId: string) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+
+    const { data } = await axios.patch(`${baseApiUrl}/admin/removeAdmin`, { id: userId }, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Remove admin response:", data)
     return data
 }

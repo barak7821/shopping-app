@@ -45,6 +45,7 @@ export const useApiErrorHandler = () => {
       "server_error": "A server error occurred. Please try again later.",
       "google_user": "Password reset is not available for Google sign-in accounts.",
       "exist": "Already exists.",
+      "admin": "You can't delete an admin account."
     }
 
     if (code && errorMap[code]) message = errorMap[code]

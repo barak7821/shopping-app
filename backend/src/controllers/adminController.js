@@ -1,6 +1,8 @@
+import DeletedUser from "../models/deletedUserModel.js";
 import Product, { productSchemaJoi, updateProductSchemaJoi } from "../models/productModel.js";
-import User from "../models/userModel.js";
+import User, { localSchema } from "../models/userModel.js";
 import { errorLog, log } from "../utils/log.js";
+import { hashPassword } from "../utils/passwordUtils.js";
 
 // Products controllers
 
@@ -54,8 +56,7 @@ export const addMultipleProducts = async (req, res) => {
             })
         }
 
-        if (formattedProducts.length === 0)
-            return res.status(400).json({ message: "No new products to add" })
+        if (formattedProducts.length === 0) return res.status(400).json({ message: "No new products to add" })
 
         await Product.insertMany(formattedProducts)
 
@@ -63,6 +64,53 @@ export const addMultipleProducts = async (req, res) => {
         res.status(201).json({ message: `${formattedProducts.length} products added`, added: formattedProducts.length })
     } catch (error) {
         errorLog("Error in addMultipleProducts controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// temp - Controller to seed users at once - SHOULD ONLY BE USED FOR TESTING/SEEDING!!
+export const seedUsers = async (req, res) => {
+    const users = req.body
+    if (!Array.isArray(users) || users.length === 0) return res.status(400).json({ code: "!field", message: "No users provided" })
+
+    try {
+        // Validate and format each product
+        const results = []
+
+        for (const user of users) {
+            const { name, email, password, city } = user
+
+            // Check for required fields
+            if (!name || !email || !password) return res.status(400).json({ code: "!field", message: `Missing fields in one of the users` })
+
+            // Validate with Joi
+            await localSchema.validateAsync({ name, email, password })
+
+            // Check for required fields
+            const exists = await User.findOne({ email: email.toLowerCase() })
+            if (exists) {
+                log(`Skipped duplicate: ${email}`)
+                continue
+            }
+
+            results.push({
+                name: name.toLowerCase(),
+                email: email.toLowerCase(),
+                password,
+                provider: "local",
+                role: "user",
+                city
+            })
+        }
+
+        if (results.length === 0) return res.status(400).json({ message: "No new users to add" })
+
+        await User.insertMany(results)
+
+        log(`${results.length} users added`)
+        res.status(201).json({ message: `${results.length} users added`, added: results.length })
+    } catch (error) {
+        errorLog("Error in seedUsers controller", error.message)
         res.status(500).json({ message: error.message || "Internal Server Error" })
     }
 }
@@ -185,11 +233,25 @@ export const fetchUsers = async (req, res) => {
 
 // Controller to delete user by ID
 export const deleteUserById = async (req, res) => {
+    const { id } = req.body
+    if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
+
     try {
-        // To Be Implied
+        const user = await User.findById(id)
+        if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
+
+        if (user.role === "admin") return res.status(400).json({ code: "admin", message: "Cannot delete admin user" })
+
+        const deletedUser = new DeletedUser({
+            ...user.toObject(),
+            deletedAt: new Date()
+        })
+
+        await deletedUser.save()
+        await user.deleteOne()
 
         log("User deleted successfully")
-        res.status(200).json({ message: "User deleted successfully" })
+        res.status(200).json({ message: "User deleted successfully", id: user._id })
     } catch (error) {
         errorLog("Error in deleteUserById controller", error.message)
         res.status(500).json({ message: error.message || "Internal Server Error" })
@@ -209,6 +271,72 @@ export const getUserById = async (req, res) => {
         res.status(200).json(user)
     } catch (error) {
         errorLog("Error in getUserById controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to fetch deleted users
+export const fetchDeletedUsers = async (req, res) => {
+    try {
+        const deletedUser = await DeletedUser.find().select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v")
+        res.status(200).json(deletedUser)
+    } catch (error) {
+        errorLog("Error in fetchDeletedUsers controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to get deleted user by ID
+export const getDeletedUserById = async (req, res) => {
+    const { id } = req.query
+    if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
+
+    try {
+        const deletedUser = await DeletedUser.findById(id).select("-password -otpCode -__v")
+        if (!deletedUser) return res.status(400).json({ code: "exist", message: "User not found" })
+
+        log(`User with id ${id} found successfully`)
+        res.status(200).json(deletedUser)
+    } catch (error) {
+        errorLog("Error in getDeletedUserById controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to make admin 
+export const makeAdmin = async (req, res) => {
+    const { id } = req.body
+    if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
+
+    try {
+        const user = await User.findById(id)
+        if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
+
+        user.role = "admin"
+        await user.save()
+        log(`User with id ${id} made admin successfully`)
+        res.status(200).json({ message: `User with id ${id} made admin successfully` })
+    } catch (error) {
+        errorLog("Error in makeAdmin controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to remove admin
+export const removeAdmin = async (req, res) => {
+    const { id } = req.body
+    if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
+
+    try {
+        const user = await User.findById(id)
+        if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
+
+        user.role = "user"
+        await user.save()
+        log(`User with id ${id} removed admin successfully`)
+        res.status(200).json({ message: `User with id ${id} removed admin successfully` })
+    } catch (error) {
+        errorLog("Error in removeAdmin controller", error.message)
         res.status(500).json({ message: error.message || "Internal Server Error" })
     }
 }
