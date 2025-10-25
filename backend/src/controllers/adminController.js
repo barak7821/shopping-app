@@ -1,4 +1,5 @@
 import Product, { productSchemaJoi, updateProductSchemaJoi } from "../models/productModel.js";
+import User from "../models/userModel.js";
 import { errorLog, log } from "../utils/log.js";
 
 // Products controllers
@@ -123,8 +124,6 @@ export const getProductById = async (req, res) => {
     const { id } = req.query
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
-    console.log(id)
-
     try {
         const product = await Product.findById(id)
         if (!product) return res.status(400).json({ code: "exist", message: "Product not found" })
@@ -137,7 +136,7 @@ export const getProductById = async (req, res) => {
     }
 }
 
-// Controller to edit product by id - TO BE IMPLEMENTED
+// Controller to edit product by id
 export const updateProductById = async (req, res) => {
     const { title, category, price, image, description, sizes, type } = req.body
     if (Object.keys(req.body).length === 0) return res.status(400).json({ code: "!field", message: "No data provided" })
@@ -169,6 +168,47 @@ export const updateProductById = async (req, res) => {
         res.status(200).json({ message: `Product with id ${req.body.id} updated successfully` })
     } catch (error) {
         errorLog("Error in updateProductById controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to fetch users
+export const fetchUsers = async (req, res) => {
+    try {
+        const users = await User.find().select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v")
+        res.status(200).json(users)
+    } catch (error) {
+        errorLog("Error in fetchUsers controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to delete user by ID
+export const deleteUserById = async (req, res) => {
+    try {
+        // To Be Implied
+
+        log("User deleted successfully")
+        res.status(200).json({ message: "User deleted successfully" })
+    } catch (error) {
+        errorLog("Error in deleteUserById controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to get user by ID
+export const getUserById = async (req, res) => {
+    const { id } = req.query
+    if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
+
+    try {
+        const user = await User.findById(id).select("-password -otpCode -__v")
+        if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
+
+        log(`User with id ${id} found successfully`)
+        res.status(200).json(user)
+    } catch (error) {
+        errorLog("Error in getUserById controller", error.message)
         res.status(500).json({ message: error.message || "Internal Server Error" })
     }
 }

@@ -88,3 +88,57 @@ export const updateProductById = async (product: any) => {
     log("Update product by id response:", data)
     return data
 }
+
+// Function to delete user by ID
+export const deleteUserById = async (userId: number) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+
+    const { data } = await axios.delete(`${baseApiUrl}/admin/deleteUserById`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        },
+        data: {
+            id: userId
+        }
+    })
+
+    log("Delete user by id response:", data)
+    return data
+}
+
+// Function to fetch users from the server
+export const fetchUsers = async () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+
+    const { data } = await axios.get(`${baseApiUrl}/admin/users`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Users:", data)
+    return data
+}
+
+// Function to get user by id
+export const getUserById = async (userId: string) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+
+    const { data } = await axios.get(`${baseApiUrl}/admin/getUserById?id=${userId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Get user by id response:", data)
+    return data
+}

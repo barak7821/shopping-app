@@ -7,6 +7,7 @@ import Orders from './pages/Orders';
 import Customers from './pages/Customers';
 import AddProduct from './pages/AddProduct';
 import EditProduct from './pages/EditProduct';
+import EditCustomers from './pages/EditCustomers';
 
 function App() {
     return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="/products/edit/:id" element={<ProtectedRouteAdmin><EditProduct /></ProtectedRouteAdmin>} />
             <Route path="/orders" element={<ProtectedRouteAdmin><Orders /></ProtectedRouteAdmin>} />
             <Route path="/customers" element={<ProtectedRouteAdmin><Customers /></ProtectedRouteAdmin>} />
+            <Route path="/customers/edit/:id" element={<ProtectedRouteAdmin><EditCustomers /></ProtectedRouteAdmin>} />
         </Routes>
     )
 }

@@ -1,6 +1,6 @@
 import Express from 'express';
 import adminAuthMiddleware from '../middlewares/adminAuthMiddleware.js';
-import { deleteAllProducts, deleteProductById, addProduct, addMultipleProducts, getProductById, updateProductById } from '../controllers/adminController.js';
+import { deleteAllProducts, deleteProductById, addProduct, addMultipleProducts, getProductById, updateProductById, fetchUsers, deleteUserById, getUserById } from '../controllers/adminController.js';
 
 const router = Express.Router()
 
@@ -11,6 +11,11 @@ router.post('/', adminAuthMiddleware, addProduct)
 router.delete('/deleteById', adminAuthMiddleware, deleteProductById)
 router.get('/getById', adminAuthMiddleware, getProductById)
 router.patch('/updateById', adminAuthMiddleware, updateProductById)
+
+// Users
+router.get('/users', adminAuthMiddleware, fetchUsers)
+router.delete('/deleteUserById', adminAuthMiddleware, deleteUserById)
+router.get('/getUserById', adminAuthMiddleware, getUserById)
 
 // temp routes - SHOULD ONLY BE USED FOR TESTING!!!
 router.delete('/deleteAll', deleteAllProducts)

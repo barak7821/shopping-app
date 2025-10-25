@@ -1,11 +1,29 @@
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import { errorLog } from "../utils/log"
+import { errorLog } from "./log"
+
+export interface ApiError {
+  response?: {
+    status?: number;
+    data?: {
+      code?: string;
+      [key: string]: any;
+    };
+  };
+  [key: string]: any;
+}
+
+interface ApiErrorResult {
+  status?: number;
+  code?: string;
+  message: string;
+}
+
 
 export const useApiErrorHandler = () => {
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
 
-  const handleApiError = (error, context = "API request") => {
+  const handleApiError = (error: ApiError, context: string = "API request"): ApiErrorResult => {
     const status = error?.response?.status
     const code = error?.response?.data?.code
 
@@ -13,7 +31,7 @@ export const useApiErrorHandler = () => {
     let message = "An unexpected error occurred. Please try again later."
 
     // Shared error codes map
-    const errorMap = {
+    const errorMap: Record<string, string> = {
       "!field": "Please fill in all required fields.",
       "!email": "Email address is required.",
       "otp_invalid": "Invalid or expired verification code.",

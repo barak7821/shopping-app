@@ -96,7 +96,7 @@ export default function Products() {
       log(`Deleted product ID ${productId}:`, data)
       notyf.success(`Product ID: ${productId} deleted successfully.`)
     } catch (error) {
-      errorLog("Error in handleEditBtn", error)
+      errorLog("Error in handleDeleteBtn", error)
       notyf.error("Something went wrong. Please try again later.")
     }
   }
@@ -110,7 +110,8 @@ export default function Products() {
   return (
     <div className="min-h-screen flex flex-col bg-[#faf8f6] dark:bg-neutral-900 font-montserrat">
       {/* Sidebar + Main */}
-      <div className="flex flex-1 w-full max-w-[1400px] mx-auto gap-10 pt-10 pb-20 px-6">
+      <div className="flex flex-1 w-full mx-auto gap-12 pt-8 pb-20 px-4">
+
 
         {/* Sidebar */}
         <SideBar />
