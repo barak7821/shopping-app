@@ -8,7 +8,7 @@ import { log } from "../utils/log";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 
-export default function EditCustomers() {
+export default function CustomersDetails() {
   const nav = useNavigate()
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
   const [name, setName] = useState("")
@@ -186,7 +186,7 @@ export default function EditCustomers() {
 
             {/* Button */}
             {provider === "local" && <div>
-              <button onClick={() => role === "admin" ? handleRemoveAdmin() : handleMakeAdmin()} className="px-8 py-3 rounded-xl font-semibold bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer">
+              <button onClick={() => role === "admin" ? handleRemoveAdmin() : handleMakeAdmin()} disabled={loading} className="px-8 py-3 rounded-xl font-semibold bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                 {role === "admin" ? "Remove Admin" : "Make Admin"}
               </button>
             </div>}

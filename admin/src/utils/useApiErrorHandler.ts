@@ -45,7 +45,11 @@ export const useApiErrorHandler = () => {
       "server_error": "A server error occurred. Please try again later.",
       "google_user": "Password reset is not available for Google sign-in accounts.",
       "exist": "Already exists.",
-      "admin": "You can't delete an admin account."
+      "admin": "You can't delete an admin account.",
+      "same_user": "You cannot perform this action on your own account",
+      "same_status": "The current order status matches the selected status.",
+      "cancelled_order": "This order was cancelled and can't be updated.",
+      "delivered_order": "This order has already been delivered and can't be updated."
     }
 
     if (code && errorMap[code]) message = errorMap[code]

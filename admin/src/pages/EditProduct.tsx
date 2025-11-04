@@ -14,7 +14,7 @@ type Category = "men" | "women" | "kids";
 export default function EditProduct() {
     const nav = useNavigate()
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
-    const [product, setProduct] = useState<ProductFormData | null>(null);
+    const [product, setProduct] = useState<ProductFormData | null>(null)
     const [loading, setLoading] = useState(true)
     const { handleApiError } = useApiErrorHandler()
     const { id } = useParams()
@@ -22,7 +22,7 @@ export default function EditProduct() {
     useEffect(() => {
         const fetchProductById = async () => {
             if (!id) return
-            setLoading(true);
+            setLoading(true)
             try {
                 const data = await getProductById(id)
                 log(data)

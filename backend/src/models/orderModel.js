@@ -13,7 +13,7 @@ export const orderUserSchemaJoi = Joi.object(
             })
         ).required(),
         shippingAddress: Joi.object({
-            name: Joi.string().min(2).max(20).required(),
+            name: Joi.string().min(2).required(),
             email: Joi.string().email().required(),
             phone: Joi.string().pattern(/^[0-9]+$/).required(),
             street: Joi.string().required(),
@@ -36,7 +36,7 @@ export const orderGuestSchemaJoi = Joi.object(
             })
         ).required(),
         shippingAddress: Joi.object({
-            name: Joi.string().required(),
+            name: Joi.string().min(2).required(),
             email: Joi.string().email().required(),
             phone: Joi.string().min(10).max(10).pattern(/^[0-9]+$/).required(),
             street: Joi.string().required(),
@@ -54,6 +54,12 @@ const orderSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.Mixed,
             ref: "User"
         },
+        userEmail: {
+            type: String,
+            lowercase: true, // Converts email to lowercase before saving
+            trim: true // Removes space from both ends of the email
+        },
+        userName: String,
         orderItems: [
             {
                 itemId: String,

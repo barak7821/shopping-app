@@ -10,6 +10,7 @@ import EditProduct from './pages/EditProduct';
 import CustomersDetails from './pages/CustomersDetails.tsx';
 import DeletedCustomers from './pages/DeletedCustomers';
 import DeleteCustomersDetails from './pages/DeleteCustomersDetails.tsx';
+import OrderDetails from './pages/OrderDetails.tsx';
 
 function App() {
     return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="/products/add" element={<ProtectedRouteAdmin><AddProduct /></ProtectedRouteAdmin>} />
             <Route path="/products/edit/:id" element={<ProtectedRouteAdmin><EditProduct /></ProtectedRouteAdmin>} />
             <Route path="/orders" element={<ProtectedRouteAdmin><Orders /></ProtectedRouteAdmin>} />
+            <Route path="/orders/edit/:id" element={<ProtectedRouteAdmin><OrderDetails /></ProtectedRouteAdmin>} />
             <Route path="/customers" element={<ProtectedRouteAdmin><Customers /></ProtectedRouteAdmin>} />
             <Route path="/customers/edit/:id" element={<ProtectedRouteAdmin><CustomersDetails /></ProtectedRouteAdmin>} />
             <Route path="/deletedCustomers" element={<ProtectedRouteAdmin><DeletedCustomers /></ProtectedRouteAdmin>} />

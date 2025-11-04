@@ -1,4 +1,5 @@
 import DeletedUser from "../models/deletedUserModel.js";
+import Order from "../models/orderModel.js";
 import Product, { productSchemaJoi, updateProductSchemaJoi } from "../models/productModel.js";
 import User, { localSchema } from "../models/userModel.js";
 import { errorLog, log } from "../utils/log.js";
@@ -240,6 +241,9 @@ export const deleteUserById = async (req, res) => {
         const user = await User.findById(id)
         if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
 
+        // User cannot do it for himself
+        if (user._id.toString() === req.user.id.toString()) return res.status(403).json({ code: "same_user", message: "You cannot perform this action on your own account" })
+
         if (user.role === "admin") return res.status(400).json({ code: "admin", message: "Cannot delete admin user" })
 
         const deletedUser = new DeletedUser({
@@ -312,6 +316,9 @@ export const makeAdmin = async (req, res) => {
         const user = await User.findById(id)
         if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
 
+        // User cannot do it for himself
+        if (user._id.toString() === req.user.id.toString()) return res.status(403).json({ code: "same_user", message: "You cannot perform this action on your own account" })
+
         user.role = "admin"
         await user.save()
         log(`User with id ${id} made admin successfully`)
@@ -331,12 +338,92 @@ export const removeAdmin = async (req, res) => {
         const user = await User.findById(id)
         if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
 
+        // User cannot do it for himself
+        if (user._id.toString() === req.user.id.toString()) return res.status(403).json({ code: "same_user", message: "You cannot perform this action on your own account" })
+
         user.role = "user"
         await user.save()
         log(`User with id ${id} removed admin successfully`)
         res.status(200).json({ message: `User with id ${id} removed admin successfully` })
     } catch (error) {
         errorLog("Error in removeAdmin controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to fetch orders
+export const fetchOrders = async (req, res) => {
+    try {
+        const orders = await Order.find().select("-__v")
+        log("Orders found successfully")
+        res.status(200).json(orders)
+    } catch (error) {
+        errorLog("Error in fetchOrders controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to get order by ID
+export const getOrderById = async (req, res) => {
+    const { id } = req.query
+    if (!id) return res.status(400).json({ code: "!field", message: "Order id is required" })
+
+    try {
+        const order = await Order.findById(id).select("-__v")
+        if (!order) return res.status(400).json({ code: "exist", message: "Order not found" })
+
+        log(`Order with id ${id} found successfully`)
+        res.status(200).json(order)
+    } catch (error) {
+        errorLog("Error in getOrderById controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to gets multiple products by their IDs
+export const getProductsByIds = async (req, res) => {
+    const { ids } = req.body
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
+
+    try {
+        const products = await Product.find({ _id: { $in: ids } }).select("-__v")
+        if (products.length !== ids.length) return res.status(400).json({ code: "exist", message: "One or more products not found" })
+
+        log("Products found successfully")
+        res.status(200).json(products)
+    } catch (error) {
+        errorLog("Error in getProductsByIds controller", error.message)
+        res.status(500).json({ message: error.message || "Internal Server Error" })
+    }
+}
+
+// Controller to updates an order's status by ID
+export const updateOrderStatus = async (req, res) => {
+    const { id, newStatus } = req.body
+    log(id, newStatus)
+    if (!id || !newStatus) return res.status(400).json({ code: "!field", message: "All fields are required" })
+
+    try {
+        const order = await Order.findById(id)
+        if (!order) return res.status(400).json({ code: "exist", message: "Order not found" })
+
+        // Prevent updating a cancelled order
+        if (order.status === "cancelled") return res.status(400).json({ code: "cancelled_order", message: "Cannot update a cancelled order." })
+
+        // Prevent updating a delivered order
+        if (order.status === "delivered") return res.status(400).json({ code: "delivered_order", message: "Cannot update a delivered order." })
+
+        // Prevent updating to the same status
+        if (order.status === newStatus) return res.status(400).json({ code: "same_status", message: "New status is the same as the old status" })
+
+        // Update status
+        order.status = newStatus
+        await order.save()
+
+        log(`Order with id ${id} updated successfully`)
+        res.status(200).json({ message: `Order with id ${id} updated successfully` })
+    } catch (error) {
+        errorLog("Error in updateOrderStatus controller", error.message)
         res.status(500).json({ message: error.message || "Internal Server Error" })
     }
 }

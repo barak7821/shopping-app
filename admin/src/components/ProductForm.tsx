@@ -75,8 +75,7 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
 
   const handleSubmit = async () => {
     await onSubmit(formData)
-    if (!isEditing) {
-      // Reset form only for "Add Product"
+    if (!isEditing) { // Reset form only for "Add Product"
       setFormData({
         title: "", category: "", price: "", image: "",
         description: "", sizes: [], type: "",

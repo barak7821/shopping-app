@@ -6,7 +6,7 @@ import Loading from "../components/Loading";
 import { getDeletedUserById } from "../utils/api";
 import { log } from "../utils/log";
 
-export default function EditDeletedCustomers() {
+export default function DeleteCustomersDetails() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [role, setRole] = useState("")

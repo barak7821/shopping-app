@@ -14,8 +14,8 @@ export const createOrder = async (req, res) => {
 
         // // Validate against Joi schema
         await orderGuestSchemaJoi.validateAsync(orderDetails)
-
         const newOrder = new Order(orderDetails) // Create a new order instance
+
         await newOrder.save() // Save the order to the database
 
         log("Order created successfully")
@@ -40,7 +40,7 @@ export const createOrderForUser = async (req, res) => {
         const user = await User.findById(userId)
         if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
 
-        // Add user id to order details
+        // Add user details to order details
         orderDetails.userId = userId
 
         // Validate against Joi schema

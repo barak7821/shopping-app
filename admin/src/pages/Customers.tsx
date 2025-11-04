@@ -52,6 +52,7 @@ export default function Customers() {
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
   const [usersList, setUsersList] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [updatingDelete, setUpdatingDelete] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
   const { token } = useAdminAuth()
@@ -96,6 +97,7 @@ export default function Customers() {
       return
     }
 
+    setUpdatingDelete(true)
     try {
       const data = await deleteUserById(userId) // Call API to delete product
 
@@ -106,6 +108,8 @@ export default function Customers() {
       notyf.success(`User ${email} deleted successfully.`)
     } catch (error) {
       handleApiError(error as ApiError, "handleDeleteBtn")
+    } finally {
+      setUpdatingDelete(false)
     }
   }
 
@@ -210,7 +214,7 @@ export default function Customers() {
                             <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
                           </svg>
                         </button>
-                        <button onClick={() => handleDeleteBtn(user._id, user.email, user.role)} title="Delete" className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 transition cursor-pointer">
+                        <button onClick={() => handleDeleteBtn(user._id, user.email, user.role)} disabled={updatingDelete} title="Delete" className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                           <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                             <polyline points="3 6 5 6 21 6" />
                             <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 0V4a2 2 0 012-2h0a2 2 0 012 2v2" />
