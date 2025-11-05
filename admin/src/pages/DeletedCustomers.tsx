@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import Loading from "../components/Loading";
 import { useNavigate } from "react-router-dom";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { errorLog, log } from "../utils/log";
 import { fetchDeletedUsers } from "../utils/api";
+import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
 
 interface User {
   _id: string
@@ -84,21 +84,20 @@ export default function DeletedCustomers() {
 
   if (loading) {
     return (
-      <Loading />
+      <TableLoadingSkeleton />
     )
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#faf8f6] dark:bg-neutral-900 font-montserrat">
       {/* Sidebar + Main */}
-      <div className="flex flex-1 w-full mx-auto gap-12 pt-8 pb-20 px-4">
-
+      <div className="flex flex-1 w-full max-w-screen-2xl mx-auto gap-12 pt-8 pb-20 px-4">
 
         {/* Sidebar */}
         <SideBar />
 
-        {/* Products Table */}
-        <div className="flex-1 bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-8 flex flex-col">
+        {/* Main Content */}
+        <div className="flex-1 min-w-0 overflow-hidden bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 flex flex-col">
 
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
