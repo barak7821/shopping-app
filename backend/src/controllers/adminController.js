@@ -3,7 +3,6 @@ import Order from "../models/orderModel.js";
 import Product, { productSchemaJoi, updateProductSchemaJoi } from "../models/productModel.js";
 import User, { localSchema } from "../models/userModel.js";
 import { errorLog, log } from "../utils/log.js";
-import { hashPassword } from "../utils/passwordUtils.js";
 
 // Products controllers
 
@@ -16,7 +15,7 @@ export const deleteAllProducts = async (req, res) => {
         res.status(200).json({ message: "All products deleted" })
     } catch (error) {
         errorLog("Error in deleteAllProducts controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -65,7 +64,7 @@ export const addMultipleProducts = async (req, res) => {
         res.status(201).json({ message: `${formattedProducts.length} products added`, added: formattedProducts.length })
     } catch (error) {
         errorLog("Error in addMultipleProducts controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -112,7 +111,7 @@ export const seedUsers = async (req, res) => {
         res.status(201).json({ message: `${results.length} users added`, added: results.length })
     } catch (error) {
         errorLog("Error in seedUsers controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -147,7 +146,7 @@ export const addProduct = async (req, res) => {
         res.status(201).json({ message: `${title} added successfully`, exist: false })
     } catch (error) {
         errorLog("Error in addProduct controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -158,13 +157,13 @@ export const deleteProductById = async (req, res) => {
 
     try {
         const product = await Product.findByIdAndDelete(id)
-        if (!product) return res.status(400).json({ code: "exist", message: "Product not found" })
+        if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
         log(`Product with id ${id} deleted successfully`)
         res.status(200).json({ message: `Product with id ${id} deleted successfully` })
     } catch (error) {
         errorLog("Error in deleteProductById controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -175,20 +174,22 @@ export const getProductById = async (req, res) => {
 
     try {
         const product = await Product.findById(id)
-        if (!product) return res.status(400).json({ code: "exist", message: "Product not found" })
+        if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
         log(`Product with id ${id} found successfully`)
         res.status(200).json(product)
     } catch (error) {
         errorLog("Error in getProductById controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to edit product by id
 export const updateProductById = async (req, res) => {
-    const { title, category, price, image, description, sizes, type } = req.body
+    const { id, title, category, price, image, description, sizes, type } = req.body
+    if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
     if (Object.keys(req.body).length === 0) return res.status(400).json({ code: "!field", message: "No data provided" })
+
 
     try {
         // Validate input against Joi schema
@@ -205,19 +206,17 @@ export const updateProductById = async (req, res) => {
         if (type) updateFields.type = type.toLowerCase()
 
         // If no fields are provided, return an error
-        if (Object.keys(updateFields).length === 0) return res.status(400).json({ message: "No fields provided" })
-
-        console.log(req.body.id)
+        if (Object.keys(updateFields).length === 0) return res.status(400).json({ code: "!field", message: "No fields provided" })
 
         // Update product data
         const product = await Product.findByIdAndUpdate({ _id: req.body.id }, updateFields, { new: true })
-        if (!product) return res.status(400).json({ code: "exist", message: "Product already exists" })
+        if (!product) return res.status(404).json({ code: "not_found", message: "Product already exists" })
 
         log(`Product with id ${req.body.id} updated successfully`)
         res.status(200).json({ message: `Product with id ${req.body.id} updated successfully` })
     } catch (error) {
         errorLog("Error in updateProductById controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -228,23 +227,23 @@ export const fetchUsers = async (req, res) => {
         res.status(200).json(users)
     } catch (error) {
         errorLog("Error in fetchUsers controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to delete user by ID
 export const deleteUserById = async (req, res) => {
     const { id } = req.body
-    if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
+    if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
 
     try {
         const user = await User.findById(id)
-        if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
+        if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
 
         // User cannot do it for himself
         if (user._id.toString() === req.user.id.toString()) return res.status(403).json({ code: "same_user", message: "You cannot perform this action on your own account" })
 
-        if (user.role === "admin") return res.status(400).json({ code: "admin", message: "Cannot delete admin user" })
+        if (user.role === "admin") return res.status(403).json({ code: "admin", message: "Cannot delete admin user" })
 
         const deletedUser = new DeletedUser({
             ...user.toObject(),
@@ -254,11 +253,11 @@ export const deleteUserById = async (req, res) => {
         await deletedUser.save()
         await user.deleteOne()
 
-        log("User deleted successfully")
+        log("User deleted successfully", user._id)
         res.status(200).json({ message: "User deleted successfully", id: user._id })
     } catch (error) {
         errorLog("Error in deleteUserById controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -269,13 +268,13 @@ export const getUserById = async (req, res) => {
 
     try {
         const user = await User.findById(id).select("-password -otpCode -__v")
-        if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
+        if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
 
         log(`User with id ${id} found successfully`)
         res.status(200).json(user)
     } catch (error) {
         errorLog("Error in getUserById controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -286,7 +285,7 @@ export const fetchDeletedUsers = async (req, res) => {
         res.status(200).json(deletedUser)
     } catch (error) {
         errorLog("Error in fetchDeletedUsers controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -297,13 +296,13 @@ export const getDeletedUserById = async (req, res) => {
 
     try {
         const deletedUser = await DeletedUser.findById(id).select("-password -otpCode -__v")
-        if (!deletedUser) return res.status(400).json({ code: "exist", message: "User not found" })
+        if (!deletedUser) return res.status(404).json({ code: "not_found", message: "User not found" })
 
         log(`User with id ${id} found successfully`)
         res.status(200).json(deletedUser)
     } catch (error) {
         errorLog("Error in getDeletedUserById controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -314,7 +313,7 @@ export const makeAdmin = async (req, res) => {
 
     try {
         const user = await User.findById(id)
-        if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
+        if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
 
         // User cannot do it for himself
         if (user._id.toString() === req.user.id.toString()) return res.status(403).json({ code: "same_user", message: "You cannot perform this action on your own account" })
@@ -325,7 +324,7 @@ export const makeAdmin = async (req, res) => {
         res.status(200).json({ message: `User with id ${id} made admin successfully` })
     } catch (error) {
         errorLog("Error in makeAdmin controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -336,7 +335,7 @@ export const removeAdmin = async (req, res) => {
 
     try {
         const user = await User.findById(id)
-        if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
+        if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
 
         // User cannot do it for himself
         if (user._id.toString() === req.user.id.toString()) return res.status(403).json({ code: "same_user", message: "You cannot perform this action on your own account" })
@@ -347,7 +346,7 @@ export const removeAdmin = async (req, res) => {
         res.status(200).json({ message: `User with id ${id} removed admin successfully` })
     } catch (error) {
         errorLog("Error in removeAdmin controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -359,7 +358,7 @@ export const fetchOrders = async (req, res) => {
         res.status(200).json(orders)
     } catch (error) {
         errorLog("Error in fetchOrders controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -370,13 +369,13 @@ export const getOrderById = async (req, res) => {
 
     try {
         const order = await Order.findById(id).select("-__v")
-        if (!order) return res.status(400).json({ code: "exist", message: "Order not found" })
+        if (!order) return res.status(404).json({ code: "not_found", message: "Order not found" })
 
         log(`Order with id ${id} found successfully`)
         res.status(200).json(order)
     } catch (error) {
         errorLog("Error in getOrderById controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -387,34 +386,33 @@ export const getProductsByIds = async (req, res) => {
 
     try {
         const products = await Product.find({ _id: { $in: ids } }).select("-__v")
-        if (products.length !== ids.length) return res.status(400).json({ code: "exist", message: "One or more products not found" })
+        if (products.length !== ids.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
 
         log("Products found successfully")
         res.status(200).json(products)
     } catch (error) {
         errorLog("Error in getProductsByIds controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to updates an order's status by ID
 export const updateOrderStatus = async (req, res) => {
     const { id, newStatus } = req.body
-    log(id, newStatus)
     if (!id || !newStatus) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
     try {
         const order = await Order.findById(id)
-        if (!order) return res.status(400).json({ code: "exist", message: "Order not found" })
+        if (!order) return res.status(404).json({ code: "not_found", message: "Order not found" })
 
         // Prevent updating a cancelled order
-        if (order.status === "cancelled") return res.status(400).json({ code: "cancelled_order", message: "Cannot update a cancelled order." })
+        if (order.status === "cancelled") return res.status(422).json({ code: "cancelled_order", message: "Cannot update a cancelled order." })
 
         // Prevent updating a delivered order
-        if (order.status === "delivered") return res.status(400).json({ code: "delivered_order", message: "Cannot update a delivered order." })
+        if (order.status === "delivered") return res.status(422).json({ code: "delivered_order", message: "Cannot update a delivered order." })
 
         // Prevent updating to the same status
-        if (order.status === newStatus) return res.status(400).json({ code: "same_status", message: "New status is the same as the old status" })
+        if (order.status === newStatus) return res.status(409).json({ code: "same_status", message: "New status is the same as the old status" })
 
         // Update status
         order.status = newStatus
@@ -424,6 +422,6 @@ export const updateOrderStatus = async (req, res) => {
         res.status(200).json({ message: `Order with id ${id} updated successfully` })
     } catch (error) {
         errorLog("Error in updateOrderStatus controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

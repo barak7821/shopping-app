@@ -15,7 +15,7 @@ export const register = async (req, res) => {
     try {
         // Check if email already exists
         const user = await User.findOne({ email: email.toLowerCase() })
-        if (user) return res.status(400).json({ code: "exist", message: "User already exists" })
+        if (user) return res.status(409).json({ code: "exist", message: "User already exists" })
 
         // Validate input against Joi schema
         await localSchema.validateAsync({ name, email, password, provider })
@@ -41,7 +41,7 @@ export const register = async (req, res) => {
         res.status(201).json({ message: `${email} added successfully`, token, exist: false })
     } catch (error) {
         errorLog("Error in register controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -53,11 +53,11 @@ export const login = async (req, res) => {
     try {
         // Find user by email
         const user = await User.findOne({ email: email.toLowerCase() }).select("+password")
-        if (!user) return res.status(400).json({ code: "exist", message: "User don't exists" })
+        if (!user) return res.status(401).json({ code: "invalid_pass", message: "Invalid password" })
 
         // Verify the password
         const isPasswordValid = await checkPassword(password, user.password)
-        if (!isPasswordValid) return res.status(400).json({ code: "invalid_pass", message: "Invalid password" })
+        if (!isPasswordValid) return res.status(401).json({ code: "invalid_pass", message: "Invalid password" })
 
         // Ensure JWT_SECRET is defined in the environment variables
         if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined")
@@ -72,7 +72,7 @@ export const login = async (req, res) => {
         res.status(200).json({ message: `${email} logged in successfully`, token, exist: false })
     } catch (error) {
         errorLog("Error in login controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -82,7 +82,7 @@ export const checkAuth = async (req, res) => {
         res.status(200).json({ exist: true, provider: req.user.provider, role: req.user.role })
     } catch (error) {
         errorLog("Error in checkAuth controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -96,10 +96,10 @@ export const sendOtp = async (req, res) => {
         const user = await User.findOne({ email: email.toLowerCase() }).select("+otpCode +otpExpiresAt +otpLastSentAt +otpAttempts +otpBlockedUntil")
 
         // Always return a neutral response for non-existing accounts
-        if (!user) return res.status(400).json({ code: "otp_sent", message: "If an account exists, OTP was sent" })
+        if (!user) return res.status(200).json({ message: "OTP sent successfully if the account exists" })
 
         // Check if user google sign-in account 
-        if (user.provider === "google") return res.status(400).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
+        if (user.provider === "google") return res.status(403).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
 
         // Check if the user is temporarily blocked
         if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ code: "blocked", message: "Too many requests, Try again later." })
@@ -136,7 +136,7 @@ export const sendOtp = async (req, res) => {
         res.status(200).json({ message: "OTP sent successfully if the account exists" })
     } catch (error) {
         errorLog("Error in sendOtp controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -150,16 +150,16 @@ export const verifyOtp = async (req, res) => {
         const user = await User.findOne({ email: email.toLowerCase() }).select("+otpCode +otpExpiresAt +otpAttempts +otpBlockedUntil")
 
         // Neutral response for invalid users or missing OTP
-        if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(400).json({ code: "otp_invalid", message: "Invalid or expired OTP" })
+        if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(401).json({ code: "otp_invalid", message: "Invalid or expired OTP" })
 
         // Check if user google sign-in account 
-        if (user.provider === "google") return res.status(400).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
+        if (user.provider === "google") return res.status(403).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
 
         // Check if the user is temporarily blocked
         if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ code: "blocked", message: "Too many requests, Try again later." })
 
         // Check OTP expiration
-        if (user.otpExpiresAt < Date.now()) return res.status(400).json({ code: "otp_expired", message: "OTP has expired" })
+        if (user.otpExpiresAt < Date.now()) return res.status(401).json({ code: "otp_expired", message: "OTP has expired" })
 
         // Verify OTP hash
         const isValid = verifyOtpHash(otp, user._id, user.otpCode)
@@ -168,7 +168,7 @@ export const verifyOtp = async (req, res) => {
             if (user.otpAttempts >= 5)
                 user.otpBlockedUntil = Date.now() + 15 * 60 * 1000 // 15 minutes block
             await user.save({ validateBeforeSave: false })
-            return res.status(400).json({ code: "otp_invalid", message: "Invalid or expired OTP" })
+            return res.status(401).json({ code: "otp_invalid", message: "Invalid or expired OTP" })
         }
 
         // OTP verified successfully (fields cleared in resetPassword controller)
@@ -176,7 +176,7 @@ export const verifyOtp = async (req, res) => {
         res.status(200).json({ message: "OTP verified successfully" })
     } catch (error) {
         errorLog("Error in verifyOtp controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -190,16 +190,16 @@ export const resetPassword = async (req, res) => {
         const user = await User.findOne({ email: email.toLowerCase() }).select("+password +otpCode +otpExpiresAt +otpAttempts +otpBlockedUntil")
 
         // Neutral response for invalid users or missing OTP
-        if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(400).json({ code: "otp_invalid", message: "Invalid or expired OTP or user not found" })
+        if (!user || !user.otpCode || !user.otpExpiresAt) return res.status(401).json({ code: "otp_invalid", message: "Invalid or expired OTP" })
 
         // Block password reset for Google-authenticated users
-        if (user.provider === "google") return res.status(400).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
+        if (user.provider === "google") return res.status(403).json({ code: "google_user", message: "Password reset is not available for Google sign-in accounts." })
 
         // Check if user is temporarily blocked due to multiple failed attempts
         if (user.otpBlockedUntil && user.otpBlockedUntil > Date.now()) return res.status(429).json({ code: "blocked", message: "Too many requests, Try again later." })
 
         // Check OTP expiration
-        if (user.otpExpiresAt < Date.now()) return res.status(400).json({ code: "otp_expired", message: "OTP has expired" })
+        if (user.otpExpiresAt < Date.now()) return res.status(401).json({ code: "otp_expired", message: "OTP has expired" })
 
         // Verify OTP hash
         const isOtpValid = verifyOtpHash(otp, user._id, user.otpCode)
@@ -208,7 +208,7 @@ export const resetPassword = async (req, res) => {
             if (user.otpAttempts >= 5)
                 user.otpBlockedUntil = Date.now() + 15 * 60 * 1000 // Block for 15 minutes
             await user.save({ validateBeforeSave: false })
-            return res.status(400).json({ code: "otp_invalid", message: "Invalid or expired OTP" })
+            return res.status(401).json({ code: "otp_invalid", message: "Invalid or expired OTP" })
         }
 
         // Validate input against Joi schema
@@ -216,7 +216,7 @@ export const resetPassword = async (req, res) => {
 
         // check if new password is the same as the old password
         const isSamePassword = await checkPassword(newPassword, user.password)
-        if (isSamePassword) return res.status(400).json({ code: "same_pass", message: "New password cannot be the same as the current password" })
+        if (isSamePassword) return res.status(422).json({ code: "same_pass", message: "New password cannot be the same as the current password" })
 
         // Hash and save new password
         const hashedPassword = await hashPassword(newPassword)
@@ -238,14 +238,14 @@ export const resetPassword = async (req, res) => {
         res.status(200).json({ message: "Password reset successfully" })
     } catch (error) {
         errorLog("Error in resetPassword controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to login/register with Google
 export const google = async (req, res) => {
     const { token } = req.body
-    if (!token) return
+    if (!token) return res.status(400).json({ code: "!field", message: "Token is required" })
 
     try {
         if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined") // Ensure JWT_SECRET is defined in the environment variables
@@ -280,6 +280,6 @@ export const google = async (req, res) => {
         res.status(200).json({ token: jwtToken, exist: true, provider: user.provider })
     } catch (error) {
         errorLog("Error in google controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

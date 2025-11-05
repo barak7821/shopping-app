@@ -22,7 +22,7 @@ export const createOrder = async (req, res) => {
         res.status(201).json({ message: "Order created successfully" })
     } catch (error) {
         errorLog("Error in createOrder controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
@@ -38,7 +38,7 @@ export const createOrderForUser = async (req, res) => {
 
         // Verify if user exists
         const user = await User.findById(userId)
-        if (!user) return res.status(400).json({ code: "exist", message: "User not found" })
+        if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
 
         // Add user details to order details
         orderDetails.userId = userId
@@ -53,18 +53,19 @@ export const createOrderForUser = async (req, res) => {
         res.status(201).json({ message: "Order created successfully" })
     } catch (error) {
         errorLog("Error in createOrder controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
+// Controller to get order by ID
 export const getOrdersById = async (req, res) => {
     try {
         const orders = await Order.find({ userId: req.user.id }) // Find orders by user ID
 
-        log("Orders found successfully")
+        log(`Found ${orders.length} orders for user ${req.user.id}`)
         res.status(200).json(orders) // Send the orders as a response
     } catch (error) {
         errorLog("Error in getOrdersById controller", error.message)
-        res.status(500).json({ message: error.message || "Internal Server Error" })
+        return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
