@@ -37,7 +37,7 @@ export default function NavBar() {
         <>
             {/* Big Screen */}
             <div className="w-full bg-white dark:bg-neutral-900 hidden lg:block sticky top-0 z-40 shadow-sm transition-all duration-200">
-                <div className="max-w-screen-xl mx-auto grid grid-cols-3 items-center py-4 px-6 min-h-[64px]">
+                <div className="max-w-screen-xl mx-auto grid [grid-template-columns:1fr_auto_1fr] items-center py-4 px-6 min-h-[64px]">
                     {/* Logo */}
                     <img src="https://www.trafongroup.com/wp-content/uploads/2019/04/logo-placeholder.png" alt="Logo" aria-label='Logo' className="h-8" />
                     {/* Navigation */}
