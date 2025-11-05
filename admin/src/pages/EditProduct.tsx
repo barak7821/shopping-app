@@ -69,7 +69,9 @@ export default function EditProduct() {
                 {/* Sidebar */}
                 <SideBar />
                 {loading || !product ? (
-                    <Loading />
+                    <div className="flex-1 bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-10">
+                        <Loading />
+                    </div>
                 ) : (
                     <ProductForm isEditing={true} initialData={product} onSubmit={handleUpdateProduct} />
                 )}

@@ -89,9 +89,23 @@ export default function CustomersDetails() {
   }
 
   if (loading) {
-    return <>
-      <Loading />
-    </>
+    return (
+      <div className="min-h-screen flex flex-col bg-[#faf8f6] dark:bg-neutral-900 font-montserrat">
+        {/* Sidebar + Main */}
+        <div className="flex flex-1 w-full mx-auto gap-12 pt-8 pb-20 px-4">
+
+          {/* Sidebar */}
+          <SideBar />
+
+          {/* Main Content */}
+          <div className="flex-1 bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-10">
+
+            <Loading />
+          </div>
+        </div>
+      </div>
+    )
+
   }
 
 
