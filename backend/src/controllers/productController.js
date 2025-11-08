@@ -49,7 +49,7 @@ export const findProductsQuery = async (req, res) => {
 // Controller to get latest 10 products
 export const getLatestProducts = async (req, res) => {
     try {
-        const products = await Product.find().sort({ createdAt: -1 }).limit(10)
+        const products = await Product.find().sort({ createdAt: -1 }).limit(10).select("-__v -createdAt -updatedAt -description -sizes -type -category")
         log(`Fetched ${products.length} latest products`)
         res.status(200).json(products)
     } catch (error) {

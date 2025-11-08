@@ -3,11 +3,12 @@ import NavBar from '../components/NavBar'
 import { useNavigate } from 'react-router-dom'
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import { errorLog, log } from '../utils/log';
+import { log } from '../utils/log';
 import { fetchProducts } from '../utils/api';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import { useApiErrorHandler } from '../utils/useApiErrorHandler';
 
 function getPageNumbers(totalPages, currentPage) {
     const delta = 2
@@ -49,6 +50,7 @@ export default function Collection() {
     const [sortBy, setSortBy] = useState("featured")
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 20
+    const { handleApiError } = useApiErrorHandler()
 
     const getProducts = async () => {
         setLoading(true)
@@ -56,10 +58,8 @@ export default function Collection() {
             const data = await fetchProducts()
             setProductsList(data)
             setSortedList(data)
-            log("Products:", data)
         } catch (error) {
-            errorLog("Error in getProducts", error)
-            notyf.error("Something went wrong. Please try again later.")
+            handleApiError(error, "fetchHomeSection")
         } finally {
             setLoading(false)
         }
@@ -287,7 +287,7 @@ export default function Collection() {
                                         ? Array.from({ length: 20 }).map((_, i) => <LoadingSkeleton key={i} />)
                                         : currentProducts.map(item =>
                                             <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
-                                                <div className="w-[170px] h-[210px] md:w-[140px] md:h-[280px] lg:w-[180px] xl:[220px] flex items-center justify-center overflow-hidden mb-4 md:mb-5">
+                                                <div className="w-[170px] h-[210px] md:w-[140px] md:h-[280px] lg:w-[180px] xl:[220px] flex items-center justify-center overflow-hidden mb-4 md:mb-5 rounded-2xl">
                                                     <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
                                                 </div>
                                                 <div className="flex flex-col items-center w-full">

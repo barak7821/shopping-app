@@ -13,6 +13,7 @@ import DeleteCustomersDetails from './pages/DeleteCustomersDetails.tsx';
 import OrderDetails from './pages/OrderDetails.tsx';
 import HeroSection from './pages/HeroSection.tsx';
 import BestSeller from './pages/BestSeller.tsx';
+import ContactInfo from './pages/ContactInfo.tsx';
 
 function App() {
     return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="/deletedCustomers/edit/:id" element={<ProtectedRouteAdmin><DeleteCustomersDetails /></ProtectedRouteAdmin>} />
             <Route path="/hero" element={<ProtectedRouteAdmin><HeroSection /></ProtectedRouteAdmin>} />
             <Route path="/bestSeller" element={<ProtectedRouteAdmin><BestSeller /></ProtectedRouteAdmin>}></Route>
+            <Route path="/contact" element={<ProtectedRouteAdmin><ContactInfo /></ProtectedRouteAdmin>}></Route>
         </Routes>
     )
 }

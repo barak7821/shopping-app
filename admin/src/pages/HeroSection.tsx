@@ -21,6 +21,7 @@ export default function HeroSection() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const [heroSection, setHeroSection] = useState<HeroSection | null>(null)
     const [loading, setLoading] = useState(true)
+    const [isEnabled, setIsEnabled] = useState(false)
     const [discardHeroSection, setDiscardHeroSection] = useState<HeroSection | null>(null)
     const { handleApiError } = useApiErrorHandler()
 
@@ -46,6 +47,7 @@ export default function HeroSection() {
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { id, value } = e.target
         setHeroSection((prev: any) => ({ ...(prev ?? {}), [id]: value }))
+        setIsEnabled(true)
     }
 
     const handleSaveBtn = async () => {
@@ -85,6 +87,7 @@ export default function HeroSection() {
             log("Hero section data:", newHeroSection)
             setDiscardHeroSection(newHeroSection)
             notyf.success("Changes saved successfully!")
+            setIsEnabled(false)
         } catch (error) {
             handleApiError(error as ApiError, "handleSaveBtn")
         } finally {
@@ -96,13 +99,14 @@ export default function HeroSection() {
     const handleDiscardBtn = () => {
         setHeroSection(discardHeroSection)
         notyf.success("Changes discarded successfully!")
+        setIsEnabled(false)
     }
 
     if (loading) {
         return (
             <div className="min-h-screen flex flex-col bg-[#faf8f6] dark:bg-neutral-900 font-montserrat">
                 {/* Sidebar + Main */}
-                <div className="flex flex-1 w-full max-w-[1400px] mx-auto gap-10 pt-10 pb-20 px-6">
+                <div className="flex flex-1 w-full max-w-screen-2xl mx-auto gap-12 pt-8 pb-20 px-4">
 
                     {/* Sidebar */}
                     <SideBar />
@@ -121,7 +125,7 @@ export default function HeroSection() {
         <div className="min-h-screen flex flex-col bg-[#faf8f6] dark:bg-neutral-900 font-montserrat">
 
             {/* Sidebar + Main */}
-            <div className="flex flex-1 w-full max-w-[1400px] mx-auto gap-10 pt-10 pb-20 px-6">
+            <div className="flex flex-1 w-full max-w-screen-2xl mx-auto gap-12 pt-8 pb-20 px-4">
 
                 {/* Sidebar */}
                 <SideBar />
@@ -134,18 +138,28 @@ export default function HeroSection() {
                             <h1 className="text-3xl font-prata text-[#181818] dark:text-neutral-100 tracking-tight">Hero Section</h1>
                             <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">Edit homepage hero copy, image and button</p>
                         </div>
+
+                        {/* Discard btn */}
                         <div className="flex gap-3">
-                            <button onClick={handleDiscardBtn} className="px-4 py-2 rounded-xl border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-700 text-[#181818] dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition shadow-sm cursor-pointer">
+                            <button onClick={handleDiscardBtn} disabled={!isEnabled} className={`px-4 py-2 rounded-xl border border-gray-300 dark:border-neutral-700 transition shadow-sm 
+                            ${!isEnabled
+                                    ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed dark:bg-neutral-700 dark:text-neutral-400 dark:border-neutral-700"
+                                    : "bg-white dark:bg-neutral-700 text-[#181818] dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-600 cursor-pointer"}`}>
                                 Discard
                             </button>
-                            <button onClick={handleSaveBtn} className="px-6 py-2 rounded-2xl font-semibold bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer">
+
+                            {/* Save btn */}
+                            <button onClick={handleSaveBtn} disabled={!isEnabled} className={`px-6 py-2 rounded-2xl font-semibold transition shadow-md
+                                ${!isEnabled
+                                    ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed dark:bg-neutral-700 dark:text-neutral-400 dark:border-neutral-700"
+                                    : " bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] cursor-pointer"}`}>
                                 Save Changes
                             </button>
                         </div>
                     </div>
 
                     {/* Editor + Preview */}
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 gap-8">
                         {/* Editor Card */}
                         <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-8 flex flex-col gap-7">
                             <h2 className="text-xl font-semibold text-[#c1a875]">Content</h2>

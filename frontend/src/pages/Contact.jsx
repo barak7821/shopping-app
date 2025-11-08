@@ -1,9 +1,27 @@
-import React from "react"
+import { useEffect, useState } from "react"
 import NavBar from "../components/NavBar"
 import AboutCard from "../components/AboutCard"
 import Footer from "../components/Footer"
+import { useApiErrorHandler } from "../utils/useApiErrorHandler"
+import { fetchContactInfo } from "../utils/api"
 
 export default function Contact() {
+    const [contact, setContact] = useState({})
+    const { handleApiError } = useApiErrorHandler()
+
+    const fetchContact = async () => {
+        try {
+            const data = await fetchContactInfo()
+            setContact(data)
+        } catch (error) {
+            handleApiError(error, "fetchHomeSection")
+        }
+    }
+
+    useEffect(() => {
+        fetchContact()
+    }, [])
+
     return (
         <div className="min-h-screen bg-[#faf8f6] dark:bg-neutral-900 flex flex-col font-montserrat">
             <NavBar />
@@ -12,36 +30,47 @@ export default function Contact() {
                     Contact Us
                 </h1>
                 <p className="text-lg text-[#555] dark:text-neutral-300 mb-12 max-w-2xl">
-                    For any questions, information or support – we're here for you.<br />
+                    For any questions, information or support - we're here for you.<br />
                     See below how to reach us:
                 </p>
                 <div className="grid md:grid-cols-2 gap-16 mb-20">
                     <div>
                         <h2 className="text-xl font-semibold text-[#c1a875] mb-3">Store Address</h2>
                         <p className="text-[#222] dark:text-neutral-200 text-base mb-8">
-                            23 King George St, Tel Aviv, Israel<br />
-                            (Main showroom & pickup)
+                            {contact.address || "Loading..."}<br />
+                            {contact.address && "(Main showroom & pickup)"}
                         </p>
 
                         <h2 className="text-xl font-semibold text-[#c1a875] mb-3">Opening Hours</h2>
                         <p className="text-[#222] dark:text-neutral-200 text-base">
-                            Sun–Thu: 10:00 - 19:00<br />
-                            Fri: 09:00 - 14:00<br />
-                            Sat: Closed
+                            {contact.openingHours
+                                ? contact.openingHours.split(/\s{2,}/).map((chunk, idx) => (
+                                    <span key={idx} className="block">{chunk.trim()}</span>
+                                ))
+                                : "Loading..."}
                         </p>
                     </div>
                     <div>
                         <h2 className="text-xl font-semibold text-[#c1a875] mb-3">Contact Details</h2>
                         <p className="text-[#222] dark:text-neutral-200 text-base mb-8">
                             <span className="font-semibold">Phone: </span>
-                            <a href="tel:+972501234567" className="underline hover:text-[#c1a875] transition">+972 50 123 4567</a><br />
+
+                            {contact.phone
+                                ? <a href={`tel:${contact.phone}`} className="underline hover:text-[#c1a875] transition" >{contact.phone}</a>
+                                : "Loading..."
+                            }
+                            <br />
                             <span className="font-semibold">Email: </span>
-                            <a href="mailto:info@yourshop.com" className="underline hover:text-[#c1a875] transition">info@yourshop.com</a>
+                            {contact.email
+                                ? <a href={`mailto:${contact.email || "#"}`} className="underline hover:text-[#c1a875] transition">{contact.email || "Loading..."}</a>
+                                : "Loading..."
+                            }
                         </p>
                         <h2 className="text-xl font-semibold text-[#c1a875] mb-3">Follow Us</h2>
                         <div className="flex gap-8 text-lg">
-                            <a href="https://www.instagram.com/yourshop" target="_blank" rel="noopener noreferrer" className="hover:text-[#c1a875] transition dark:text-white hover:underline">Instagram</a>
-                            <a href="https://www.facebook.com/yourshop" target="_blank" rel="noopener noreferrer" className="hover:text-[#c1a875] transition dark:text-white hover:underline">Facebook</a>
+                            <a href={contact.instagramUrl || "/*"} target="_blank" rel="noopener noreferrer" className="hover:text-[#c1a875] transition dark:text-white hover:underline">Instagram</a>
+                            <a href={contact.facebookUrl || "/*"} target="_blank" rel="noopener noreferrer" className="hover:text-[#c1a875] transition dark:text-white hover:underline">Facebook</a>
+                            <a href={contact.twitterUrl || "/*"} target="_blank" rel="noopener noreferrer" className="hover:text-[#c1a875] transition dark:text-white hover:underline">Twitter</a>
                         </div>
                     </div>
                 </div>

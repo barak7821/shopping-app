@@ -321,3 +321,27 @@ export const findProductsLimited = async (search: string) => {
     log("Search results:", data)
     return data
 }
+
+// Function to get contact info section
+export const fetchContactInfo = async () => {
+    const { data } = await axios.get(`${baseApiUrl}/home/contactInfo`)
+
+    log("Get contact info response:", data)
+    return data
+}
+
+// Function to update contact info section
+export const updateContactInfo = async (contactInfoSection: any) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+    const { data } = await axios.patch(`${baseApiUrl}/admin/contactInfo`, { contactInfoSection }, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Update contact info response:", data)
+    return data
+}

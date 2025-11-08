@@ -92,7 +92,7 @@ export default function CustomersDetails() {
     return (
       <div className="min-h-screen flex flex-col bg-[#faf8f6] dark:bg-neutral-900 font-montserrat">
         {/* Sidebar + Main */}
-        <div className="flex flex-1 w-full mx-auto gap-12 pt-8 pb-20 px-4">
+        <div className="flex flex-1 w-full max-w-screen-2xl mx-auto gap-12 pt-8 pb-20 px-4">
 
           {/* Sidebar */}
           <SideBar />
@@ -105,14 +105,13 @@ export default function CustomersDetails() {
         </div>
       </div>
     )
-
   }
 
 
   return (
     <div className="min-h-screen flex flex-col bg-[#faf8f6] dark:bg-neutral-900 font-montserrat">
       {/* Sidebar + Main */}
-      <div className="flex flex-1 w-full mx-auto gap-12 pt-8 pb-20 px-4">
+      <div className="flex flex-1 w-full max-w-screen-2xl mx-auto gap-12 pt-8 pb-20 px-4">
 
         {/* Sidebar */}
         <SideBar />

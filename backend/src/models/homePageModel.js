@@ -19,6 +19,18 @@ export const bestSellerSchemaJoi = Joi.array().items(
     }).unknown(true)
 ).length(5).required()
 
+export const contactInfoSchemaJoi = Joi.object(
+    {
+        email: Joi.string().email().required(),
+        phone: Joi.string().pattern(/^[0-9]+$/).required(),
+        facebookUrl: Joi.string().uri().required(),
+        instagramUrl: Joi.string().uri().required(),
+        twitterUrl: Joi.string().uri().required(),
+        openingHours: Joi.string().required(),
+        address: Joi.string().required()
+    }
+)
+
 const heroSchema = new mongoose.Schema(
     {
         _id: {
@@ -98,10 +110,70 @@ const bestSellerSchema = new mongoose.Schema(
             ref: "User",
             default: null
         }
-    }, {
-    timestamps: true,
-    collection: "HomePage"
-}
+    },
+    {
+        timestamps: true,
+        collection: "HomePage"
+    }
 )
 
 export const BestSeller = mongoose.model("BestSeller", bestSellerSchema)
+
+const contactInfoSchema = new mongoose.Schema(
+    {
+        _id: {
+            type: String,
+            default: "contact_info" // Fixed ID for the contact info section
+        },
+        email: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        phone: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        facebookUrl: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        instagramUrl: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        twitterUrl: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        openingHours: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        address: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        version: {
+            type: Number,
+            default: 1
+        },
+        updatedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null
+        }
+    },
+    {
+        timestamps: true,
+        collection: "ContactInfo"
+    }
+)
+
+export const ContactInfo = mongoose.model("ContactInfo", contactInfoSchema)

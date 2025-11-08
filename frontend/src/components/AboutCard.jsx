@@ -1,6 +1,25 @@
+import { useEffect, useState } from "react"
 import { FiMail, FiPhone, FiInstagram, FiFacebook, FiTwitter } from "react-icons/fi"
+import { fetchContactInfo } from "../utils/api"
+import { useApiErrorHandler } from "../utils/useApiErrorHandler"
 
 export default function AboutCard() {
+    const [contact, setContact] = useState({})
+    const { handleApiError } = useApiErrorHandler()
+
+    const fetchContact = async () => {
+        try {
+            const data = await fetchContactInfo()
+            setContact(data)
+        } catch (error) {
+            handleApiError(error, "fetchHomeSection")
+        }
+    }
+
+    useEffect(() => {
+        fetchContact()
+    }, [])
+
     return (
         <section className="w-full py-10 flex justify-center items-center px-4">
             <div className="w-full max-w-5xl bg-white/90 dark:bg-neutral-900/90 rounded-2xl lg:shadow-[0_0_35px_rgba(0,0,0,0.1)] dark:shadow-none px-6 md:px-16 py-10 flex flex-col md:flex-row items-center md:items-start gap-10">
@@ -22,22 +41,26 @@ export default function AboutCard() {
                         <li className="flex items-center gap-2">
                             <FiMail className="text-[#c1a875]" size={19} />
                             <span>Email:</span>
-                            <a href="mailto:info@ourstore.com" className="text-blue-600 hover:underline ml-1">info@ourstore.com</a>
+                            <a href="mailto:info@ourstore.com" className="text-blue-600 hover:underline ml-1">
+                                {contact.email || "Loading..."}
+                            </a>
                         </li>
                         <li className="flex items-center gap-2">
                             <FiPhone className="text-[#c1a875]" size={19} />
                             <span>Phone:</span>
-                            <a href="tel:+1234567890" className="text-blue-600 hover:underline ml-1">+1 234 567 890</a>
+                            <a href="tel:+1234567890" className="text-blue-600 hover:underline ml-1">
+                                {contact.phone || "Loading..."}
+                            </a>
                         </li>
                     </ul>
                     <div className="flex gap-4 mt-6">
-                        <a href="https://instagram.com/ourstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                        <a href={contact.instagramUrl || "#"} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                             <FiInstagram className="text-[#c1a875] hover:text-[#e4405f] transition" size={26} />
                         </a>
-                        <a href="https://facebook.com/ourstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                        <a href={contact.facebookUrl || "#"} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                             <FiFacebook className="text-[#c1a875] hover:text-[#1877f3] transition" size={26} />
                         </a>
-                        <a href="https://twitter.com/ourstore" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                        <a href={contact.twitterUrl || "#"} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
                             <FiTwitter className="text-[#c1a875] hover:text-[#1da1f2] transition" size={26} />
                         </a>
                     </div>

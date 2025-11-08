@@ -51,7 +51,8 @@ export const useApiErrorHandler = () => {
       "cancelled_order": "This order was cancelled and can't be updated.",
       "delivered_order": "This order has already been delivered and can't be updated.",
       "not_found": "Requested resource not found.",
-      "same_hero": "The current Hero section is identical to the existing one."
+      "same_hero": "The current Hero section is identical to the existing one.",
+      "same_best_seller": "The current Best seller section is identical to the existing one.",
     }
 
     if (code && errorMap[code]) message = errorMap[code]

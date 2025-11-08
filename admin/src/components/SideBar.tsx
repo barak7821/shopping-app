@@ -20,7 +20,8 @@ export default function SideBar() {
                             { text: "Customers", link: "/customers", aria: "Customers" },
                             { text: "Deleted Customers", link: "/deletedCustomers", aria: "Deleted Customers" },
                             { text: "Hero Section Editor", link: "/hero", aria: "Hero" },
-                            { text: "Best Sellers", link: "/bestSeller", aria: "Best Sellers" },
+                            { text: "Best Sellers Editor", link: "/bestSeller", aria: "Best Sellers" },
+                            { text: "Contact Info Editor", link: "/contact", aria: "Contact Info" },
                         ].map((item, index) => (
                             <li key={index}>
                                 <NavLink

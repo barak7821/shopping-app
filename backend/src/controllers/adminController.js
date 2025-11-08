@@ -2,7 +2,7 @@ import DeletedUser from "../models/deletedUserModel.js";
 import Order from "../models/orderModel.js";
 import Product, { productSchemaJoi, updateProductSchemaJoi } from "../models/productModel.js";
 import User, { localSchema } from "../models/userModel.js";
-import { BestSeller, bestSellerSchemaJoi, Hero, heroSchemaJoi } from "../models/homePageModel.js";
+import { BestSeller, bestSellerSchemaJoi, ContactInfo, contactInfoSchemaJoi, Hero, heroSchemaJoi } from "../models/homePageModel.js";
 import { errorLog, log } from "../utils/log.js";
 
 // Temp Controller - SHOULD ONLY BE USED FOR TESTING!!!
@@ -155,7 +155,51 @@ export const tempHeroSection = async (req, res) => {
         log("Hero section updated successfully")
         res.status(200).json({ message: "Hero section updated successfully" })
     } catch (error) {
-        errorLog("Error in heroSection controller", error.message)
+        errorLog("Error in tempHeroSection controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// temp - // Controller to update contact info section - SHOULD ONLY BE USED FOR TESTING!!!
+export const tempContactInfo = async (req, res) => {
+    const { email, phone, facebookUrl, instagramUrl, twitterUrl, openingHours, address } = req.body
+    if (!email || !phone || !facebookUrl || !instagramUrl || !twitterUrl || !openingHours || !address) return res.status(400).json({ code: "!field", message: "All fields are required" })
+
+    try {
+        const contactInfo = await ContactInfo.findById("contact_info")
+        if (!contactInfo) { // if contact info is not found
+            const newContactInfo = new ContactInfo({
+                _id: "contact_info",
+                email: email,
+                phone: phone,
+                facebookUrl: facebookUrl,
+                instagramUrl: instagramUrl,
+                twitterUrl: twitterUrl,
+                openingHours: openingHours,
+                address: address,
+                version: 1
+            })
+            await newContactInfo.save()
+            log("Contact info section created successfully")
+            return res.status(201).json({ message: "Contact info section created successfully" })
+        }
+
+        // Update contact info section data
+        contactInfo.email = email
+        contactInfo.phone = phone
+        contactInfo.facebookUrl = facebookUrl
+        contactInfo.instagramUrl = instagramUrl
+        contactInfo.twitterUrl = twitterUrl
+        contactInfo.openingHours = openingHours
+        contactInfo.address = address
+        contactInfo.version += 1
+
+        await contactInfo.save()
+
+        log("Contact info section updated successfully")
+        res.status(200).json({ message: "Contact info section updated successfully" })
+    } catch (error) {
+        errorLog("Error in tempContactInfo controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -582,6 +626,66 @@ export const bestSellerSection = async (req, res) => {
         res.status(200).json({ message: "Best seller section updated successfully" })
     } catch (error) {
         errorLog("Error in bestSellerSection controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to update contact info
+export const contactInfoSection = async (req, res) => {
+    const { contactInfoSection } = req.body
+    if (!contactInfoSection) return res.status(400).json({ code: "!field", message: "All fields are required" }) // if no contact info section is provided
+    try {
+        // Validate input against Joi schema
+        await contactInfoSchemaJoi.validateAsync(contactInfoSection)
+
+        const contactInfo = await ContactInfo.findById("contact_info")
+        if (!contactInfo) { // if contact info is not found
+            const newContactInfo = new ContactInfo({
+                _id: "contact_info",
+                email: contactInfoSection.email,
+                phone: contactInfoSection.phone,
+                facebookUrl: contactInfoSection.facebookUrl,
+                instagramUrl: contactInfoSection.instagramUrl,
+                twitterUrl: contactInfoSection.twitterUrl,
+                openingHours: contactInfoSection.openingHours,
+                address: contactInfoSection.address,
+                updatedBy: req.user.id,
+                version: 1
+            })
+            await newContactInfo.save()
+            log("Contact info section created successfully")
+            return res.status(201).json({ message: "Contact info section created successfully" })
+        }
+
+        // if contact info is same as current contact info section
+        if (contactInfo.email === contactInfoSection.email &&
+            contactInfo.phone === contactInfoSection.phone &&
+            contactInfo.facebookUrl === contactInfoSection.facebookUrl &&
+            contactInfo.instagramUrl === contactInfoSection.instagramUrl &&
+            contactInfo.twitterUrl === contactInfoSection.twitterUrl &&
+            contactInfo.openingHours === contactInfoSection.openingHours &&
+            contactInfo.address === contactInfoSection.address) {
+            log("Contact info section is same as current contact info section")
+            return res.status(409).json({ code: "same_contact_info", message: "Contact info section is same as current contact info section" })
+        }
+
+        // Update contact info section data
+        contactInfo.email = contactInfoSection.email
+        contactInfo.phone = contactInfoSection.phone
+        contactInfo.facebookUrl = contactInfoSection.facebookUrl
+        contactInfo.instagramUrl = contactInfoSection.instagramUrl
+        contactInfo.twitterUrl = contactInfoSection.twitterUrl
+        contactInfo.openingHours = contactInfoSection.openingHours
+        contactInfo.address = contactInfoSection.address
+        contactInfo.updatedBy = req.user.id
+        contactInfo.version += 1
+
+        await contactInfo.save()
+
+        log("Contact info section updated successfully")
+        res.status(200).json({ message: "Contact info section updated successfully" })
+    } catch (error) {
+        errorLog("Error in contactInfoSection controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

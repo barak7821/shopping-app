@@ -212,3 +212,11 @@ export const fetchBestSellers = async () => {
     log("Get best sellers response:", data)
     return data
 }
+
+// Function to get contact info section
+export const fetchContactInfo = async () => {
+    const { data } = await axios.get(`${baseApiUrl}/home/contactInfo`)
+
+    log("Get contact info response:", data)
+    return data
+}

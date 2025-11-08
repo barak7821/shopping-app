@@ -21,15 +21,12 @@ export default function Home() {
         setLoading(true)
         try {
             const data = await fetchLatestProducts()
-            log("Latest products:", data)
             setLatestProduct(data)
 
             const heroData = await fetchHeroSection()
-            log("Hero section:", heroData)
             setHeroSection(heroData)
 
             const bestSellerData = await fetchBestSellers()
-            log("Best sellers:", bestSellerData)
             setBestSeller(bestSellerData)
         } catch (error) {
             handleApiError(error, "fetchHomeSection")

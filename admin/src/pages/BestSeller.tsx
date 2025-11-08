@@ -96,7 +96,7 @@ export default function BestSeller() {
 
     return (
         <div className="min-h-screen flex flex-col bg-[#faf8f6] dark:bg-neutral-900 font-montserrat">
-            <div className="flex flex-1 w-full max-w-[1400px] mx-auto gap-10 pt-10 pb-20 px-6">
+            <div className="flex flex-1 w-full max-w-screen-2xl mx-auto gap-12 pt-8 pb-20 px-4">
                 {/* Sidebar */}
                 <SideBar />
 
@@ -115,9 +115,9 @@ export default function BestSeller() {
                         </div>
 
                         {/* Save Selection */}
-                        <button onClick={handleSave} disabled={selected.length === 0} className={`px-6 py-2.5 rounded-2xl font-semibold text-base transition shadow-md border
-              ${selected.length === 0
-                                ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed"
+                        <button onClick={handleSave} disabled={selected.length < 5} className={`px-6 py-2.5 rounded-2xl font-semibold text-base transition shadow-md border
+              ${selected.length < 5
+                                ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed dark:bg-neutral-700 dark:text-neutral-400 dark:border-neutral-700"
                                 : "bg-[#1a1a1a] text-white border-[#1a1a1a] hover:bg-[#c1a875] hover:text-[#1a1a1a] hover:border-[#c1a875] active:scale-95 cursor-pointer"}`}>
                             Save Selection
                         </button>
@@ -130,7 +130,7 @@ export default function BestSeller() {
                         </h2>
 
                         <div className="relative">
-                            <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} placeholder="Type a product name..." className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-base focus:ring-2 focus:ring-[#c1a875] focus:outline-none" />
+                            <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} placeholder="Type a product name..." className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-base focus:ring-2 focus:ring-[#c1a875] focus:outline-none dark:text-neutral-100" />
                             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-neutral-400">
                                 {results.length} results
                             </div>
@@ -154,7 +154,8 @@ export default function BestSeller() {
                                                     ${item.price.toFixed(2)}
                                                 </p>
                                             </div>
-                                            <button onClick={() => handleAddItem(item)} className="px-4 py-2 rounded-xl border border-[#1a1a1a] bg-white text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition shadow-sm active:scale-95 cursor-pointer">
+                                            {/* Add */}
+                                            <button onClick={() => handleAddItem(item)} className="px-4 py-2 rounded-xl border border-[#1a1a1a] bg-white text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition shadow-sm active:scale-95 cursor-pointer dark:bg-[#1a1a1a] dark:text-white dark:hover:bg-white dark:hover:text-[#1a1a1a]">
                                                 Add
                                             </button>
                                         </li>
@@ -207,7 +208,7 @@ export default function BestSeller() {
                                         </div>
 
                                         {/* Remove */}
-                                        <button onClick={() => handleRemoveItem(item._id)} className="px-3 py-1.5 rounded-xl bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition text-sm active:scale-95 cursor-pointer">
+                                        <button onClick={() => handleRemoveItem(item._id)} className="px-3 py-1.5 rounded-xl bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition text-sm active:scale-95 cursor-pointer dark:bg-red-900/50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-800">
                                             Remove
                                         </button>
                                     </div>
