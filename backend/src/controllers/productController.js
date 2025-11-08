@@ -19,7 +19,7 @@ export const findProducts = async (req, res) => {
     if (!search || search.trim() === "") return res.status(400).json({ code: "!field", message: "Search input is required" })
 
     try {
-        const products = await Product.find({ title: { $regex: search, $options: "i" } }) // Find products by title
+        const products = await Product.find({ title: { $regex: search, $options: "i" } }).select("-__v -createdAt -updatedAt -description -sizes -type -category") // Find products by title
             .limit(10) // Limit results to 10 for performance
 
         log(`Found ${products.length} products for search: ${search}`)
@@ -44,4 +44,21 @@ export const findProductsQuery = async (req, res) => {
         errorLog("Error in findProducts controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
+}
+
+// Controller to get latest 10 products
+export const getLatestProducts = async (req, res) => {
+    try {
+        const products = await Product.find().sort({ createdAt: -1 }).limit(10)
+        log(`Fetched ${products.length} latest products`)
+        res.status(200).json(products)
+    } catch (error) {
+        errorLog("Error in getLatestProducts controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to get the best sellers products by IDs
+export const getBestSellers = async (req, res) => {
+
 }

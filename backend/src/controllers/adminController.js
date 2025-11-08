@@ -2,9 +2,10 @@ import DeletedUser from "../models/deletedUserModel.js";
 import Order from "../models/orderModel.js";
 import Product, { productSchemaJoi, updateProductSchemaJoi } from "../models/productModel.js";
 import User, { localSchema } from "../models/userModel.js";
+import { BestSeller, bestSellerSchemaJoi, Hero, heroSchemaJoi } from "../models/homePageModel.js";
 import { errorLog, log } from "../utils/log.js";
 
-// Products controllers
+// Temp Controller - SHOULD ONLY BE USED FOR TESTING!!!
 
 // temp - Controller for delete all products - SHOULD ONLY BE USED FOR TESTING!!!
 export const deleteAllProducts = async (req, res) => {
@@ -115,6 +116,52 @@ export const seedUsers = async (req, res) => {
     }
 }
 
+// temp - Controller to update hero section - SHOULD ONLY BE USED FOR TESTING!!!
+export const tempHeroSection = async (req, res) => {
+    const { title, subtitle, description, buttonText, buttonLink, imageUrl, imageAlt } = req.body
+    if (!title || !subtitle || !description || !buttonText || !buttonLink || !imageUrl || !imageAlt) return res.status(400).json({ code: "!field", message: "All fields are required" })
+
+    try {
+        const hero = await Hero.findById("hero_section")
+        if (!hero) {
+            const newHero = new Hero({
+                _id: "hero_section",
+                title,
+                subtitle,
+                description,
+                buttonText,
+                buttonLink,
+                imageUrl,
+                imageAlt,
+                version: 1
+            })
+            await newHero.save()
+            log("Hero section created successfully")
+            return res.status(200).json({ message: "Hero section created successfully" })
+        }
+
+        // Update hero section data
+        hero.title = title
+        hero.subtitle = subtitle
+        hero.description = description
+        hero.buttonText = buttonText
+        hero.buttonLink = buttonLink
+        hero.imageUrl = imageUrl
+        hero.imageAlt = imageAlt
+        hero.version += 1
+
+        await hero.save()
+
+        log("Hero section updated successfully")
+        res.status(200).json({ message: "Hero section updated successfully" })
+    } catch (error) {
+        errorLog("Error in heroSection controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+/////////// Products Controllers ///////////
+
 // Controller to add a new product
 export const addProduct = async (req, res) => {
     const { title, category, price, image, description, sizes, type } = req.body
@@ -219,6 +266,25 @@ export const updateProductById = async (req, res) => {
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
+
+// Controller to gets multiple products by their IDs
+export const getProductsByIds = async (req, res) => {
+    const { ids } = req.body
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
+
+    try {
+        const products = await Product.find({ _id: { $in: ids } }).select("-__v")
+        if (products.length !== ids.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
+
+        log("Products found successfully")
+        res.status(200).json(products)
+    } catch (error) {
+        errorLog("Error in getProductsByIds controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+/////////// Users Controllers ///////////
 
 // Controller to fetch users
 export const fetchUsers = async (req, res) => {
@@ -350,6 +416,9 @@ export const removeAdmin = async (req, res) => {
     }
 }
 
+/////////// Orders Controllers ///////////
+
+
 // Controller to fetch orders
 export const fetchOrders = async (req, res) => {
     try {
@@ -375,23 +444,6 @@ export const getOrderById = async (req, res) => {
         res.status(200).json(order)
     } catch (error) {
         errorLog("Error in getOrderById controller", error.message)
-        return res.status(500).json({ code: "server_error", message: "server_error" })
-    }
-}
-
-// Controller to gets multiple products by their IDs
-export const getProductsByIds = async (req, res) => {
-    const { ids } = req.body
-    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
-
-    try {
-        const products = await Product.find({ _id: { $in: ids } }).select("-__v")
-        if (products.length !== ids.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
-
-        log("Products found successfully")
-        res.status(200).json(products)
-    } catch (error) {
-        errorLog("Error in getProductsByIds controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -422,6 +474,114 @@ export const updateOrderStatus = async (req, res) => {
         res.status(200).json({ message: `Order with id ${id} updated successfully` })
     } catch (error) {
         errorLog("Error in updateOrderStatus controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+/////////// Home Page Controller ///////////
+
+// Controller to update hero section
+export const heroSection = async (req, res) => {
+    const { heroSection } = req.body
+    if (!heroSection) return res.status(400).json({ code: "!field", message: "All fields are required" })
+    if (Object.keys(heroSection).length === 0) return res.status(400).json({ code: "!field", message: "All fields are required" })
+
+    try {
+        // Validate input against Joi schema
+        await heroSchemaJoi.validateAsync(heroSection)
+
+        const hero = await Hero.findById("hero_section")
+        if (!hero) { // if hero is not found
+            const newHero = new hero({
+                _id: "hero_section",
+                title: heroSection.title,
+                subtitle: heroSection.subtitle,
+                description: heroSection.description,
+                buttonText: heroSection.buttonText,
+                buttonLink: heroSection.buttonLink.toLowerCase(),
+                imageUrl: heroSection.imageUrl,
+                imageAlt: heroSection.imageAlt,
+                updatedBy: req.user.id,
+                version: 1
+            })
+            await newHero.save()
+            log("Hero section created successfully")
+            return res.status(201).json({ message: "Hero section created successfully" })
+        }
+
+        // if hero is same as current hero section
+        if (hero.title === heroSection.title &&
+            hero.subtitle === heroSection.subtitle &&
+            hero.description === heroSection.description &&
+            hero.buttonText === heroSection.buttonText &&
+            hero.buttonLink === heroSection.buttonLink &&
+            hero.imageUrl === heroSection.imageUrl &&
+            hero.imageAlt === heroSection.imageAlt) {
+            log("Hero section is same as current hero section")
+            return res.status(409).json({ code: "same_hero", message: "Hero section is same as current hero section" })
+        }
+
+        // Update hero section data
+        hero.title = heroSection.title
+        hero.subtitle = heroSection.subtitle
+        hero.description = heroSection.description
+        hero.buttonText = heroSection.buttonText
+        hero.buttonLink = heroSection.buttonLink
+        hero.imageUrl = heroSection.imageUrl
+        hero.imageAlt = heroSection.imageAlt
+        hero.updatedBy = req.user.id
+        hero.version += 1
+
+        await hero.save()
+
+        log("Hero section updated successfully")
+        res.status(200).json({ message: "Hero section updated successfully" })
+    } catch (error) {
+        errorLog("Error in heroSection controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to update best seller section
+export const bestSellerSection = async (req, res) => {
+    const { bestSellerSection } = req.body
+    if (!bestSellerSection) return res.status(400).json({ code: "!field", message: "All fields are required" }) // if no best seller section is provided
+    if (bestSellerSection.length < 5) return res.status(400).json({ code: "!field", message: "Best seller section must have at least 5 items" }) // if best seller section has less than 5 items
+
+    try {
+        // Validate input against Joi schema
+        await bestSellerSchemaJoi.validateAsync(bestSellerSection)
+
+        const bestSeller = await BestSeller.findById("best_seller")
+        if (!bestSeller) { // if best seller is not found
+            const newBestSeller = new BestSeller({
+                _id: "best_seller",
+                products: bestSellerSection,
+                updatedBy: req.user.id,
+                version: 1
+            })
+            await newBestSeller.save()
+            log("Best seller section created successfully")
+            return res.status(201).json({ message: "Best seller section created successfully" })
+        }
+
+        // if best seller is same as current best seller section
+        if (bestSeller.products.toString() === bestSellerSection.toString()) {
+            log("Best seller section is same as current best seller section")
+            return res.status(409).json({ code: "same_best_seller", message: "Best seller section is same as current best seller section" })
+        }
+
+        // Update best seller section data
+        bestSeller.products = bestSellerSection
+        bestSeller.updatedBy = req.user.id
+        bestSeller.version += 1
+
+        await bestSeller.save()
+
+        log("Best seller section updated successfully")
+        res.status(200).json({ message: "Best seller section updated successfully" })
+    } catch (error) {
+        errorLog("Error in bestSellerSection controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

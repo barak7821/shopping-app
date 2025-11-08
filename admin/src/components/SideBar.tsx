@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import Theme from "./Theme";
 
 export default function SideBar() {
     return (
@@ -18,6 +19,8 @@ export default function SideBar() {
                             { text: "Orders", link: "/orders", aria: "Orders" },
                             { text: "Customers", link: "/customers", aria: "Customers" },
                             { text: "Deleted Customers", link: "/deletedCustomers", aria: "Deleted Customers" },
+                            { text: "Hero Section Editor", link: "/hero", aria: "Hero" },
+                            { text: "Best Sellers", link: "/bestSeller", aria: "Best Sellers" },
                         ].map((item, index) => (
                             <li key={index}>
                                 <NavLink
@@ -34,6 +37,9 @@ export default function SideBar() {
                         ))}
                     </ul>
                 </nav>
+                
+                {/* Theme */}
+                <Theme />
             </aside>
         </div>
     )

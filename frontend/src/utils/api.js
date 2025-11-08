@@ -188,3 +188,27 @@ export const handleGoogle = async (token) => {
     log("Google response:", data)
     return data
 }
+
+// Function to get hero section
+export const fetchHeroSection = async () => {
+    const { data } = await axios.get(`${baseApiUrl}/home`)
+
+    log("Get hero section response:", data)
+    return data
+}
+
+// Function to get 10 latest products
+export const fetchLatestProducts = async () => {
+    const { data } = await axios.get(`${baseApiUrl}/products/latest`)
+
+    log("Get latest products response:", data)
+    return data
+}
+
+// Function to get best sellers
+export const fetchBestSellers = async () => {
+    const { data } = await axios.get(`${baseApiUrl}/home/bestSellers`)
+
+    log("Get best sellers response:", data)
+    return data
+}

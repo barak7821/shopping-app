@@ -11,7 +11,7 @@ import helmet from "helmet"
 import compression from "compression"
 import morgan from "morgan"
 import adminRoutes from "./routes/adminRoutes.js"
-
+import homePageRoutes from "./routes/homePageRoutes.js"
 
 dotenv.config()
 const app = Express()
@@ -30,6 +30,7 @@ app.use("/api/auth", authRoutes) // authentication routes (eg. register, login)
 app.use("/api/user", userRoutes) // user routes (eg. get, update or remove user details)
 app.use("/api/order", orderRoutes) // order routes (eg. create, get, update or remove order details)
 app.use("/api/products", productRoutes) // product routes (eg. add, get, update or remove product details)
+app.use("/api/home", homePageRoutes) // home page related routes (eg. get hero section details, get latest collections section, get best sellers section)
 app.use("/api/admin", adminRoutes) // admin routes (eg. admin authentication)
 
 // Define a simple ping endpoint to check if the server is running

@@ -270,3 +270,54 @@ export const updateOrderStatusById = async (orderId: string, newStatus: string) 
     log("Update order status by id response:", data)
     return data
 }
+
+// Function to get hero section
+export const fetchHeroSection = async () => {
+    const { data } = await axios.get(`${baseApiUrl}/home`)
+
+    log("Get hero section response:", data)
+    return data
+}
+
+// Function to update hero section
+export const updateHeroSection = async (heroSection: any) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+    const { data } = await axios.patch(`${baseApiUrl}/admin/hero`, { heroSection }, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Update hero section response:", data)
+    return data
+}
+
+// Function to update best seller section
+export const updateBestSellerSection = async (bestSellerSection: any) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+    const { data } = await axios.patch(`${baseApiUrl}/admin/bestSeller`, { bestSellerSection }, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Update best seller section response:", data)
+    return data
+}
+
+// Function to find products by search input - limited to 10 results
+export const findProductsLimited = async (search: string) => {
+    if (!search || search.trim() === "") {
+        log("Search input is required")
+        return
+    }
+    const { data } = await axios.post(`${baseApiUrl}/products/search`, { search })
+    log("Search results:", data)
+    return data
+}

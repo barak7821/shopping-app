@@ -1,44 +1,25 @@
-import React, { useEffect, useState } from "react"
-import { FiSearch, FiX } from "react-icons/fi";
-import { errorLog, log } from '../utils/log';
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
+import { useEffect, useState } from "react"
+import { FiX } from "react-icons/fi";
+import { log } from '../utils/log';
 import { findProductsLimited } from "../utils/api";
 import { useNavigate } from "react-router-dom";
+import { useApiErrorHandler } from "../utils/useApiErrorHandler";
 
 export default function SearchBar({ setSearchOpen }) {
     const nav = useNavigate()
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const [searchInput, setSearchInput] = useState("")
     const [searchResults, setSearchResults] = useState([])
+    const { handleApiError } = useApiErrorHandler()
 
     const handleSearch = async (e) => {
         log("Search initiated with input:", searchInput)
 
         try {
-            const data = await findProductsLimited(searchInput.toLowerCase().trim());
-
-            if (!data || data.length === 0) {
-                log("No products found for search input:", searchInput)
-                return
-            }
-
-            const products = data.map(product => ({
-                ...product,
-                _id: product._id,
-                title: product.title.replace(/\b\w/g, l => l.toUpperCase()),
-                category: product.category.replace(/\b\w/g, l => l.toUpperCase()),
-                type: product.type.replace(/\b\w/g, l => l.toUpperCase()),
-                price: product.price.toFixed(2),
-                image: product.image,
-                description: product.description,
-                sizes: product.sizes,
-            }))
-
-            setSearchResults(products)
-            log("Search results:", products)
+            const data = await findProductsLimited(searchInput.toLowerCase().trim())
+            setSearchResults(data)
+            log("Search results:", data)
         } catch (error) {
-            errorLog("Error during fetching products", error)
+            handleApiError(error, "handleSearch")
         }
     }
 
@@ -73,16 +54,16 @@ export default function SearchBar({ setSearchOpen }) {
                         }
                     </div>
                     <hr className="border-[#e6dfd2] dark:border-neutral-700" />
-                    {searchResults.length > 0 && (
+                    {searchResults.length > 0 &&
                         <div className="absolute left-0 right-0 top-full mx-auto w-full max-w-2xl bg-white dark:bg-neutral-800 shadow-xl rounded-b-xl z-50 max-h-192 overflow-y-auto border-t border-neutral-200 dark:border-neutral-700">
                             {searchResults.map((product, index) => (
                                 <div key={index} onClick={() => nav(`/product/${product._id}`)} className="flex items-center gap-4 border-b dark:border-neutral-700 last:border-b-0 py-3 px-4 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition">
                                     <img src={product.image} alt={product.title} className="w-16 h-16 object-cover rounded-lg" />
-                                    <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">{product.title}</h3>
+                                    <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">{product.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
                                 </div>
                             ))}
                         </div>
-                    )}
+                    }
                 </div>
             </div>
         </>

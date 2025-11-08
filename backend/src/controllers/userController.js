@@ -79,15 +79,14 @@ export const deleteUser = async (req, res) => {
 // Controller to change password
 export const changePassword = async (req, res) => {
     const { password, currentPassword } = req.body
-    try {
-        // Validate input fields
-        if (!password || !currentPassword) return res.status(400).json({ code: "!field", message: "All fields are required" })
+    // Validate input fields
+    if (!password || !currentPassword) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
+    // check if new password is the same as the old password
+    if (password === currentPassword) return res.status(422).json({ code: "same_pass", message: "New password cannot be the same as the old password" })
+    try {
         // Validate input against Joi schema
         await updatePasswordSchemaJoi.validateAsync({ password })
-
-        // check if new password is the same as the old password
-        if (password === currentPassword) return res.status(422).json({ code: "same_pass", message: "New password cannot be the same as the old password" })
 
         // Find user by email
         const user = await User.findById(req.user.id).select("+password")
@@ -117,10 +116,10 @@ export const changePassword = async (req, res) => {
 // Controller to verify password
 export const verifyPassword = async (req, res) => {
     const { password } = req.body
-    try {
-        // Validate input fields
-        if (!password) return res.status(400).json({ code: "!field", message: "All fields are required" })
+    // Validate input fields
+    if (!password) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
+    try {
         // Find user
         const user = await User.findById(req.user.id).select("+password")
         if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })

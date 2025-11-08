@@ -1,6 +1,6 @@
 import Express from 'express';
 import adminAuthMiddleware from '../middlewares/adminAuthMiddleware.js';
-import { deleteAllProducts, deleteProductById, addProduct, addMultipleProducts, getProductById, updateProductById, fetchUsers, deleteUserById, getUserById, seedUsers, fetchDeletedUsers, getDeletedUserById, makeAdmin, removeAdmin, fetchOrders, getOrderById, getProductsByIds, updateOrderStatus } from '../controllers/adminController.js';
+import { deleteAllProducts, deleteProductById, addProduct, addMultipleProducts, getProductById, updateProductById, fetchUsers, deleteUserById, getUserById, seedUsers, fetchDeletedUsers, getDeletedUserById, makeAdmin, removeAdmin, fetchOrders, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection } from '../controllers/adminController.js';
 
 const router = Express.Router()
 
@@ -27,9 +27,14 @@ router.get('/orders', adminAuthMiddleware, fetchOrders)
 router.get('/getOrderById', adminAuthMiddleware, getOrderById)
 router.patch('/updateOrderStatus', adminAuthMiddleware, updateOrderStatus)
 
+// Home Page
+router.patch('/hero', adminAuthMiddleware, heroSection)
+router.patch('/bestSeller', adminAuthMiddleware, bestSellerSection)
+
 // temp routes - SHOULD ONLY BE USED FOR TESTING!!!
 router.delete('/deleteAll', deleteAllProducts)
 router.post('/batch', addMultipleProducts)
 router.post('/userBatch', seedUsers)
+router.patch('/heroTest', tempHeroSection)
 
 export default router
