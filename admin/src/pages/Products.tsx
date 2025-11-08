@@ -14,6 +14,8 @@ interface Product {
   title: string
   price: number
   category: string
+  discountPercent: number
+  onSale: boolean
 }
 
 function getPageNumbers(totalPages: number, currentPage: number) {
@@ -159,8 +161,8 @@ export default function Products() {
                     </td>
 
                     {/* Price */}
-                    <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200">
-                      ${product.price.toFixed(2)}
+                    <td className={`px-6 py-4 border-t border-[#eee] dark:border-neutral-700 ${product.onSale === true ? "text-[#c1a875] font-semibold" : "text-[#232323] dark:text-neutral-200"}`}>
+                      {product.onSale ? `$${(product.price * (1 - product.discountPercent / 100)).toFixed(2)} (On sale)` : `$${product.price}`}
                     </td>
 
                     {/* Category */}
