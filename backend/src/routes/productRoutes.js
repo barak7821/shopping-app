@@ -1,5 +1,5 @@
 import Express from 'express';
-import { findProducts, findProductsQuery, getLatestProducts, getProducts } from '../controllers/productController.js';
+import { findProducts, findProductsQuery, getLatestProducts, getProducts, getProductsByIds } from '../controllers/productController.js';
 
 const router = Express.Router()
 
@@ -10,5 +10,6 @@ router.get('/latest', getLatestProducts)
 // Define route handlers
 router.post('/search', findProducts)
 router.get('/query', findProductsQuery)
+router.post('/getProductsByIds', getProductsByIds)
 
 export default router

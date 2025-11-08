@@ -21,7 +21,6 @@ export default function Product() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
 
-
     const getProducts = async () => {
         setLoading(true)
         try {
@@ -72,7 +71,7 @@ export default function Product() {
             <div className='flex justify-center py-10 gap-10 lg:flex-row flex-col'>
 
                 {/* Image section */}
-                <div className='flex flex-col items-center'>
+                <div className='relative flex flex-col items-center'>
                     <img src={item.image} alt={item.title} className="w-[400px] h-[550px] object-cover rounded-2xl shadow-xl" />
                 </div>
 
@@ -82,8 +81,20 @@ export default function Product() {
                         {item.title.replace(/\b\w/g, l => l.toUpperCase())}
                     </h1>
                     <div className='flex flex-col py-5'>
-                        <p className="text-gray-800 dark:text-neutral-200 font-[#1a1a1a] font-bold text-3xl">${item.price}</p>
+
+                        {/* Sale */}
+                        {item.onSale == true
+                            ? <div>
+                                <div className="flex items-baseline gap-3">
+                                    <p className="text-[#c1a875] dark:text-[#d3b988] font-bold text-3xl">${(item.price * (1 - item.discountPercent / 100)).toFixed(2)}</p>
+                                    <p className="text-gray-500 dark:text-neutral-400 font-semibold text-xl line-through">${item.price}</p>
+                                </div>
+                                <span className="text-sm font-semibold text-[#c1a875] dark:text-[#d3b988] tracking-wide mt-1">{item.discountPercent}% OFF</span>
+                            </div>
+                            : <p className="text-gray-800 dark:text-neutral-200 font-[#1a1a1a] font-bold text-3xl">${item.price}</p>
+                        }
                     </div>
+                    
                     <p className="text-gray-600 dark:text-neutral-300 mb-10">{item.description}</p>
 
                     {/* Size */}

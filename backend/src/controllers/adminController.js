@@ -208,12 +208,12 @@ export const tempContactInfo = async (req, res) => {
 
 // Controller to add a new product
 export const addProduct = async (req, res) => {
-    const { title, category, price, image, description, sizes, type } = req.body
-    if (!title || !category || !price || !image || !description || !sizes || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" })
+    const { title, category, price, image, description, sizes, type, onSale, discountPercent } = req.body
+    if (!title || !category || !price || !image || !description || !sizes || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
 
     try {
         // Validate input against Joi schema
-        await productSchemaJoi.validateAsync({ title, category, price, image, description, sizes, type })
+        await productSchemaJoi.validateAsync({ title, category, price, image, description, sizes, type, onSale, discountPercent })
 
         // Verify if the product already exists
         const product = await Product.findOne({ title: title.toLowerCase() })
@@ -227,7 +227,9 @@ export const addProduct = async (req, res) => {
             image,
             description,
             sizes,
-            type: type.toLowerCase()
+            type: type.toLowerCase(),
+            onSale,
+            discountPercent
         })
 
         // Save the new product to the database
@@ -277,10 +279,9 @@ export const getProductById = async (req, res) => {
 
 // Controller to edit product by id
 export const updateProductById = async (req, res) => {
-    const { id, title, category, price, image, description, sizes, type } = req.body
+    const { id, title, category, price, image, description, sizes, type, onSale, discountPercent } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
-    if (Object.keys(req.body).length === 0) return res.status(400).json({ code: "!field", message: "No data provided" })
-
+    if (!title || !category || !price || !image || !description || !sizes || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
 
     try {
         // Validate input against Joi schema
@@ -295,6 +296,9 @@ export const updateProductById = async (req, res) => {
         if (description) updateFields.description = description
         if (sizes) updateFields.sizes = sizes
         if (type) updateFields.type = type.toLowerCase()
+        if (onSale !== undefined) updateFields.onSale = onSale
+        if (discountPercent !== undefined) updateFields.discountPercent = discountPercent
+
 
         // If no fields are provided, return an error
         if (Object.keys(updateFields).length === 0) return res.status(400).json({ code: "!field", message: "No fields provided" })

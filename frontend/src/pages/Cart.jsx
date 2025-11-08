@@ -6,53 +6,45 @@ import { FiX } from "react-icons/fi"
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { fetchProducts } from '../utils/api';
+import { fetchProductsByIds } from '../utils/api';
+import { useApiErrorHandler } from '../utils/useApiErrorHandler';
 
 export default function Cart() {
     const nav = useNavigate()
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const { cart, removeFromCart, addToCart, clearItem } = useCart()
     const [fullCart, setFullCart] = useState([])
-    const [productsList, setProductsList] = useState([])
     const [loading, setLoading] = useState(true)
+    const { handleApiError } = useApiErrorHandler()
 
-    const getProducts = async () => {
+    const getProductsByIds = async () => {
         setLoading(true)
         try {
-            const data = await fetchProducts()
-            setProductsList(data)
+            const data = await fetchProductsByIds(cart.map(item => item.id))
+
+            const items = cart.map(cartItem => { // get the product from the localStorage
+                const product = data.find(item => item._id === cartItem.id)
+                return product
+                    ? {
+                        ...product,
+                        id: product._id,
+                        size: cartItem.size,
+                        quantity: cartItem.quantity
+                    }
+                    : null
+            }).filter(Boolean) // remove null values
+
+            setFullCart(items)
+            log("fullCart updated", fullCart)
         } catch (error) {
-            errorLog("Error in getProducts", error)
-            notyf.error("Something went wrong. Please try again later.")
+            handleApiError(error, "getProductsByIds")
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        getProducts() // Get products from the server
-    }, [])
-
-    useEffect(() => {
-        const items = cart.map(cartItem => { // get the product from the localStorage
-            const product = productsList.find(item => item._id === cartItem.id)
-            return product
-                ? {
-                    ...product,
-                    id: product._id,
-                    size: cartItem.size,
-                    quantity: cartItem.quantity
-                }
-                : null
-        }).filter(Boolean) // remove null values
-
-        setFullCart(items)
-
-        log(`items:${items}`)
-        log(`fullCart:${fullCart}`)
-    }, [cart, productsList])
+        getProductsByIds() // Get products from the server
+    }, [ cart ])
 
     const skeleton = ( // Loading skeleton for cart items
         <div className="flex items-center justify-between gap-8 bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-md p-5 animate-pulse">
@@ -98,7 +90,17 @@ export default function Cart() {
                                     <div>
                                         <h3 className="text-xl font-semibold text-[#1a1a1a] dark:text-neutral-100 mb-1">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
                                         <p className="text-sm text-gray-500 dark:text-neutral-400 mb-1">Size: <span className="font-bold">{item.size?.toUpperCase()}</span></p>
-                                        <p className="text-lg font-bold text-[#1a1a1a] dark:text-neutral-200">${(+item.price * item.quantity).toFixed(2)}</p>
+
+                                        {/* Sale */}
+                                        {item.onSale == true
+                                            ? <div className="flex flex-col items-center text-center gap-1">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <p className="text-[#c1a875] dark:text-[#d3b988] font-bold text-base md:text-lg">${(+item.price * item.quantity * (1 - item.discountPercent / 100)).toFixed(2)}</p>
+                                                    <p className="text-gray-500 dark:text-neutral-400 font-semibold line-through text-xs md:text-sm">${(+item.price * item.quantity).toFixed(2)}</p>
+                                                </div>
+                                            </div>
+                                            : <p className="text-lg font-bold text-[#1a1a1a] dark:text-neutral-200">${(+item.price * item.quantity).toFixed(2)}</p>
+                                        }
                                     </div>
                                 </div>
                                 {/* Remove */}
@@ -132,7 +134,7 @@ export default function Cart() {
                                     Total:
                                 </p>
                                 <span className="text-[#1a1a1a] dark:text-neutral-200">
-                                    ${fullCart.reduce((sum, item) => sum + +item.price * item.quantity, 0).toFixed(2)}
+                                    ${fullCart.reduce((sum, item) => sum + +item.price * item.quantity * (1 - item.discountPercent / 100), 0).toFixed(2)}
                                 </span>
                             </div>
                             <button onClick={() => nav("/checkout")} className="w-full md:w-auto px-10 py-4 border bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition rounded-2xl shadow-md font-semibold font-montserrat text-lg active:scale-95 mt-2 cursor-pointer">

@@ -12,7 +12,9 @@ export const productSchemaJoi = Joi.object(
         type: Joi.string().valid(
             "t-shirt", "shirt", "hoodie", "dress", "pants",
             "shorts", "skirt", "jacket", "leggings"
-        ).required()
+        ).required(),
+        onSale: Joi.boolean().default(false),
+        discountPercent: Joi.number().default(0)
     }
 )
 
@@ -27,7 +29,9 @@ export const updateProductSchemaJoi = Joi.object(
         type: Joi.string().valid(
             "t-shirt", "shirt", "hoodie", "dress", "pants",
             "shorts", "skirt", "jacket", "leggings"
-        ).allow("")
+        ).allow(""),
+        onSale: Joi.boolean().default(false).allow(""),
+        discountPercent: Joi.number().default(0).allow("")
     }
 )
 
@@ -40,6 +44,14 @@ const productSchema = new mongoose.Schema(
         description: String,
         sizes: [String],
         type: String,
+        onSale: {
+            type: Boolean,
+            default: false
+        },
+        discountPercent: {
+            type: Number,
+            default: 0
+        }
     },
     { timestamps: true }  // Automatically adds 'createdAt' and 'updatedAt' fields
 )

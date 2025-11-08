@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar';
 import { useCart } from '../utils/CartContext';
-import { errorLog, log } from '../utils/log';
+import {  log } from '../utils/log';
 import { FaCreditCard, FaPaypal, FaApplePay, FaGooglePay } from "react-icons/fa6"
 import AboutCard from '../components/AboutCard';
 import Footer from '../components/Footer';
@@ -9,7 +9,8 @@ import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
-import { fetchProducts, handleGuestOrder, handleOrder } from '../utils/api';
+import { fetchProductsByIds, handleGuestOrder, handleOrder } from '../utils/api';
+import { useApiErrorHandler } from '../utils/useApiErrorHandler';
 
 export default function Payment() {
     const nav = useNavigate()
@@ -17,7 +18,7 @@ export default function Payment() {
     const { cart, address, setCart } = useCart()
     const [fullCart, setFullCart] = useState([])
     const [paymentMethod, setPaymentMethod] = useState("creditCard")
-    const [shippingPrice, setShippingPrice] = useState(10)
+    const [shippingPrice, setShippingPrice] = useState(0)
     const [creditCardNumber, setCreditCardNumber] = useState("")
     const [creditCardExpirationDate, setCreditCardExpirationDate] = useState("")
     const [creditCardCVV, setCreditCardCVV] = useState("")
@@ -25,17 +26,29 @@ export default function Payment() {
     const [loading, setLoading] = useState(false)
     const [demoPayment, setDemoPayment] = useState({})
     const { isAuthenticated } = useAuth()
-    const [productsList, setProductsList] = useState([])
+    const { handleApiError } = useApiErrorHandler()
 
     // Get products from server
-    const getProducts = async () => {
+    const getProductsByIds = async () => {
         setLoading(true)
         try {
-            const data = await fetchProducts()
-            setProductsList(data)
+            const data = await fetchProductsByIds(cart.map(item => item.id))
+
+            const items = cart.map(cartItem => {
+                const product = data.find(item => item._id === cartItem.id)
+                return product
+                    ? {
+                        ...product,
+                        selectedSize: cartItem.size,
+                        selectedQuantity: cartItem.quantity
+                    }
+                    : null
+            }).filter(Boolean) // remove null values
+
+            setFullCart(items)
+            log("fullCart updated", fullCart)
         } catch (error) {
-            errorLog("Error in getProducts", error)
-            notyf.error("Something went wrong. Please try again later.")
+            handleApiError(error, "getProductsByIds")
         } finally {
             setLoading(false)
         }
@@ -55,24 +68,8 @@ export default function Payment() {
 
         log(address)
 
-        getProducts() // get products from server
-    }, [address])
-
-    useEffect(() => {
-        const items = cart.map(cartItem => { // get the product from the localStorage
-            const product = productsList.find(item => item._id === cartItem.id) // find the product by id in the server
-            return product
-                ? {
-                    ...product,
-                    selectedSize: cartItem.size,
-                    selectedQuantity: cartItem.quantity
-                }
-                : null
-        }).filter(Boolean) // remove null values
-
-        setFullCart(items)
-        log("fullCart updated", fullCart)
-    }, [cart, productsList])
+        getProductsByIds() // get products from server
+    }, [address, cart])
 
     // Format credit card number with spaces
     const formatCardNumber = (value) => {
@@ -192,7 +189,7 @@ export default function Payment() {
         const orderDetails = {
             orderItems: fullCart.map(item => ({
                 itemId: item._id,
-                itemPricePerUnit: item.price,
+                itemPricePerUnit: item.price * (1 - item.discountPercent / 100),
                 selectedQuantity: item.selectedQuantity,
                 selectedSize: item.selectedSize
             })),
@@ -216,8 +213,7 @@ export default function Payment() {
             notyf.success("Order created successfully!")
             nav("/orderSuccess")
         } catch (error) {
-            errorLog("Error in creating new order", error)
-            notyf.error("An error occurred while processing your request. Please try again later.")
+            handleApiError(error, "handleAddProduct")
         } finally {
             setLoading(false)
         }
@@ -321,7 +317,17 @@ export default function Payment() {
                                             <h3 className="font-semibold text-lg text-[#1a1a1a] dark:text-neutral-100">{item.title.replace(/\b\w/g, l => l.toUpperCase())}</h3>
                                             <p className="text-sm text-gray-500 dark:text-neutral-400">Size: <span className="font-bold">{item.selectedSize?.toUpperCase()}</span></p>
                                             <p className="font-base text-sm text-gray-500 dark:text-neutral-400">Quantity: <span className="font-bold">{item.selectedQuantity}</span></p>
-                                            <p className="text-base font-black text-[#1a1a1a] dark:text-neutral-200">${(+item.price * item.selectedQuantity).toFixed(2)}</p>
+
+                                            {item.onSale == true
+                                                ? <div className="flex flex-col items-center text-center gap-1">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <p className="text-[#c1a875] dark:text-[#d3b988] font-bold text-base md:text-lg">${(+item.price * item.selectedQuantity * (1 - item.discountPercent / 100)).toFixed(2)}</p>
+                                                        <p className="text-gray-500 dark:text-neutral-400 font-semibold line-through text-xs md:text-sm">${(+item.price * item.selectedQuantity).toFixed(2)}</p>
+                                                    </div>
+                                                </div>
+                                                : <p className="text-base font-black text-[#1a1a1a] dark:text-neutral-200">${(+item.price * item.selectedQuantity).toFixed(2)}</p>
+
+                                            }
                                         </div>
                                     </div>
                                 )}
@@ -333,7 +339,7 @@ export default function Payment() {
                                     <div className="flex justify-between">
                                         <span className="dark:text-neutral-300">Subtotal</span>
                                         <span className="font-bold text-[#1a1a1a] dark:text-neutral-200">
-                                            ${(+fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0)).toFixed(2)}
+                                            ${(+fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity * (1 - item.discountPercent / 100), 0)).toFixed(2)}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
@@ -343,7 +349,7 @@ export default function Payment() {
                                     <div className="flex justify-between text-xl pt-2">
                                         <span className="font-bold dark:text-neutral-300">Total</span>
                                         <span className="font-bold text-[#1a1a1a] dark:text-neutral-200">
-                                            ${(fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity, 0) + +shippingPrice).toFixed(2)}
+                                            ${(fullCart.reduce((acc, item) => acc + item.price * item.selectedQuantity * (1 - item.discountPercent / 100), 0) + +shippingPrice).toFixed(2)}
                                         </span>
                                     </div>
                                 </div>}

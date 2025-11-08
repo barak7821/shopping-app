@@ -34,6 +34,8 @@ export default function EditProduct() {
                     image: data.image,
                     type: data.type,
                     description: data.description,
+                    discountPercent: data.discountPercent.toString(),
+                    onSale: data.onSale,
                 });
             } catch (error) {
                 handleApiError(error as ApiError, "fetchProductById")

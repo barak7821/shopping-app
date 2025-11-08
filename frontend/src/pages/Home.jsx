@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
 import { FiRefreshCw, FiShield, FiHeadphones } from "react-icons/fi"
-import { log } from '../utils/log';
 import { fetchBestSellers, fetchHeroSection, fetchLatestProducts, fetchProducts } from '../utils/api';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import { useApiErrorHandler } from '../utils/useApiErrorHandler';
+import SaleProduct from '../components/saleProduct';
 
 export default function Home() {
     const nav = useNavigate()
@@ -101,16 +101,33 @@ export default function Home() {
                                 ? Array.from({ length: 10 }).map((_, i) => <LoadingSkeleton key={i} />)
                                 : latestProduct.map(item =>
                                     <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
-                                        <div className="w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5 rounded-2xl">
+                                        <div className="relative w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5 rounded-2xl">
                                             <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
+
+                                            {/* Sale Tag */}
+                                            {item.onSale == true && <SaleProduct />}
+
                                         </div>
                                         <div className="flex flex-col items-center w-full">
                                             <h3 className="font-prata text-base md:text-lg text-[#232323] dark:text-[#f5f5f5] mb-1 text-center">
                                                 {item.title.replace(/\b\w/g, l => l.toUpperCase())}
                                             </h3>
-                                            <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a] dark:text-[#f5f5f5]">
-                                                ${item.price.toFixed(2)}
-                                            </p>
+
+                                            {/* Sale */}
+                                            {item.onSale == true
+                                                ? <div className="flex flex-col items-center text-center gap-1">
+                                                    <div className="flex items-baseline justify-center gap-2">
+                                                        <p className="text-[#c1a875] dark:text-[#d3b988] font-bold text-base md:text-lg">${(item.price * (1 - item.discountPercent / 100)).toFixed(2)}</p>
+                                                        <p className="text-gray-500 dark:text-neutral-400 font-semibold line-through text-xs md:text-sm">${item.price.toFixed(2)}</p>
+                                                    </div>
+                                                    <span className="text-[0.65rem] md:text-xs font-semibold text-[#c1a875] dark:text-[#d3b988] tracking-[0.3em] uppercase">
+                                                        {item.discountPercent}% Off
+                                                    </span>
+                                                </div>
+                                                : <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a] dark:text-[#f5f5f5]">
+                                                    ${item.price.toFixed(2)}
+                                                </p>
+                                            }
                                         </div>
                                     </div>
                                 )}
@@ -137,17 +154,31 @@ export default function Home() {
                                     <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
                                         <div className="relative w-[170px] h-[210px] md:w-[220px] md:h-[280px] flex items-center justify-center overflow-hidden mb-4 md:mb-5 rounded-2xl">
                                             <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
-                                            <span className="absolute top-3 left-3 bg-[#c1a875] text-white text-xs font-bold px-3 py-1 rounded-full shadow-md tracking-wide">
-                                                Best Seller
-                                            </span>
+
+                                            {/* Sale Tag */}
+                                            {item.onSale == true && <SaleProduct />}
+
                                         </div>
                                         <div className="flex flex-col items-center w-full">
                                             <h3 className="font-prata text-base md:text-lg text-[#232323] dark:text-[#f5f5f5] mb-1 text-center">
                                                 {item.title.replace(/\b\w/g, l => l.toUpperCase())}
                                             </h3>
-                                            <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a] dark:text-[#f5f5f5]">
-                                                ${item.price.toFixed(2)}
-                                            </p>
+
+                                            {/* Sale */}
+                                            {item.onSale == true
+                                                ? <div className="flex flex-col items-center text-center gap-1">
+                                                    <div className="flex items-baseline justify-center gap-2">
+                                                        <p className="text-[#c1a875] dark:text-[#d3b988] font-bold text-base md:text-lg">${(item.price * (1 - item.discountPercent / 100)).toFixed(2)}</p>
+                                                        <p className="text-gray-500 dark:text-neutral-400 font-semibold line-through text-xs md:text-sm">${item.price.toFixed(2)}</p>
+                                                    </div>
+                                                    <span className="text-[0.65rem] md:text-xs font-semibold text-[#c1a875] dark:text-[#d3b988] tracking-[0.3em] uppercase">
+                                                        {item.discountPercent}% Off
+                                                    </span>
+                                                </div>
+                                                : <p className="font-bold text-sm md:text-base text-center mb-1 text-[#1a1a1a] dark:text-[#f5f5f5]">
+                                                    ${item.price.toFixed(2)}
+                                                </p>
+                                            }
                                         </div>
                                     </div>
                                 ))}

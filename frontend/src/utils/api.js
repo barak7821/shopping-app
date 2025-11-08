@@ -220,3 +220,16 @@ export const fetchContactInfo = async () => {
     log("Get contact info response:", data)
     return data
 }
+
+// Function to gets multiple products by their IDs
+export const fetchProductsByIds = async (ids) => {
+    if (!Array.isArray(ids) || ids.length === 0) {
+        log("Product ids are required")
+        return
+    }
+
+    const { data } = await axios.post(`${baseApiUrl}/products/getProductsByIds`, { ids })
+
+    log("Get products by ids response:", data)
+    return data
+}

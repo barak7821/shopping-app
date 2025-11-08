@@ -17,6 +17,8 @@ export interface ProductFormData {
   description: string
   sizes: string[]
   type: string
+  discountPercent: string
+  onSale: boolean
 }
 
 interface ProductFormProps {
@@ -34,6 +36,8 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
     description: "",
     sizes: [],
     type: "",
+    discountPercent: "",
+    onSale: false,
     ...initialData,
   })
 
@@ -45,6 +49,13 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target
+
+    if (id === "discountPercent") {
+      const numeric = Math.min(100, Math.max(0, Number(value)))
+      setFormData(prev => ({ ...prev, discountPercent: Number.isNaN(numeric) ? "" : numeric.toString() }))
+      return
+    }
+
     setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
@@ -78,12 +89,12 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
     if (!isEditing) { // Reset form only for "Add Product"
       setFormData({
         title: "", category: "", price: "", image: "",
-        description: "", sizes: [], type: "",
+        description: "", sizes: [], type: "", discountPercent: "", onSale: false,
       })
     }
   }
 
-  const { title, category, price, image, description, sizes, type } = formData
+  const { title, category, price, image, description, sizes, type, discountPercent, onSale } = formData
 
   return (
     <div className="flex-1 bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-10">
@@ -103,6 +114,20 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
         <div>
           <label htmlFor="price" className="block text-sm font-semibold text-[#c1a875] mb-1">Price</label>
           <input value={price} onChange={handleChange} id="price" type="number" step="0.01" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm" />
+        </div>
+
+        {/* On Sale */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <input id="onSale" type="checkbox" checked={onSale} onChange={(e) => setFormData((prev) => ({ ...prev, onSale: e.target.checked }))} />
+            <label htmlFor="onSale" className="text-sm font-semibold text-[#c1a875]">On Sale</label>
+          </div>
+          {onSale &&
+            <div>
+              <label htmlFor="discountPercent" className="block text-sm font-semibold text-[#c1a875] mb-1">Sale Percentage</label>
+              <input value={discountPercent} onChange={handleChange} id="discountPercent" type="number" step="0.1" min="0" max="100" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm" />
+            </div>
+          }
         </div>
 
         {/* Category */}
