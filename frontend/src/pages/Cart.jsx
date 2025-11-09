@@ -44,7 +44,7 @@ export default function Cart() {
 
     useEffect(() => {
         getProductsByIds() // Get products from the server
-    }, [ cart ])
+    }, [cart])
 
     const skeleton = ( // Loading skeleton for cart items
         <div className="flex items-center justify-between gap-8 bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-md p-5 animate-pulse">
@@ -93,8 +93,8 @@ export default function Cart() {
 
                                         {/* Sale */}
                                         {item.onSale == true
-                                            ? <div className="flex flex-col items-center text-center gap-1">
-                                                <div className="flex items-center justify-center gap-2">
+                                            ? <div className="flex flex-col text-center gap-1">
+                                                <div className="flex items-center gap-2">
                                                     <p className="text-[#c1a875] dark:text-[#d3b988] font-bold text-base md:text-lg">${(+item.price * item.quantity * (1 - item.discountPercent / 100)).toFixed(2)}</p>
                                                     <p className="text-gray-500 dark:text-neutral-400 font-semibold line-through text-xs md:text-sm">${(+item.price * item.quantity).toFixed(2)}</p>
                                                 </div>

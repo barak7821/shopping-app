@@ -160,7 +160,7 @@ export const tempHeroSection = async (req, res) => {
     }
 }
 
-// temp - // Controller to update contact info section - SHOULD ONLY BE USED FOR TESTING!!!
+// temp - Controller to update contact info section - SHOULD ONLY BE USED FOR TESTING!!!
 export const tempContactInfo = async (req, res) => {
     const { email, phone, facebookUrl, instagramUrl, twitterUrl, openingHours, address } = req.body
     if (!email || !phone || !facebookUrl || !instagramUrl || !twitterUrl || !openingHours || !address) return res.status(400).json({ code: "!field", message: "All fields are required" })
@@ -200,6 +200,37 @@ export const tempContactInfo = async (req, res) => {
         res.status(200).json({ message: "Contact info section updated successfully" })
     } catch (error) {
         errorLog("Error in tempContactInfo controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// temp - Controller to update best seller section - SHOULD ONLY BE USED FOR TESTING!!!
+export const tempBestSeller = async (req, res) => {
+    const { bestSellerSection } = req.body
+
+    try {
+        const bestSeller = await BestSeller.findById("best_seller")
+        if (!bestSeller) { // if best seller is not found
+            const newBestSeller = new BestSeller({
+                _id: "best_seller",
+                products: bestSellerSection,
+                version: 1
+            })
+            await newBestSeller.save()
+            log("Best seller section created successfully")
+            return res.status(201).json({ message: "Best seller section created successfully" })
+        }
+
+        // Update best seller section data
+        bestSeller.products = bestSellerSection
+        bestSeller.version += 1
+
+        await bestSeller.save()
+
+        log("Best seller section updated successfully")
+        res.status(200).json({ message: "Best seller section updated successfully" })
+    } catch (error) {
+        errorLog("Error in tempBestSeller controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
