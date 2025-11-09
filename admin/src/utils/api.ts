@@ -345,3 +345,19 @@ export const updateContactInfo = async (contactInfoSection: any) => {
     log("Update contact info response:", data)
     return data
 }
+
+// Controller to add note to user
+export const addNoteToUser = async (userId: string, note: string) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+    const { data } = await axios.patch(`${baseApiUrl}/admin/addNoteToUser`, { id: userId, note }, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Add note to user response:", data)
+    return data
+}

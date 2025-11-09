@@ -79,7 +79,8 @@ const userSchema = new mongoose.Schema(
             type: Date,
             select: false
         },
-        lastLogin: Date
+        lastLogin: Date,
+        note: String
     },
     { timestamps: true }  // Automatically adds 'createdAt' and 'updatedAt' fields
 )

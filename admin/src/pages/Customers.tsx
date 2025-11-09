@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { useAdminAuth } from "../utils/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
@@ -16,7 +15,7 @@ interface User {
   role: string
   lastLogin: string
   createdAt: string
-  provider: string
+  note: string
 }
 
 
@@ -55,7 +54,6 @@ export default function Customers() {
   const [updatingDelete, setUpdatingDelete] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
-  const { token } = useAdminAuth()
   const { handleApiError } = useApiErrorHandler()
 
   const getUsers = async () => {
@@ -63,7 +61,6 @@ export default function Customers() {
     try {
       const data = await fetchUsers()
       setUsersList(data)
-      log("Users:", data)
     } catch (error) {
       handleApiError(error as ApiError, "getUsers")
     } finally {
@@ -87,11 +84,6 @@ export default function Customers() {
   }
 
   const handleDeleteBtn = async (userId: string, email: string, role: string) => {
-    if (!token) {
-      notyf.error("You must be logged in to delete products.")
-      return
-    }
-
     if (role === "admin") {
       notyf.error("You can't delete an admin account.")
       return
@@ -99,12 +91,11 @@ export default function Customers() {
 
     setUpdatingDelete(true)
     try {
-      const data = await deleteUserById(userId) // Call API to delete product
+      await deleteUserById(userId) // Call API to delete product
 
       const updatedUsers = currentUsers.filter(user => user._id !== userId) // Update local state
       setUsersList(updatedUsers) // Save updated list to state
 
-      log(`Deleted user ID ${userId}:`, data)
       notyf.success(`User ${email} deleted successfully.`)
     } catch (error) {
       handleApiError(error as ApiError, "handleDeleteBtn")
@@ -142,7 +133,7 @@ export default function Customers() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-[#f5f2ee] dark:bg-neutral-700/40">
                 <tr>
-                  {["Name", "Email", "Role", "Last Login", "Register Date", "Provider", "Actions"].map((title) => (
+                  {["Name", "Email", "Role", "Last Login", "Register Date", "Note", "Actions"].map((title) => (
                     <th key={title} className="px-6 py-3 text-sm font-semibold text-[#c1a875] uppercase tracking-wide">
                       {title}
                     </th>
@@ -199,9 +190,9 @@ export default function Customers() {
                       })}
                     </td>
 
-                    {/* Provider */}
+                    {/* Note */}
                     <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
-                      {user.provider}
+                      {user.note}
                     </td>
 
                     {/* Actions */}

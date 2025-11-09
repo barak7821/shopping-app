@@ -354,10 +354,14 @@ export const deleteUserById = async (req, res) => {
         const user = await User.findById(id)
         if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
 
-        // User cannot do it for himself
+        // User cannot delete himself
         if (user._id.toString() === req.user.id.toString()) return res.status(403).json({ code: "same_user", message: "You cannot perform this action on your own account" })
 
+        // Admin cannot deleted
         if (user.role === "admin") return res.status(403).json({ code: "admin", message: "Cannot delete admin user" })
+
+        // User cannot delete if note is not provided            
+        if (user.note === "") return res.status(400).json({ code: "!field", message: "Note is required" })
 
         const deletedUser = new DeletedUser({
             ...user.toObject(),
@@ -464,8 +468,29 @@ export const removeAdmin = async (req, res) => {
     }
 }
 
-/////////// Orders Controllers ///////////
+// Controller to add note to user
+export const addNoteToUser = async (req, res) => {
+    const { id, note } = req.body
+    if (!id || !note) return res.status(400).json({ code: "!field", message: "User id and note is required" })
 
+    try {
+        const user = await User.findById(id)
+        if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
+
+        // User cannot add note to himself
+        if (user._id.toString() === req.user.id.toString()) return res.status(403).json({ code: "same_user", message: "You cannot perform this action on your own account" })
+
+        user.note = note
+        await user.save()
+        log(`Note added to user with id ${id} successfully`)
+        res.status(200).json({ message: `Note added to user with id ${id} successfully` })
+    } catch (error) {
+        errorLog("Error in addNoteToUser controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+/////////// Orders Controllers ///////////
 
 // Controller to fetch orders
 export const fetchOrders = async (req, res) => {

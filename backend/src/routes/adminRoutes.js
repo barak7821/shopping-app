@@ -1,6 +1,6 @@
 import Express from 'express';
 import adminAuthMiddleware from '../middlewares/adminAuthMiddleware.js';
-import { deleteAllProducts, deleteProductById, addProduct, addMultipleProducts, getProductById, updateProductById, fetchUsers, deleteUserById, getUserById, seedUsers, fetchDeletedUsers, getDeletedUserById, makeAdmin, removeAdmin, fetchOrders, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo } from '../controllers/adminController.js';
+import { deleteAllProducts, deleteProductById, addProduct, addMultipleProducts, getProductById, updateProductById, fetchUsers, deleteUserById, getUserById, seedUsers, fetchDeletedUsers, getDeletedUserById, makeAdmin, removeAdmin, fetchOrders, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser } from '../controllers/adminController.js';
 
 const router = Express.Router()
 
@@ -21,6 +21,7 @@ router.get('/getDeletedUserById', adminAuthMiddleware, getDeletedUserById)
 router.delete('/deleteUserById', adminAuthMiddleware, deleteUserById)
 router.patch('/makeAdmin', adminAuthMiddleware, makeAdmin)
 router.patch('/removeAdmin', adminAuthMiddleware, removeAdmin)
+router.patch('/addNoteToUser', adminAuthMiddleware, addNoteToUser)
 
 // Orders
 router.get('/orders', adminAuthMiddleware, fetchOrders)

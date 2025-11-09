@@ -50,7 +50,8 @@ const deletedUserSchema = new mongoose.Schema(
         deletedAt: {
             type: Date,
             default: Date.now
-        }
+        },
+        note: String
     },
     { timestamps: true }  // Automatically adds 'createdAt' and 'updatedAt' fields
 )
