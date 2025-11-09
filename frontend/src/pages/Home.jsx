@@ -30,6 +30,7 @@ export default function Home() {
             setBestSeller(bestSellerData)
         } catch (error) {
             handleApiError(error, "fetchHomeSection")
+            nav("/*")
         } finally {
             setLoading(false)
         }

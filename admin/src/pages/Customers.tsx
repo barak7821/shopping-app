@@ -3,7 +3,6 @@ import SideBar from "../components/SideBar";
 import { useNavigate } from "react-router-dom";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import { log } from "../utils/log";
 import { deleteUserById, fetchUsers } from "../utils/api";
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
