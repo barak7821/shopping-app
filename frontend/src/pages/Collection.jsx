@@ -65,8 +65,12 @@ export default function Collection() {
             const data = await fetchProductsByQuery(query, { signal }) // Send query to backend and signal to abort request if needed
             if (signal.aborted) return // If the request was aborted, return early
             setProductsList(data.items)
-            setTotalPages(+data.totalPages)
+            setTotalPages(Math.max(1, +data.totalPages || 1))
         } catch (error) {
+            if (error?.response?.data?.code === "page_not_found") {
+                nav("/collection", { replace: true })
+                return
+            }
             handleApiError(error, "getProducts")
         } finally {
             setLoading(false)

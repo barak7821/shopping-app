@@ -46,7 +46,6 @@ export default function Payment() {
             }).filter(Boolean) // remove null values
 
             setFullCart(items)
-            log("fullCart updated", fullCart)
         } catch (error) {
             handleApiError(error, "getProductsByIds")
         } finally {
@@ -66,7 +65,7 @@ export default function Payment() {
             setLoading(false)
         }
 
-        log(address)
+        log("Address", address)
 
         getProductsByIds() // get products from server
     }, [address, cart])

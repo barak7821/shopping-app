@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar';
-import { errorLog, log } from '../utils/log';
 import { useCart } from '../utils/CartContext';
 import { FiX } from "react-icons/fi"
 import { useNavigate } from 'react-router-dom';
@@ -34,7 +33,6 @@ export default function Cart() {
             }).filter(Boolean) // remove null values
 
             setFullCart(items)
-            log("fullCart updated", fullCart)
         } catch (error) {
             handleApiError(error, "getProductsByIds")
         } finally {

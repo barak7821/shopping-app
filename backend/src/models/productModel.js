@@ -37,24 +37,79 @@ export const updateProductSchemaJoi = Joi.object(
 
 const productSchema = new mongoose.Schema(
     {
-        title: String,
-        category: String,
-        price: Number,
-        image: String,
-        description: String,
+        title: {
+            type: String,
+            trim: true,
+            minlength: 2,
+            maxlength: 30,
+            required: true
+        },
+        category: {
+            type: String,
+            trim: true,
+            minlength: 2,
+            maxlength: 20,
+            required: true
+        },
+        price: {
+            type: Number,
+            min: 0,
+            required: true
+        },
+        image: {
+            type: String,
+            trim: true,
+            required: true
+        },
+        description: {
+            type: String,
+            trim: true,
+            required: true
+        },
         sizes: [String],
-        type: String,
+        type: {
+            type: String,
+            enum: [
+                "t-shirt", "shirt", "hoodie", "dress", "pants",
+                "shorts", "skirt", "jacket", "leggings"
+            ],
+            required: true
+        },
         onSale: {
             type: Boolean,
             default: false
         },
         discountPercent: {
             type: Number,
+            min: 0,
+            max: 100,
             default: 0
+        },
+        active: {
+            type: Boolean,
+            default: true
+        },
+        stock: {
+            type: Number,
+            default: 0
+        },
+        lowStockThreshold: {
+            type: Number,
+            min: 0,
+            default: 3
         }
     },
     { timestamps: true }  // Automatically adds 'createdAt' and 'updatedAt' fields
 )
+
+productSchema.index({ category: 1 })
+productSchema.index({ type: 1 })
+productSchema.index({ price: 1 })
+productSchema.index({ createdAt: -1 })
+productSchema.index({ sizes: 1 })
+productSchema.index({ category: 1, type: 1, price: 1 })
+productSchema.index({ category: 1, type: 1, createdAt: -1 })
+productSchema.index({ title: "text" })
 
 export const Product = mongoose.model("Product", productSchema)
 export default Product

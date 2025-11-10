@@ -64,7 +64,7 @@ export const getProductsByIds = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
     try {
-        const products = await Product.find({ _id: { $in: ids } }).select("-__v")
+        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold")
         if (products.length !== ids.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
 
         log("Products found successfully")
@@ -83,13 +83,13 @@ export const getProductsByQuery = async (req, res) => {
 
         const categoryParam = (req.query.category || "").trim() // Default to empty string if not provided
 
-        const categoriesArray = categoryParam ? categoryParam.split(",").map(s => s.trim()).filter(Boolean) : [] // Split categories by comma and trim whitespace
+        const categoriesArray = categoryParam ? categoryParam.split(",").map(s => s.trim().toLowerCase()).filter(Boolean) : [] // Split categories by comma and trim whitespace
 
         const typeParam = (req.query.type || "").trim() // Default to empty string if not provided
 
-        const typesArray = typeParam ? typeParam.split(",").map(s => s.trim()).filter(Boolean) : [] // Split types by comma and trim whitespace
+        const typesArray = typeParam ? typeParam.split(",").map(s => s.trim().toLowerCase()).filter(Boolean) : [] // Split types by comma and trim whitespace
 
-        const sizes = (req.query.sizes || "").trim() // Default to empty string if not provided
+        const sizes = (req.query.sizes || "").trim().toUpperCase() // Default to empty string if not provided
         const sort = (req.query.sort || "new").trim() // Default to "new" if not provided   
 
         const query = {} // Empty query object
@@ -107,11 +107,13 @@ export const getProductsByQuery = async (req, res) => {
 
         const total = await Product.countDocuments(query) // Count total number of products
 
-        const items = await Product.find(query).sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -updatedAt -description").lean()
+        const items = await Product.find(query).sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -updatedAt -description -sizes -type -category -stock -createdAt").lean()
 
         const totalPages = Math.max(1, Math.ceil(total / limit)) // Calculate total number of pages
         const hasNext = page < totalPages // Check if there are more pages
         const hasPrev = page > 1 // Check if there are previous pages
+
+        if (page > totalPages) return res.status(404).json({ code: "page_not_found", message: "Page not found" })
 
         log(`Fetched ${items.length} products for page ${page}`)
         return res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
