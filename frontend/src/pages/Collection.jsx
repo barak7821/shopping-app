@@ -73,7 +73,7 @@ export default function Collection() {
             }
             handleApiError(error, "getProducts")
         } finally {
-            setLoading(false)
+            setTimeout(() => setLoading(false), 500)
         }
     }
 
@@ -123,7 +123,6 @@ export default function Collection() {
         })
 
     }
-
 
     return (
         <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6] dark:bg-neutral-900">

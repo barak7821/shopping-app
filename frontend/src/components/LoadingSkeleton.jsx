@@ -1,5 +1,3 @@
-import React from 'react'
-
 export default function LoadingSkeleton() {
     return (
         <div className="flex flex-col items-center animate-pulse">

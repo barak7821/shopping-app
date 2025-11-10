@@ -71,7 +71,7 @@ export default function Orders() {
             }
             handleApiError(error, "getOrders")
         } finally {
-            setLoading(false)
+            setTimeout(() => setLoading(false), 1000)
         }
     }
 
@@ -95,7 +95,105 @@ export default function Orders() {
 
     if (loading) {
         return (
-            <Loading />
+            <div className="min-h-screen bg-[#faf8f6] dark:bg-neutral-900 flex flex-col font-montserrat">
+                <NavBar />
+
+                <div className="flex-1 flex flex-col items-center py-12 px-4">
+                    {/* Title + Subtitle */}
+                    <div className="w-full max-w-5xl flex flex-col items-center mb-10">
+                        <div className="w-full flex flex-col items-center animate-pulse">
+                            {/* h1 mimic: 4xl/md:5xl height */}
+                            <div className="h-12 md:h-14 w-64 md:w-80 rounded-lg bg-gray-200 dark:bg-neutral-700 mb-2" />
+                            {/* p mimic: text-sm/md:text-lg centered + max widths */}
+                            <div className="h-4 w-40 md:w-64 rounded bg-gray-200 dark:bg-neutral-700 mb-2" />
+                            <div className="h-4 w-56 md:w-72 rounded bg-gray-200 dark:bg-neutral-700" />
+                        </div>
+                    </div>
+
+                    {/* Orders List */}
+                    <div className="w-full max-w-5xl flex flex-col gap-10 md:gap-12">
+                        {Array.from({ length: 2 }).map((_, cardIdx) => (
+                            <div
+                                key={`sk-card-${cardIdx}`}
+                                className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 flex flex-col gap-5"
+                            >
+                                {/* Header - ID & Status */}
+                                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                                    {/* Order ID block */}
+                                    <div className="flex flex-col gap-1 animate-pulse">
+                                        {/* label 'Order ID' size ~ text-sm */}
+                                        <div className="h-3 w-16 rounded bg-gray-200 dark:bg-neutral-700" />
+                                        {/* value size ~ text-base bold tracking-wider */}
+                                        <div className="h-5 w-44 rounded bg-gray-200 dark:bg-neutral-700" />
+                                    </div>
+
+                                    {/* Meta: Date / Status / Total */}
+                                    <div className="flex gap-7 flex-wrap">
+                                        {["Date", "Status", "Total"].map((k, i) => (
+                                            <div key={`sk-meta-${i}`} className="flex flex-col gap-1 animate-pulse">
+                                                {/* meta label xs */}
+                                                <div className="h-3 w-10 rounded bg-gray-200 dark:bg-neutral-700" />
+                                                {/* meta value */}
+                                                <div className={`rounded bg-gray-200 dark:bg-neutral-700 ${i === 2 ? "h-5 w-20" : "h-5 w-24"}`} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Items */}
+                                <div className="flex flex-col gap-3 divide-y divide-gray-100 dark:divide-neutral-700">
+                                    {Array.from({ length: 1 }).map((_, itemIdx) => (
+                                        <div
+                                            key={`sk-item-${cardIdx}-${itemIdx}`}
+                                            className="flex gap-4 py-3 items-center"
+                                        >
+                                            {/* image */}
+                                            <div className="w-28 h-28 rounded-xl bg-gray-200 dark:bg-neutral-700 border border-[#f2e8db] dark:border-neutral-600 animate-pulse" />
+                                            {/* text lines */}
+                                            <div className="flex flex-col gap-1 w-full animate-pulse">
+                                                {/* title ~ base */}
+                                                <div className="h-4 w-60 md:w-80 rounded bg-gray-200 dark:bg-neutral-700" />
+                                                {/* Size */}
+                                                <div className="h-3 w-40 rounded bg-gray-200 dark:bg-neutral-700" />
+                                                {/* Quantity */}
+                                                <div className="h-3 w-36 rounded bg-gray-200 dark:bg-neutral-700" />
+                                                {/* Price */}
+                                                <div className="h-3 w-28 rounded bg-gray-200 dark:bg-neutral-700" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* More Details Button */}
+                                <div className="flex justify-end mt-2">
+                                    <div className="h-10 w-40 rounded-2xl bg-gray-200 dark:bg-neutral-700 animate-pulse" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    <div className="flex justify-center items-center mt-10 gap-2 flex-wrap">
+                        {/* Prev */}
+                        <div className="h-[38px] w-[38px] rounded-lg bg-[#eee] dark:bg-neutral-700 animate-pulse" />
+
+                        {/* Page Numbers (match getPageNumbers layout spacing) */}
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <div
+                                key={`sk-page-${i}`}
+                                className="h-[38px] w-10 rounded-lg bg-[#eee] dark:bg-neutral-700 animate-pulse"
+                            />
+                        ))}
+
+                        {/* Next */}
+                        <div className="h-[38px] w-[38px] rounded-lg bg-[#eee] dark:bg-neutral-700 animate-pulse" />
+                    </div>
+                </div>
+
+                {/* About & Footer placeholders to keep page height/flow identical */}
+                <AboutCard />
+                <Footer />
+            </div>
         )
     }
 
@@ -114,7 +212,7 @@ export default function Orders() {
 
                 {/* Orders List */}
                 <div className="w-full max-w-5xl flex flex-col gap-10 md:gap-12">
-                    {ordersList.length === 0 ?
+                    {loading && ordersList.length === 0 ?
                         <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow p-7 flex flex-col items-center">
                             <p className="text-gray-600 dark:text-neutral-300 text-lg">No orders found.</p>
                         </div>
