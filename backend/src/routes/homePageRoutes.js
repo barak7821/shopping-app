@@ -4,8 +4,8 @@ import { getHeroSection, getBestSellers, getContactInfoSection } from '../contro
 const router = Express.Router()
 
 // Define route handlers
-router.get('/', getHeroSection)
-router.get('/bestSellers', getBestSellers)
-router.get('/contactInfo', getContactInfoSection)
+router.get('/', getHeroSection) // Get hero section
+router.get('/bestSellers', getBestSellers) // Get best sellers section
+router.get('/contactInfo', getContactInfoSection) // Get contact info section
 
 export default router

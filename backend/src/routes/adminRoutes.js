@@ -1,37 +1,38 @@
 import Express from 'express';
 import adminAuthMiddleware from '../middlewares/adminAuthMiddleware.js';
-import { deleteAllProducts, deleteProductById, addProduct, addMultipleProducts, getProductById, updateProductById, fetchUsers, deleteUserById, getUserById, seedUsers, fetchDeletedUsers, getDeletedUserById, makeAdmin, removeAdmin, fetchOrders, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller } from '../controllers/adminController.js';
+import { deleteAllProducts, deleteProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery } from '../controllers/adminController.js';
 
 const router = Express.Router()
 
 // Define route handlers
 
 // Products
-router.post('/', adminAuthMiddleware, addProduct)
-router.delete('/deleteById', adminAuthMiddleware, deleteProductById)
-router.get('/getById', adminAuthMiddleware, getProductById)
-router.patch('/updateById', adminAuthMiddleware, updateProductById)
-router.post('/getProductsByIds', adminAuthMiddleware, getProductsByIds)
+router.get('/', adminAuthMiddleware, getProductsByQuery) - // Get products - pagination in Products page
+router.post('/', adminAuthMiddleware, addProduct) - // Add new product
+router.delete('/', adminAuthMiddleware, deleteProductById) - // Delete product by id
+router.patch('/', adminAuthMiddleware, updateProductById) - // Update product by id
+router.post('/getByIds', adminAuthMiddleware, getProductsByIds) // Get List of products by their IDs - used for order details page
+router.get('/getById', adminAuthMiddleware, getProductById) // Get product by id
 
 // Users
-router.get('/users', adminAuthMiddleware, fetchUsers)
-router.get('/getUserById', adminAuthMiddleware, getUserById)
-router.get('/deletedUsers', adminAuthMiddleware, fetchDeletedUsers)
-router.get('/getDeletedUserById', adminAuthMiddleware, getDeletedUserById)
-router.delete('/deleteUserById', adminAuthMiddleware, deleteUserById)
-router.patch('/makeAdmin', adminAuthMiddleware, makeAdmin)
-router.patch('/removeAdmin', adminAuthMiddleware, removeAdmin)
-router.patch('/addNoteToUser', adminAuthMiddleware, addNoteToUser)
+router.get('/users', adminAuthMiddleware, getUsersByQuery) // Get users - pagination in Users page
+router.delete('/users', adminAuthMiddleware, deleteUserById) // Delete user by id
+router.patch('/users', adminAuthMiddleware, addNoteToUser) // Add note to user
+router.get('/getUserById', adminAuthMiddleware, getUserById) // Get user by id
+router.get('/deletedUsers', adminAuthMiddleware, getDeletedUsersByQuery) // Get deleted users - pagination in Deleted Users page
+router.get('/getDeletedUserById', adminAuthMiddleware, getDeletedUserById) // Get deleted user by id
+router.patch('/makeAdmin', adminAuthMiddleware, makeAdmin) // Make user admin
+router.patch('/removeAdmin', adminAuthMiddleware, removeAdmin) // Remove admin role from user
 
 // Orders
-router.get('/orders', adminAuthMiddleware, fetchOrders)
-router.get('/getOrderById', adminAuthMiddleware, getOrderById)
-router.patch('/updateOrderStatus', adminAuthMiddleware, updateOrderStatus)
+router.get('/orders', adminAuthMiddleware, getOrderByQuery) // Get orders - pagination in Orders page
+router.get('/getOrderById', adminAuthMiddleware, getOrderById) // Get order by id
+router.patch('/updateOrderStatus', adminAuthMiddleware, updateOrderStatus) // Update order status by id
 
 // Home Page
-router.patch('/hero', adminAuthMiddleware, heroSection)
-router.patch('/bestSeller', adminAuthMiddleware, bestSellerSection)
-router.patch('/contactInfo', adminAuthMiddleware, contactInfoSection)
+router.patch('/hero', adminAuthMiddleware, heroSection) // Update hero section
+router.patch('/bestSeller', adminAuthMiddleware, bestSellerSection) // Update best seller section
+router.patch('/contactInfo', adminAuthMiddleware, contactInfoSection) // Update contact info section
 
 // temp routes - SHOULD ONLY BE USED FOR TESTING!!!
 router.delete('/deleteAll', deleteAllProducts)

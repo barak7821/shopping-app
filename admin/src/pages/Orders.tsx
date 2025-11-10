@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { useNavigate } from "react-router-dom";
-import { log } from "../utils/log";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-import { fetchOrders } from "../utils/api";
+import { fetchOrdersByQuery } from "../utils/api";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
 
 interface Order {
@@ -47,19 +46,28 @@ function getPageNumbers(totalPages: number, currentPage: number) {
 
 export default function Orders() {
   const nav = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [ordersList, setOrdersList] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
+  const [totalPages, setTotalPages] = useState(1)
   const { handleApiError } = useApiErrorHandler()
 
-  const getOrders = async () => {
+  // Get query params and set default values
+  const currentPage = Math.max(1, +(searchParams.get("page") || 1))
+
+  const getOrders = async (signal?: AbortSignal) => {
+    const query = { page: currentPage }
+
     setLoading(true)
     try {
-      const data = await fetchOrders()
-      setOrdersList(data)
-      log("Orders:", data)
+      const data = await fetchOrdersByQuery(query, { signal })
+      setOrdersList(data.items)
+      setTotalPages(Math.max(1, data.totalPages || 1))
     } catch (error) {
+      if ((error as any)?.response?.data?.code === "page_not_found") {
+        nav("/orders", { replace: true })
+        return
+      }
       handleApiError(error as ApiError, "getOrders")
     } finally {
       setLoading(false)
@@ -67,18 +75,19 @@ export default function Orders() {
   }
 
   useEffect(() => {
-    getOrders()
-  }, [])
-
-  const totalPages = Math.ceil(ordersList.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const currentOrders = ordersList.slice(startIndex, startIndex + itemsPerPage)
+    const controller = new AbortController()
+    getOrders(controller.signal)
+    return () => controller.abort()
+  }, [searchParams])
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    const safe = Math.min(Math.max(1, page), totalPages)
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev)
+      params.set("page", String(safe))
+      return params
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   if (loading) {
@@ -118,7 +127,7 @@ export default function Orders() {
               </thead>
               <tbody>
                 {/* Orders */}
-                {currentOrders.map((order) => (
+                {ordersList.map((order) => (
                   <tr key={order._id} className="hover:bg-[#faf8f6] dark:hover:bg-neutral-700/60 transition">
 
                     {/* Email */}
@@ -169,37 +178,40 @@ export default function Orders() {
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className="flex justify-center items-center mt-8 gap-2">
+          {/* Pagination Controls */}
+          {!loading && totalPages > 1 && (
+            <div className="flex justify-center items-center mt-10 gap-2 flex-wrap">
 
-            {/* Prev */}
-            <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
-              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
+              {/* Prev */}
+              <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
+                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
 
-            {/* Page Numbers */}
-            {getPageNumbers(totalPages, currentPage).map((page, i) =>
-              page === "..."
-                ? <span key={`dots-${i}`} className="px-3 text-[#999] dark:text-neutral-400">
-                  ...
-                </span>
-                : <button key={`page-${page}`} onClick={() => handlePageChange(page as number)} className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${currentPage === page
-                  ? "bg-[#c1a875] text-white"
-                  : "bg-[#eee] dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-200 hover:bg-[#c1a875]/30"
-                  }`}>
-                  {page}
-                </button>
-            )}
+              {/* Page Numbers */}
+              {getPageNumbers(totalPages, currentPage).map((page, i) =>
+                page === "..."
+                  ? <span key={`dots-${i}`} className="px-3 text-[#999] dark:text-neutral-400">
+                    ...
+                  </span> :
+                  <button key={`page-${page}`} onClick={() => handlePageChange(page as number)} className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${currentPage === page
+                    ? "bg-[#c1a875] text-white"
+                    : "bg-[#eee] dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-200 hover:bg-[#c1a875]/30"
+                    }`}>
+                    {page}
+                  </button>
+              )}
 
-            {/* Next */}
-            <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
-              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
+
+              {/* Next */}
+              <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
+                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+          )}
 
         </div>
       </div>

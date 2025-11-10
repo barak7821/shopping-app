@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Notyf } from 'notyf'
 import 'notyf/notyf.min.css'
-import { fetchOrdersById, fetchProducts } from '../utils/api'
+import { fetchOrderById, fetchProductsByIds } from '../utils/api'
 import { errorLog, log } from '../utils/log'
 import Loading from '../components/Loading';
 import NavBar from '../components/NavBar'
 import { useParams } from 'react-router-dom'
 import AboutCard from '../components/AboutCard';
 import Footer from '../components/Footer';
+import { useApiErrorHandler } from '../utils/useApiErrorHandler';
 
 export default function OrderDetails() {
   const { orderId } = useParams()
@@ -15,42 +16,27 @@ export default function OrderDetails() {
   const [order, setOrder] = useState({})
   const [loading, setLoading] = useState(true)
   const [productsList, setProductsList] = useState([])
+  const { handleApiError } = useApiErrorHandler()
 
   // get orders from server
   const getOrders = async () => {
     setLoading(true)
     try {
-      const data = await fetchOrdersById()
+      const data = await fetchOrderById(orderId)
+      setOrder(data)
 
-      // find the order by id in the url
-      const findOrder = data.find(order => order._id === orderId)
-
-      setOrder(findOrder)
+      const products = await fetchProductsByIds(data.orderItems.map(item => item.itemId))
+      setProductsList(products)
     } catch (error) {
-      errorLog("Error in getOrders", error)
-      notyf.error("Something went wrong. Please try again later.")
+      handleApiError(error, "getOrders")
     } finally {
       setLoading(false)
     }
   }
 
-  const getProducts = async () => {
-    try {
-      const data = await fetchProducts()
-      setProductsList(data)
-    } catch (error) {
-      errorLog("Error in getProducts", error)
-      notyf.error("Something went wrong. Please try again later.")
-    }
-  }
-
   useEffect(() => {
-    const run = async () => {
-      await getOrders()
-      await getProducts()
-    }
-    run()
-  }, [])
+    getOrders()
+  }, [orderId])
 
   if (loading) {
     return (
@@ -110,23 +96,23 @@ export default function OrderDetails() {
           <div>
             <h3 className="text-sm font-semibold text-[#c1a875] mb-3">Items</h3>
             <div className="flex flex-col gap-5">
-              {order.orderItems.map(item => {
-                const product = productsList.find(p => p._id === item.itemId)
-                return (
-                  <div key={`${item._id}-${item.size}`} className="flex items-center gap-5 bg-white/70 dark:bg-neutral-700 rounded-2xl p-5 shadow-sm">
-                    <img src={product?.image} alt={product?.title} className="w-24 h-24 object-cover rounded-xl border border-[#f0e6d8] dark:border-neutral-600" />
+              {productsList.map(item =>
+                order.orderItems.map(orderItem => orderItem.itemId === item._id &&
+                  <div key={`${item._id}-${orderItem.size}`} className="flex items-center gap-5 bg-white/70 dark:bg-neutral-700 rounded-2xl p-5 shadow-sm">
+                    <img src={item?.image} alt={item?.title} className="w-24 h-24 object-cover rounded-xl border border-[#f0e6d8] dark:border-neutral-600" />
                     <div className="flex flex-col gap-1">
-                      <p className="font-medium text-[#232323] dark:text-neutral-100">{product?.title.replace(/\b\w/g, l => l.toUpperCase())}</p>
-                      <p className="text-sm text-gray-600 dark:text-neutral-400">Size: <b>{item.selectedSize?.toUpperCase()}</b></p>
-                      <p className="text-sm text-gray-600 dark:text-neutral-400">Quantity: <b>{item.selectedQuantity}</b></p>
+                      <p className="font-medium text-[#232323] dark:text-neutral-100">{item?.title}</p>
+                      <p className="text-sm text-gray-600 dark:text-neutral-400">Size: <b>{orderItem.selectedSize?.toUpperCase()}</b></p>
+                      <p className="text-sm text-gray-600 dark:text-neutral-400">Quantity: <b>{orderItem.selectedQuantity}</b></p>
                     </div>
                     <div className="ml-auto text-right">
                       <p className="text-xs text-gray-500 dark:text-neutral-400">Total</p>
-                      <p className="font-bold text-[#c1a875]">${(item.itemPricePerUnit * item.selectedQuantity).toFixed(2)}</p>
+                      <p className="font-bold text-[#c1a875]">${(orderItem.itemPricePerUnit * orderItem.selectedQuantity).toFixed(2)}</p>
                     </div>
                   </div>
                 )
-              })}
+              )
+              }
             </div>
           </div>
 

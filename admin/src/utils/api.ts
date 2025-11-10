@@ -17,25 +17,13 @@ export const checkUserAuth = async () => {
     return data
 }
 
-// Function to fetch products from the server
-export const fetchProducts = async () => {
-    const token = localStorage.getItem("token")
-    if (!token) {
-        log("No token found")
-        return
-    }
-    const { data } = await axios.get(`${baseApiUrl}/products`)
-    log("Products response:", data)
-    return data
-}
-
 // Function to delete a product by ID
 export const deleteProductById = async (productId: number) => {
     const token = localStorage.getItem("token")
     if (!token) {
         throw new Error("No token found")
     }
-    const { data } = await axios.delete(`${baseApiUrl}/admin/deleteById`, {
+    const { data } = await axios.delete(`${baseApiUrl}/admin`, {
         headers: {
             Authorization: `Bearer ${token}`
         },
@@ -53,7 +41,7 @@ export const addProduct = async (product: any) => {
     if (!token) {
         throw new Error("No token found")
     }
-    const { data } = await axios.post(`${baseApiUrl}/admin/`, product,
+    const { data } = await axios.post(`${baseApiUrl}/admin`, product,
         { headers: { Authorization: `Bearer ${token}` } }
     )
     log("Add product response:", data)
@@ -82,7 +70,7 @@ export const updateProductById = async (product: any) => {
     if (!token) {
         throw new Error("No token found")
     }
-    const { data } = await axios.patch(`${baseApiUrl}/admin/updateById`, product, {
+    const { data } = await axios.patch(`${baseApiUrl}/admin`, product, {
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -98,7 +86,7 @@ export const deleteUserById = async (userId: string) => {
     if (!token) {
         throw new Error("No token found")
     }
-    const { data } = await axios.delete(`${baseApiUrl}/admin/deleteUserById`, {
+    const { data } = await axios.delete(`${baseApiUrl}/admin/users`, {
         headers: {
             Authorization: `Bearer ${token}`
         },
@@ -112,18 +100,20 @@ export const deleteUserById = async (userId: string) => {
 }
 
 // Function to fetch users from the server
-export const fetchUsers = async () => {
+export const fetchUsersByQuery = async (query: any, opt: { signal?: AbortSignal } = {}) => {
+    const { signal } = opt
     const token = localStorage.getItem("token")
     if (!token) {
         throw new Error("No token found")
     }
     const { data } = await axios.get(`${baseApiUrl}/admin/users`, {
+        params: { ...query }, signal,
         headers: {
             Authorization: `Bearer ${token}`
         }
     })
 
-    log("Users:", data)
+    log("Get users by query response:", data)
     return data
 }
 
@@ -144,18 +134,20 @@ export const getUserById = async (userId: string) => {
 }
 
 // Function to fetch deleted users from the server
-export const fetchDeletedUsers = async () => {
+export const fetchDeletedUsers = async (query: any, opt: { signal?: AbortSignal } = {}) => {
+    const { signal } = opt
     const token = localStorage.getItem("token")
     if (!token) {
         throw new Error("No token found")
     }
     const { data } = await axios.get(`${baseApiUrl}/admin/deletedUsers`, {
+        params: { ...query }, signal,
         headers: {
             Authorization: `Bearer ${token}`
         }
     })
 
-    log("Users:", data)
+    log("Get deleted users response:", data)
     return data
 }
 
@@ -208,18 +200,20 @@ export const removeAdmin = async (userId: string) => {
 }
 
 // Function to fetch orders from the server
-export const fetchOrders = async () => {
+export const fetchOrdersByQuery = async (query: any, opt: { signal?: AbortSignal } = {}) => {
+    const { signal } = opt
     const token = localStorage.getItem("token")
     if (!token) {
         throw new Error("No token found")
     }
     const { data } = await axios.get(`${baseApiUrl}/admin/orders`, {
+        params: { ...query }, signal,
         headers: {
             Authorization: `Bearer ${token}`
         }
     })
 
-    log("Orders:", data)
+    log("Get orders response:", data)
     return data
 }
 
@@ -245,7 +239,7 @@ export const getProductsByIds = async (productIds: string[]) => {
     if (!token) {
         throw new Error("No token found")
     }
-    const { data } = await axios.post(`${baseApiUrl}/admin/getProductsByIds`, { ids: productIds }, {
+    const { data } = await axios.post(`${baseApiUrl}/admin/getByIds`, { ids: productIds }, {
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -311,8 +305,8 @@ export const updateBestSellerSection = async (bestSellerSection: any) => {
     return data
 }
 
-// Function to find products by search input - limited to 10 results
-export const findProductsLimited = async (search: string) => {
+// Function to find products by search input
+export const findProductsSearch = async (search: string) => {
     if (!search || search.trim() === "") {
         log("Search input is required")
         return
@@ -352,12 +346,31 @@ export const addNoteToUser = async (userId: string, note: string) => {
     if (!token) {
         throw new Error("No token found")
     }
-    const { data } = await axios.patch(`${baseApiUrl}/admin/addNoteToUser`, { id: userId, note }, {
+    const { data } = await axios.patch(`${baseApiUrl}/admin/users`, { id: userId, note }, {
         headers: {
             Authorization: `Bearer ${token}`
         }
     })
 
     log("Add note to user response:", data)
+    return data
+}
+
+// Function to fetch products by query - pagination
+export const fetchProductsByQuery = async (query: any, opt: { signal?: AbortSignal } = {}) => {
+    const { signal } = opt
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+
+    const { data } = await axios.get(`${baseApiUrl}/admin`, {
+        params: { ...query }, signal,
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Get products by query response:", data)
     return data
 }

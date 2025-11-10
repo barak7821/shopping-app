@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import { deleteUserById, fetchUsers } from "../utils/api";
+import { deleteUserById, fetchUsersByQuery } from "../utils/api";
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
+import { log } from "../utils/log";
 
 interface User {
   _id: string
@@ -48,19 +49,30 @@ function getPageNumbers(totalPages: number, currentPage: number) {
 export default function Customers() {
   const nav = useNavigate()
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+  const [searchParams, setSearchParams] = useSearchParams()
   const [usersList, setUsersList] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [totalPages, setTotalPages] = useState(1)
   const [updatingDelete, setUpdatingDelete] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
   const { handleApiError } = useApiErrorHandler()
 
-  const getUsers = async () => {
+  // Get query params and set default values
+  const currentPage = Math.max(1, +(searchParams.get("page") || 1))
+
+  const getUsers = async (signal?: AbortSignal) => {
+    const query = { page: currentPage }
+
     setLoading(true)
     try {
-      const data = await fetchUsers()
-      setUsersList(data)
+      const data = await fetchUsersByQuery(query, { signal })
+      if (signal?.aborted) return // If the request was aborted, return early
+      setUsersList(data.items)
+      setTotalPages(Math.max(1, data.totalPages || 1))
     } catch (error) {
+      if ((error as any)?.response?.data?.code === "page_not_found") {
+        nav("/customers", { replace: true })
+        return
+      }
       handleApiError(error as ApiError, "getUsers")
     } finally {
       setLoading(false)
@@ -68,18 +80,19 @@ export default function Customers() {
   }
 
   useEffect(() => {
-    getUsers()
-  }, [])
-
-  const totalPages = Math.ceil(usersList.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const currentUsers = usersList.slice(startIndex, startIndex + itemsPerPage)
+    const controller = new AbortController()
+    getUsers(controller.signal)
+    return () => controller.abort()
+  }, [searchParams])
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    const safe = Math.min(Math.max(1, page), totalPages)
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev)
+      params.set("page", String(safe))
+      return params
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDeleteBtn = async (userId: string, email: string, role: string) => {
@@ -92,9 +105,10 @@ export default function Customers() {
     try {
       await deleteUserById(userId) // Call API to delete product
 
-      const updatedUsers = currentUsers.filter(user => user._id !== userId) // Update local state
+      const updatedUsers = usersList.filter(user => user._id !== userId) // Update local state
       setUsersList(updatedUsers) // Save updated list to state
 
+      log(`Deleted user ID ${userId}:`)
       notyf.success(`User ${email} deleted successfully.`)
     } catch (error) {
       handleApiError(error as ApiError, "handleDeleteBtn")
@@ -141,7 +155,7 @@ export default function Customers() {
               </thead>
               <tbody>
                 {/* Users */}
-                {currentUsers.map((user) => (
+                {usersList.map((user) => (
                   <tr key={user._id} className="hover:bg-[#faf8f6] dark:hover:bg-neutral-700/60 transition">
 
                     {/* Name */}

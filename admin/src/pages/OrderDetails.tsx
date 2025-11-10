@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import SideBar from "../components/SideBar"
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import Loading from "../components/Loading";
 import { getOrderById, getProductsByIds, updateOrderStatusById } from "../utils/api";
@@ -9,6 +9,7 @@ import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 
 interface Order {
+    userId: string
     _id: string
     userEmail: string
     orderItems: {
@@ -43,13 +44,11 @@ export default function OrderDetails() {
 
         try {
             const orderData = await getOrderById(id)
-            log(orderData)
             setOrder(orderData)
 
             const productIds = orderData.orderItems.map((item: { itemId: any; }) => item.itemId)
             if (productIds.length > 0) {
                 const productData = await getProductsByIds(productIds)
-                log(productData)
                 setProductsList(productData)
             }
         } catch (error) {
@@ -146,6 +145,10 @@ export default function OrderDetails() {
                                 <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">
                                     Order ID: <span className="font-mono">{order._id}</span>
                                 </p>
+                                <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">
+                                    User ID: <span className="font-mono">{order.userId}</span>
+                                    <Link to={`/customers/edit/${order.userId}`} className="text-[#c1a875] ml-2 hover:underline">View User</Link>
+                                </p>
                             </div>
                             {order.status !== "delivered" && order.status !== "cancelled" &&
                                 <div className="flex items-center gap-4">
@@ -194,7 +197,6 @@ export default function OrderDetails() {
                                         </span>
                                     </p>
                                     <p><span className="font-semibold">Created At:</span> {new Date(order.createdAt).toLocaleString("en-GB")}</p>
-                                    <p><span className="font-semibold">Updated At:</span> {new Date(order.updatedAt).toLocaleString("en-GB")}</p>
                                 </div>
                             </div>
                         </div>

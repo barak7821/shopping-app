@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react"
 import SideBar from "../components/SideBar"
-import { findProductsLimited, updateBestSellerSection } from "../utils/api"
+import { findProductsSearch, updateBestSellerSection } from "../utils/api"
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler"
 import { log } from "../utils/log"
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 
 interface Product {
+    discountPercent: number
+    onSale: number
     _id: string
     image: string
     title: string
@@ -21,13 +23,13 @@ export default function BestSeller() {
     const [selected, setSelected] = useState<Product[]>([])
     const { handleApiError } = useApiErrorHandler()
 
-    const handleSearch = async () => {
+    const getProducts = async () => {
         try {
-            const data = await findProductsLimited(searchInput.toLowerCase().trim())
+            const data = await findProductsSearch(searchInput.toLowerCase().trim())
             setResults(data)
             log("Search results:", data)
         } catch (error) {
-            handleApiError(error as ApiError, "handleSearch")
+            handleApiError(error as ApiError, "getProducts")
         }
     }
 
@@ -38,7 +40,7 @@ export default function BestSeller() {
         }
 
         const delaySearch = setTimeout(() => {
-            handleSearch()
+            getProducts()
         }, 300) // Debounce search input to avoid too many requests
 
         return () => clearTimeout(delaySearch)
@@ -150,8 +152,8 @@ export default function BestSeller() {
                                                 <p className="font-medium text-[#232323] dark:text-neutral-100">
                                                     {item.title}
                                                 </p>
-                                                <p className="text-sm text-[#777] dark:text-neutral-400">
-                                                    ${item.price.toFixed(2)}
+                                                <p className={`text-sm ${item.onSale ? "text-[#c1a875] font-semibold" : "text-[#777] dark:text-neutral-400"}`}>
+                                                    {item.onSale ? `$${(item.price * (1 - item.discountPercent / 100)).toFixed(2)} (On sale)` : `$${item.price}`}
                                                 </p>
                                             </div>
                                             {/* Add */}
@@ -188,8 +190,8 @@ export default function BestSeller() {
                                             <p className="text-sm font-medium text-[#232323] dark:text-neutral-100">
                                                 {item.title}
                                             </p>
-                                            <p className="text-xs text-[#777] dark:text-neutral-400">
-                                                ${item.price.toFixed(2)}
+                                            <p className={`text-xs ${item.onSale ? "text-[#c1a875] font-semibold" : "text-[#777] dark:text-neutral-400"}`}>
+                                                {item.onSale ? `$${(item.price * (1 - item.discountPercent / 100)).toFixed(2)} (On sale)` : `$${item.price}`}
                                             </p>
                                         </div>
 

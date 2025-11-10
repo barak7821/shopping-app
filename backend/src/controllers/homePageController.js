@@ -5,7 +5,7 @@ import { errorLog, log } from "../utils/log.js";
 // Controller to get hero section
 export const getHeroSection = async (req, res) => {
     try {
-        const hero = await Hero.findById("hero_section").select("-__v -createdAt -updatedAt -version -updatedBy")
+        const hero = await Hero.findById("hero_section").select("-__v -createdAt -updatedAt -version -updatedBy -_id").lean()
         if (!hero) return res.status(404).json({ code: "not_found", message: "Hero section not found" })
 
         log("Hero section found successfully")
@@ -24,7 +24,7 @@ export const getBestSellers = async (req, res) => {
 
         log("Best seller section found successfully")
 
-        const products = await Product.find({ _id: { $in: bestSeller.products } }).select("-__v -createdAt -updatedAt -description -sizes -type -category") // get products from best seller section
+        const products = await Product.find({ _id: { $in: bestSeller.products } }).select("-__v -createdAt -updatedAt -description -sizes -type -category").lean() // get products from best seller section
         if (products.length !== bestSeller.products.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
 
         log("Best seller products found successfully")
@@ -38,7 +38,7 @@ export const getBestSellers = async (req, res) => {
 // Controller to get contact info section
 export const getContactInfoSection = async (req, res) => {
     try {
-        const contactInfo = await ContactInfo.findById("contact_info").select("-__v -createdAt -updatedAt -version -updatedBy")
+        const contactInfo = await ContactInfo.findById("contact_info").select("-__v -createdAt -updatedAt -version -updatedBy").lean()
         if (!contactInfo) return res.status(404).json({ code: "not_found", message: "Contact info section not found" })
 
         log("Contact info section found successfully")

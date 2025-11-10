@@ -24,6 +24,8 @@ export const useApiErrorHandler = () => {
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
 
   const handleApiError = (error: ApiError, context: string = "API request"): ApiErrorResult => {
+    if (error?.code === "ERR_CANCELED" || error?.name === "CanceledError") return { message: "Request canceled" } // AbortController cancellations surface as errors in axios, but should be ignored in the UI layer.
+
     const status = error?.response?.status
     const code = error?.response?.data?.code
 

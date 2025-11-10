@@ -4,7 +4,7 @@ import Home from './pages/Home.jsx';
 import NotFound from './pages/NotFound';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
-import Product from './pages/Product.jsx';
+import ProductDetails from './pages/ProductDetails.jsx';
 import Cart from './pages/Cart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import Payment from './pages/Payment.jsx';
@@ -33,7 +33,7 @@ function App() {
       <Route path='/checkout' element={<Checkout />} />
       <Route path='/payment' element={<Payment />} />
       <Route path='/orderSuccess' element={<OrderSuccess />} />
-      <Route path='/product/:productId' element={<Product />} />
+      <Route path='/product/:productId' element={<ProductDetails />} />
       <Route path='/about' element={<About />} />
       <Route path='/contact' element={<Contact />} />
       <Route path='/search' element={<SearchResults />} />

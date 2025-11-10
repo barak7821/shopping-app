@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { deleteProductById, fetchProducts } from "../utils/api";
+import { deleteProductById, fetchProductsByQuery } from "../utils/api";
 import { errorLog, log } from "../utils/log";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { useAdminAuth } from "../utils/AdminAuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
+import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 
 interface Product {
   _id: number
@@ -46,42 +47,53 @@ function getPageNumbers(totalPages: number, currentPage: number) {
 }
 
 export default function Products() {
-  const nav = useNavigate()
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+  const nav = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [productsList, setProductsList] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [totalPages, setTotalPages] = useState(1) // Total number of pages for pagination
   const [updatingDelete, setUpdatingDelete] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
   const { token } = useAdminAuth()
+  const { handleApiError } = useApiErrorHandler()
 
-  const getProducts = async () => {
+  // Get query params and set default values
+  const currentPage = Math.max(1, +(searchParams.get("page") || 1))
+
+  const getProducts = async (signal?: AbortSignal) => {
+    const query = { page: currentPage }
+
     setLoading(true)
     try {
-      const data = await fetchProducts()
-      setProductsList(data)
-      log("Products:", data)
+      const data = await fetchProductsByQuery(query, { signal })
+      if (signal?.aborted) return // If the request was aborted, return early
+      setProductsList(data.items)
+      setTotalPages(Math.max(1, data.totalPages || 1))
     } catch (error) {
-      errorLog("Error in getProducts", error)
-      notyf.error("Something went wrong. Please try again later.")
+      if ((error as any)?.response?.data?.code === "page_not_found") {
+        nav("/products", { replace: true })
+        return
+      }
+      handleApiError(error as ApiError, "getProducts")
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    getProducts()
-  }, [])
+    const controller = new AbortController()
+    getProducts(controller.signal)
+    return () => controller.abort()
+  }, [searchParams])
 
-  const totalPages = Math.ceil(productsList.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const currentProducts = productsList.slice(startIndex, startIndex + itemsPerPage)
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+  const handlePageChange = (nextPage: number) => {
+    const safe = Math.min(Math.max(1, nextPage), totalPages) // Safeguard against invalid page numbers like negative or greater than total pages
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev)
+      params.set("page", String(safe))
+      return params
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDeleteBtn = async (productId: number) => {
@@ -94,11 +106,11 @@ export default function Products() {
     try {
       const data = await deleteProductById(productId) // Call API to delete product
 
-      const updatedProducts = currentProducts.filter(product => product._id !== productId) // Update local state
+      const updatedProducts = productsList.filter(product => product._id !== productId) // Update local state
       setProductsList(updatedProducts) // Save updated list to state
 
       log(`Deleted product ID ${productId}:`, data)
-      notyf.success(`Product ID: ${productId} deleted successfully.`)
+      notyf.success(`Product deleted successfully.`)
     } catch (error) {
       errorLog("Error in handleDeleteBtn", error)
       notyf.error("Something went wrong. Please try again later.")
@@ -148,7 +160,7 @@ export default function Products() {
               </thead>
               <tbody>
                 {/* Products */}
-                {currentProducts.map((product) => (
+                {productsList.map((product) => (
                   <tr key={product._id} className="hover:bg-[#faf8f6] dark:hover:bg-neutral-700/60 transition">
                     {/* Image */}
                     <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
@@ -195,37 +207,40 @@ export default function Products() {
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className="flex justify-center items-center mt-8 gap-2">
+          {/* Pagination Controls */}
+          {!loading && totalPages > 1 && (
+            <div className="flex justify-center items-center mt-10 gap-2 flex-wrap">
 
-            {/* Prev */}
-            <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
-              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
+              {/* Prev */}
+              <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
+                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
 
-            {/* Page Numbers */}
-            {getPageNumbers(totalPages, currentPage).map((page, i) =>
-              page === "..."
-                ? <span key={`dots-${i}`} className="px-3 text-[#999] dark:text-neutral-400">
-                  ...
-                </span>
-                : <button key={`page-${page}`} onClick={() => handlePageChange(page as number)} className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${currentPage === page
-                  ? "bg-[#c1a875] text-white"
-                  : "bg-[#eee] dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-200 hover:bg-[#c1a875]/30"
-                  }`}>
-                  {page}
-                </button>
-            )}
+              {/* Page Numbers */}
+              {getPageNumbers(totalPages, currentPage).map((page, i) =>
+                page === "..."
+                  ? <span key={`dots-${i}`} className="px-3 text-[#999] dark:text-neutral-400">
+                    ...
+                  </span> :
+                  <button key={`page-${page}`} onClick={() => handlePageChange(page as number)} className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${currentPage === page
+                    ? "bg-[#c1a875] text-white"
+                    : "bg-[#eee] dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-200 hover:bg-[#c1a875]/30"
+                    }`}>
+                    {page}
+                  </button>
+              )}
 
-            {/* Next */}
-            <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
-              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
+
+              {/* Next */}
+              <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-2 rounded-lg bg-[#eee] dark:bg-neutral-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed">
+                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+          )}
 
         </div>
       </div>

@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { useNavigate } from "react-router-dom";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { errorLog, log } from "../utils/log";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchDeletedUsers } from "../utils/api";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
+import { useApiErrorHandler } from "../utils/useApiErrorHandler";
 
 interface User {
   _id: string
@@ -14,7 +12,7 @@ interface User {
   role: string
   deletedAt: string
   createdAt: string
-  provider: string
+  note: string
 }
 
 
@@ -47,39 +45,49 @@ function getPageNumbers(totalPages: number, currentPage: number) {
 
 export default function DeletedCustomers() {
   const nav = useNavigate()
-  const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+  const [searchParams, setSearchParams] = useSearchParams()
   const [usersList, setUsersList] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
+  const [totalPages, setTotalPages] = useState(1)
+  const { handleApiError } = useApiErrorHandler()
 
-  const getUsers = async () => {
+  const currentPage = Math.max(1, +(searchParams.get("page") || 1))
+
+  const getUsers = async (signal?: AbortSignal) => {
+    const query = { page: currentPage }
+
     setLoading(true)
     try {
-      const data = await fetchDeletedUsers()
-      setUsersList(data)
-      log("Users:", data)
+      const data = await fetchDeletedUsers(query, { signal })
+      if (signal?.aborted) return
+      setUsersList(data.items)
+      setTotalPages(Math.max(1, data.totalPages || 1))
     } catch (error) {
-      errorLog("Error in getUsers", error)
-      notyf.error("Something went wrong. Please try again later.")
+      if ((error as any)?.response?.data?.code === "page_not_found") {
+        nav("/deletedCustomers", { replace: true })
+        return
+      }
+      handleApiError(error as any, "getUsers")
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    getUsers()
-  }, [])
-
-  const totalPages = Math.ceil(usersList.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const currentUsers = usersList.slice(startIndex, startIndex + itemsPerPage)
+    const controller = new AbortController()
+    getUsers(controller.signal)
+    return () => controller.abort()
+  }, [searchParams])
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    const safe = Math.min(Math.max(1, page), totalPages)
+
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev)
+      params.set("page", String(safe))
+      return params
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   if (loading) {
@@ -111,7 +119,7 @@ export default function DeletedCustomers() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-[#f5f2ee] dark:bg-neutral-700/40">
                 <tr>
-                  {["Name", "Email", "Role", "Deleted On", "Register Date", "Provider", "Actions"].map((title) => (
+                  {["Name", "Email", "Role", "Deleted On", "Note", "Actions"].map((title) => (
                     <th key={title} className="px-6 py-3 text-sm font-semibold text-[#c1a875] uppercase tracking-wide">
                       {title}
                     </th>
@@ -120,7 +128,7 @@ export default function DeletedCustomers() {
               </thead>
               <tbody>
                 {/* Users */}
-                {currentUsers.map((user) => (
+                {usersList.map((user) => (
                   <tr key={user._id} className="hover:bg-[#faf8f6] dark:hover:bg-neutral-700/60 transition">
 
                     {/* Name */}
@@ -149,20 +157,9 @@ export default function DeletedCustomers() {
                       })}
                     </td>
 
-                    {/* Register Date */}
+                    {/* Note */}
                     <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
-                      {new Date(user.createdAt).toLocaleString('he-IL', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </td>
-
-                    {/* Provider */}
-                    <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
-                      {user.provider}
+                      {user.note}
                     </td>
 
                     {/* Actions */}

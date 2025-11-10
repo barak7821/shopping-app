@@ -1,44 +1,42 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
 import { errorLog, log } from '../utils/log';
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
 import { useCart } from '../utils/CartContext';
 import Loading from '../components/Loading';
-import { fetchProducts } from '../utils/api';
+import { fetchProductById } from '../utils/api';
 import NotFound from './NotFound';
+import { useApiErrorHandler } from '../utils/useApiErrorHandler';
 
-export default function Product() {
+export default function ProductDetails() {
     const { productId } = useParams()
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const { addToCart } = useCart()
     const [size, setSize] = useState("")
     const [activeTab, setActiveTab] = useState("description")
-    const [item, setItem] = useState({})
+    const [item, setItem] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
+    const { handleApiError } = useApiErrorHandler()
+    const sizes = Array.isArray(item?.sizes) ? item.sizes : []
+    const isOutOfStock = sizes.includes("outOfStock")
 
     const getProducts = async () => {
         setLoading(true)
         try {
-            const data = await fetchProducts()
-            const item = data.find(item => item._id === productId) // Find product by id
-            setItem(item)
-            log("Product:", item)
+            const data = await fetchProductById(productId)
+            setItem(data)
         } catch (error) {
-            errorLog("Error in getProducts", error)
-            notyf.error("Something went wrong. Please try again later.")
+            handleApiError(error, "getProducts")
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        getProducts() // Get products from the server
-    }, [])
+        getProducts()
+    }, [productId])
 
     // Function to add the product to the cart
     const handleClick = () => {
@@ -94,17 +92,17 @@ export default function Product() {
                             : <p className="text-gray-800 dark:text-neutral-200 font-[#1a1a1a] font-bold text-3xl">${item.price}</p>
                         }
                     </div>
-                    
+
                     <p className="text-gray-600 dark:text-neutral-300 mb-10">{item.description}</p>
 
                     {/* Size */}
                     <p className={`text-gray-700 dark:text-neutral-300 ${!size && error === "size" && "text-red-500"}`}>Select Size {!size && error === "size" && <span className="text-red-500">*</span>}</p>
                     <div className='flex flex-wrap gap-2 py-2 items-center'>
-                        {item.sizes.includes("outOfStock")
+                        {isOutOfStock
                             ? <p className="text-red-600 dark:text-red-400 font-semibold text-sm flex items-center gap-2">
                                 Currently out of stock
                             </p>
-                            : item.sizes.map((item, index) => (
+                            : sizes.map((item, index) => (
                                 <button key={index} onClick={e => setSize(e.target.value)} value={item} className={`bg-gray-200 dark:bg-neutral-600 dark:text-neutral-100 px-3 py-1 rounded transition-colors duration-300 ease-in-out cursor-pointer ${size === item ? "bg-gray-500 dark:bg-neutral-800" : ""}`}>
                                     {item}
                                 </button>
@@ -114,7 +112,7 @@ export default function Product() {
 
                     {/* Add to cart */}
                     <div className='pt-10'>
-                        <button onClick={handleClick} disabled={item.sizes.includes("outOfStock")} className="px-10 py-4 border bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition rounded-2xl shadow-md font-semibold font-montserrat text-lg active:scale-95 cursor-pointer disabled:bg-neutral-600 disabled:text-neutral-100 disabled:cursor-not-allowed disabled:active:scale-100">
+                        <button onClick={handleClick} disabled={sizes.includes("outOfStock")} className="px-10 py-4 border bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition rounded-2xl shadow-md font-semibold font-montserrat text-lg active:scale-95 cursor-pointer disabled:bg-neutral-600 disabled:text-neutral-100 disabled:cursor-not-allowed disabled:active:scale-100">
                             Add to Cart
                         </button>
                     </div>

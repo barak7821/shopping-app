@@ -79,13 +79,7 @@ export const seedUsers = async (req, res) => {
         const results = []
 
         for (const user of users) {
-            const { name, email, password, city } = user
-
-            // Check for required fields
-            if (!name || !email || !password) return res.status(400).json({ code: "!field", message: `Missing fields in one of the users` })
-
-            // Validate with Joi
-            await localSchema.validateAsync({ name, email, password })
+            const { name, email, password, role, provider, phone, street, city, zip, country, note } = user
 
             // Check for required fields
             const exists = await User.findOne({ email: email.toLowerCase() })
@@ -98,9 +92,14 @@ export const seedUsers = async (req, res) => {
                 name: name.toLowerCase(),
                 email: email.toLowerCase(),
                 password,
-                provider: "local",
-                role: "user",
-                city
+                role,
+                provider,
+                phone,
+                street,
+                city,
+                zip,
+                country,
+                note
             })
         }
 
@@ -297,7 +296,7 @@ export const getProductById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
     try {
-        const product = await Product.findById(id)
+        const product = await Product.findById(id).lean()
         if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
         log(`Product with id ${id} found successfully`)
@@ -352,7 +351,7 @@ export const getProductsByIds = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
     try {
-        const products = await Product.find({ _id: { $in: ids } }).select("-__v")
+        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold -active -discountPercent -onSale -price").lean()
         if (products.length !== ids.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
 
         log("Products found successfully")
@@ -363,15 +362,53 @@ export const getProductsByIds = async (req, res) => {
     }
 }
 
+// Controller to get products by query parameters for pagination
+export const getProductsByQuery = async (req, res) => {
+    try {
+        const page = Math.max(1, +req.query.page || 1) // Default to page 1 if not provided
+        const limit = 20 // Default to 20 items per page
+
+        const sortBy = { createdAt: -1, _id: 1 } // Default sort by createdAt in descending order
+
+        const total = await Product.countDocuments() // Count total number of products
+
+        const items = await Product.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -createAt -updatedAt -description -sizes -type").lean()
+
+        const totalPages = Math.max(1, Math.ceil(total / limit)) // Calculate total number of pages
+        const hasNext = page < totalPages // Check if there are more pages
+        const hasPrev = page > 1 // Check if there are previous pages
+
+        if (page > totalPages) return res.status(404).json({ code: "page_not_found", message: "Page not found" })
+
+        log(`Fetched ${items.length} products for page ${page}`)
+        res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
+    } catch (error) {
+        errorLog("Error in getProductsByQuery controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
 /////////// Users Controllers ///////////
 
 // Controller to fetch users
-export const fetchUsers = async (req, res) => {
+export const getUsersByQuery = async (req, res) => {
     try {
-        const users = await User.find().select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v")
-        res.status(200).json(users)
+        const page = Math.max(1, +req.query.page || 1)
+        const limit = 20
+        const sortBy = { createdAt: -1, _id: 1 }
+
+        const total = await User.countDocuments()
+        const items = await User.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v -city -provider -street -zip -country -phone").lean()
+        const totalPages = Math.max(1, Math.ceil(total / limit))
+        const hasNext = page < totalPages
+        const hasPrev = page > 1
+
+        if (page > totalPages) return res.status(404).json({ code: "page_not_found", message: "Page not found" })
+
+        log(`Fetched ${items.length} users for page ${page}`)
+        res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in fetchUsers controller", error.message)
+        errorLog("Error in getUsersByQuery controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -416,7 +453,7 @@ export const getUserById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
 
     try {
-        const user = await User.findById(id).select("-password -otpCode -__v")
+        const user = await User.findById(id).select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v").lean()
         if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
 
         log(`User with id ${id} found successfully`)
@@ -428,12 +465,24 @@ export const getUserById = async (req, res) => {
 }
 
 // Controller to fetch deleted users
-export const fetchDeletedUsers = async (req, res) => {
+export const getDeletedUsersByQuery = async (req, res) => {
     try {
-        const deletedUser = await DeletedUser.find().select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v")
-        res.status(200).json(deletedUser)
+        const page = Math.max(1, +req.query.page || 1)
+        const limit = 20
+        const sortBy = { deletedAt: -1, _id: 1 }
+
+        const total = await DeletedUser.countDocuments()
+        const items = await DeletedUser.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v -city -provider -street -zip -country -phone -createdAt -updatedAt").lean()
+        const totalPages = Math.max(1, Math.ceil(total / limit))
+        const hasNext = page < totalPages
+        const hasPrev = page > 1
+
+        if (page > totalPages) return res.status(404).json({ code: "page_not_found", message: "Page not found" })
+
+        log(`Fetched ${items.length} deleted users for page ${page}`)
+        res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in fetchDeletedUsers controller", error.message)
+        errorLog("Error in getDeletedUsersByQuery controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -444,7 +493,7 @@ export const getDeletedUserById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
 
     try {
-        const deletedUser = await DeletedUser.findById(id).select("-password -otpCode -__v")
+        const deletedUser = await DeletedUser.findById(id).select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v").lean()
         if (!deletedUser) return res.status(404).json({ code: "not_found", message: "User not found" })
 
         log(`User with id ${id} found successfully`)
@@ -524,13 +573,24 @@ export const addNoteToUser = async (req, res) => {
 /////////// Orders Controllers ///////////
 
 // Controller to fetch orders
-export const fetchOrders = async (req, res) => {
+export const getOrderByQuery = async (req, res) => {
     try {
-        const orders = await Order.find().select("-__v")
-        log("Orders found successfully")
-        res.status(200).json(orders)
+        const page = Math.max(1, +req.query.page || 1)
+        const limit = 20
+
+        const total = await Order.countDocuments()
+        const items = await Order.find().sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).select("-__v -updatedAt -shippingAddress.city -shippingAddress.street -shippingAddress.zip -shippingAddress.country -shippingAddress.phone -shippingAddress.name -orderItems.selectedSize -orderItems.selectedQuantity -orderItems.itemPricePerUnit -userId").lean()
+
+        const totalPages = Math.max(1, Math.ceil(total / limit))
+        const hasNext = page < totalPages
+        const hasPrev = page > 1
+
+        if (page > totalPages) return res.status(404).json({ code: "page_not_found", message: "Page not found" })
+
+        log(`Fetched ${items.length} orders for page ${page}`)
+        res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in fetchOrders controller", error.message)
+        errorLog("Error in getOrderByQuery controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -541,7 +601,7 @@ export const getOrderById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "Order id is required" })
 
     try {
-        const order = await Order.findById(id).select("-__v")
+        const order = await Order.findById(id).select("-__v -updatedAt").lean()
         if (!order) return res.status(404).json({ code: "not_found", message: "Order not found" })
 
         log(`Order with id ${id} found successfully`)

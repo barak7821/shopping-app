@@ -4,13 +4,6 @@ import { log } from "./log"
 const baseApiUrl = `${import.meta.env.VITE_BACKEND_URL}/api`
 const token = localStorage.getItem("token")
 
-// Function to fetch products from the server
-export const fetchProducts = async () => {
-    const { data } = await axios.get(`${baseApiUrl}/products`)
-    log("Products:", data)
-    return data
-}
-
 // Function to send order details to the server - logged in user only
 export const handleOrder = async (orderDetails) => {
     if (!token) {
@@ -110,21 +103,28 @@ export const verifyPassword = async (password) => {
     return data
 }
 
-// Function to fetch orders by user ID
-export const fetchOrdersById = async () => {
+// Function to fetch order by ID
+export const fetchOrderById = async (id) => {
     if (!token) {
         log("No token found")
         return
     }
-    const { data } = await axios.get(`${baseApiUrl}/order`, {
+
+    if (!id) {
+        log("Product id is required")
+        return
+    }
+
+    const { data } = await axios.get(`${baseApiUrl}/order/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
     })
-    log("Orders by user ID response:", data)
+
+    log("Get order by id response:", data)
     return data
 }
 
-// Function to find products by search input - limited to 10 results
-export const findProductsLimited = async (search) => {
+// Function to find products by search input
+export const findProductsSearch = async (search) => {
     if (!search || search.trim() === "") {
         log("Search input is required")
         return
@@ -134,7 +134,7 @@ export const findProductsLimited = async (search) => {
     return data
 }
 
-// Function to find products by search query - Search
+// Function to find products by search query - Search Results Page
 export const findProductsQuery = async (query) => {
     if (!query || query.trim() === "") {
         log("Query is required")
@@ -237,7 +237,37 @@ export const fetchProductsByIds = async (ids) => {
 // Function to fetch products by query - pagination
 export const fetchProductsByQuery = async (query, opt = {}) => {
     const { signal } = opt
-    const { data } = await axios.get(`${baseApiUrl}/products/page`, { params: { ...query }, signal })
+    const { data } = await axios.get(`${baseApiUrl}/products/`, { params: { ...query }, signal })
+
     log("Get products by query response:", data)
+    return data
+}
+
+// Function to get product by ID - one product
+export const fetchProductById = async (id) => {
+    if (!id) {
+        log("Product id is required")
+        return
+    }
+
+    const { data } = await axios.get(`${baseApiUrl}/products/${id}`)
+
+    log("Get product by id response:", data)
+    return data
+}
+
+// Function to fetch order by query - pagination
+export const fetchOrdersByQuery = async (query, opt = {}) => {
+    const { signal } = opt
+    if (!token) {
+        log("No token found")
+        return
+    }
+    const { data } = await axios.get(`${baseApiUrl}/order/`, {
+        params: { ...query }, signal,
+        headers: { Authorization: `Bearer ${token}` }
+    })
+
+    log("Get order by query response:", data)
     return data
 }

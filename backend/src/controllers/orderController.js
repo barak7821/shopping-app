@@ -58,14 +58,41 @@ export const createOrderForUser = async (req, res) => {
 }
 
 // Controller to get order by ID
-export const getOrdersById = async (req, res) => {
-    try {
-        const orders = await Order.find({ userId: req.user.id }) // Find orders by user ID
+export const getOrderById = async (req, res) => {
+    const { id } = req.params
+    if (!id) return res.status(400).json({ code: "!field", message: "Order id is required" })
 
-        log(`Found ${orders.length} orders for user ${req.user.id}`)
-        res.status(200).json(orders) // Send the orders as a response
+    try {
+        const orders = await Order.findById(id).select("-__v -updatedAt").lean()
+        if (!orders) return res.status(404).json({ code: "not_found", message: "Order not found" })
+
+        log("Order found successfully")
+        res.status(200).json(orders)
     } catch (error) {
-        errorLog("Error in getOrdersById controller", error.message)
+        errorLog("Error in getOrderById controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to get orders by query parameters for pagination
+export const getOrdersByQuery = async (req, res) => {
+    try {
+        const page = Math.max(1, +req.query.page || 1)
+        const limit = 5
+        const sortBy = { createdAt: -1, _id: 1 }
+
+        const total = await Order.countDocuments()
+        const items = await Order.find({ userId: req.user.id }).sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -updatedAt").lean()
+        const totalPages = Math.max(1, Math.ceil(total / limit))
+        const hasNext = page < totalPages
+        const hasPrev = page > 1
+
+        if (page > totalPages) return res.status(404).json({ code: "page_not_found", message: "Page not found" })
+
+        log(`Fetched ${items.length} orders for page ${page}`)
+        res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
+    } catch (error) {
+        errorLog("Error in getOrdersByQuery controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

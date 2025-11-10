@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
 import { FiRefreshCw, FiShield, FiHeadphones } from "react-icons/fi"
-import { fetchBestSellers, fetchHeroSection, fetchLatestProducts, fetchProducts } from '../utils/api';
+import { fetchBestSellers, fetchHeroSection, fetchLatestProducts } from '../utils/api';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import { useApiErrorHandler } from '../utils/useApiErrorHandler';
 import SaleProduct from '../components/saleProduct';

@@ -117,6 +117,10 @@ export default function CustomersDetails() {
     }
   }
 
+  const dateFormat = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-GB")
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-[#faf8f6] dark:bg-neutral-900 font-montserrat">
@@ -192,19 +196,19 @@ export default function CustomersDetails() {
             {/* Last Login */}
             <div>
               <label htmlFor="lastLogin" className="block text-sm font-semibold text-[#c1a875] mb-1">Last Login</label>
-              <input value={user?.lastLogin ? new Date(user?.lastLogin).toLocaleString("en-GB") : new Date(user?.createdAt || "").toLocaleString("en-GB")} id="lastLogin" type="text" disabled className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-not-allowed" />
+              <input value={dateFormat(user?.lastLogin || user?.createdAt || "")} id="lastLogin" type="text" disabled className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-not-allowed" />
             </div>
 
             {/* Register Date */}
             <div>
               <label htmlFor="registerDate" className="block text-sm font-semibold text-[#c1a875] mb-1">Register Date</label>
-              <input value={new Date(user?.createdAt || "").toLocaleString("en-GB")} id="registerDate" type="text" disabled className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-not-allowed" />
+              <input value={dateFormat(user?.createdAt || "")} id="registerDate" type="text" disabled className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-not-allowed" />
             </div>
 
             {/* Last Update */}
             <div>
               <label htmlFor="lastUpdated" className="block text-sm font-semibold text-[#c1a875] mb-1">Last Updated</label>
-              <input value={new Date(user?.updatedAt || "").toLocaleString("en-GB")} id="lastUpdated" type="text" disabled className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-not-allowed" />
+              <input value={dateFormat(user?.updatedAt || "")} id="lastUpdated" type="text" disabled className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-not-allowed" />
             </div>
 
             {/* Address */}
