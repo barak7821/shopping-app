@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar'
-import { useNavigate } from 'react-router-dom'
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { log } from '../utils/log';
-import { fetchProducts } from '../utils/api';
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { fetchProductsByQuery } from '../utils/api';
 import Footer from '../components/Footer';
 import AboutCard from '../components/AboutCard';
 import LoadingSkeleton from '../components/LoadingSkeleton';
@@ -41,131 +38,88 @@ function getPageNumbers(totalPages, currentPage) {
 
 export default function Collection() {
     const nav = useNavigate()
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+    const [searchParams, setSearchParams] = useSearchParams() // To get and set query params
     const [loading, setLoading] = useState(true)
-    const [productsList, setProductsList] = useState([])
-    const [sortedList, setSortedList] = useState([])
-    const [selectedCategories, setSelectedCategories] = useState([])
-    const [selectedSubCategories, setSelectedSubCategories] = useState([])
-    const [selectedSizes, setSelectedSizes] = useState([])
-    const [sortBy, setSortBy] = useState("featured")
-    const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 20
+    const [productsList, setProductsList] = useState([]) // List of products
+    const [totalPages, setTotalPages] = useState(1) // Total number of pages for pagination
     const { handleApiError } = useApiErrorHandler()
 
-    const getProducts = async () => {
+    // Get query params and set default values
+    const sortBy = (searchParams.get("sort") || "featured").toLowerCase()
+    const currentPage = Math.max(1, +(searchParams.get("page")) || 1)
+    const categories = (searchParams.get("category") || "").toLowerCase().split(",").filter(Boolean)
+    const type = (searchParams.get("type") || "").toLowerCase().split(",").filter(Boolean)
+    const sizes = (searchParams.get("sizes") || "").toUpperCase().split(",").filter(Boolean)
+
+    // Fetch products by query
+    const getProducts = async (signal) => {
+        // Build query object
+        const query = { page: currentPage }
+        if (categories.length > 0) query.category = categories.join(",")
+        if (type.length > 0) query.type = type.join(",")
+        if (sizes.length > 0) query.sizes = sizes.join(",")
+        query.sort = ["price-low", "price-high", "new", "featured"].includes(sortBy) ? sortBy : "featured"
+
         setLoading(true)
         try {
-            const data = await fetchProducts()
-            setProductsList(data)
-            setSortedList(data)
+            const data = await fetchProductsByQuery(query, { signal }) // Send query to backend and signal to abort request if needed
+            if (signal.aborted) return // If the request was aborted, return early
+            setProductsList(data.items)
+            setTotalPages(+data.totalPages)
         } catch (error) {
-            handleApiError(error, "fetchHomeSection")
+            handleApiError(error, "getProducts")
         } finally {
             setLoading(false)
         }
     }
 
+    // Fetch products on mount
     useEffect(() => {
-        getProducts()
-    }, [])
+        const controller = new AbortController() // Create AbortController
 
-    const categoryFilter = (e) => {
-        const value = e.target.value.toLowerCase() // the value of the checked input
-        log("category", value)
-        const isChecked = e.target.checked // the checked status of the input
+        getProducts(controller.signal) // controller.signal is used to abort the request if needed
 
-        let updatedCategories
+        return () => controller.abort() // Abort the request when the component unmounts
+    }, [searchParams])
 
-        if (isChecked) { // if the input is checked
-            updatedCategories = [...selectedCategories, value] // add the value to the array, eg: [men] -> [men, women]
-        } else {
-            updatedCategories = selectedCategories.filter(item => item !== value) // remove the value from the array, eg: [men, women] -> [women]
-        }
-
-        log("updatedCategories", updatedCategories)
-        setSelectedCategories(updatedCategories)
+    // Function to handle page changes in pagination
+    const handlePageChange = (nextPage) => {
+        const safe = Math.min(Math.max(1, nextPage), totalPages) // Safeguard against invalid page numbers like negative or greater than total pages
+        setSearchParams(prev => { // Update query params
+            const params = new URLSearchParams(prev) // Get current query params
+            params.set("page", String(safe)) // Set page to the safe value
+            return params
+        })
+        window.scrollTo({ top: 0, behavior: "smooth" }) // Scroll to top of page
     }
 
-    const subCategoryFilter = (e) => {
-        const value = e.target.value.toLowerCase() // the value of the checked input
-        log("subCategory", value)
-        const isChecked = e.target.checked // the checked status of the input
+    // Function to handle checkbox changes in the filters
+    const handleParamChange = (setSearchParams, paramKey, currentValues, e, formatValue = v => v) => {
+        const { value, checked } = e.target // Get value and checked status of the input
+        const formattedValue = formatValue(value) // Format the value if needed
 
-        let updatedSubCategories
+        setSearchParams(prev => {
+            const params = new URLSearchParams(prev) // Get current query params
 
-        if (isChecked) { // if the input is checked
-            updatedSubCategories = [...selectedSubCategories, value] // add the value to the array, eg: [men] -> [men, women]
-        } else {
-            updatedSubCategories = selectedSubCategories.filter(item => item !== value) // remove the value from the array, eg: [men, women] -> [women]
-        }
-        log("updatedSubCategories", updatedSubCategories)
-        setSelectedSubCategories(updatedSubCategories)
+            if (typeof checked === "boolean") { // If the input is a checkbox
+                const updatedValues = checked ? [...currentValues, formattedValue] : currentValues.filter(v => v !== formattedValue)
+
+                if (updatedValues.length > 0) { // If there are updated values
+                    params.set(paramKey, updatedValues.join(",")) 
+                } else {
+                    params.delete(paramKey)
+                }
+            } else {
+                params.set(paramKey, formattedValue) // If the input is not a checkbox, set the value directly
+            }
+
+            params.set("page", "1") // Reset page to 1 when changing params so we get the first page of results
+
+            return params
+        })
+
     }
 
-    const sizeFilter = (e) => {
-        const value = e.target.value.toUpperCase() // the value of the checked input
-        log("size", value)
-        const isChecked = e.target.checked // the checked status of the input
-
-        let updatedSizes
-
-        if (isChecked) { // if the input is checked
-            updatedSizes = [...selectedSizes, value] // add the value to the array, eg: [men] -> [men, women]
-        } else {
-            updatedSizes = selectedSizes.filter(item => item !== value) // remove the value from the array, eg: [men, women] -> [women]
-        }
-        log("updatedSizes", updatedSizes)
-        setSelectedSizes(updatedSizes)
-    }
-
-    useEffect(() => {
-        setCurrentPage(1)
-    }, [selectedCategories, selectedSubCategories, selectedSizes, sortBy])
-
-    useEffect(() => {
-        let filtered = productsList
-
-        if (selectedCategories.length > 0) {
-            filtered = filtered.filter(item => selectedCategories.includes(item.category))
-        }
-
-        if (selectedSubCategories.length > 0) {
-            filtered = filtered.filter(item => selectedSubCategories.includes(item.type))
-        }
-
-        if (selectedSizes.length > 0) {
-            filtered = filtered.filter(item =>
-                Array.isArray(item.sizes) && item.sizes.some(size => selectedSizes.includes(size))
-            )
-        }
-
-        if (sortBy === "new") {
-            filtered = [...filtered].sort((a, b) =>
-                new Date(b.createdAt) - new Date(a.createdAt))
-        }
-
-        if (sortBy === "price-low") {
-            filtered = [...filtered].sort((a, b) => a.price - b.price)
-        }
-
-        if (sortBy === "price-high") {
-            filtered = [...filtered].sort((a, b) => b.price - a.price)
-        }
-
-        setSortedList(filtered)
-    }, [productsList, selectedCategories, selectedSubCategories, selectedSizes, sortBy])
-
-    const totalPages = Math.ceil(sortedList.length / itemsPerPage)
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const currentProducts = sortedList.slice(startIndex, startIndex + itemsPerPage)
-
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page)
-            window.scrollTo({ top: 0, behavior: "smooth" })
-        }
-    }
 
     return (
         <div className="min-h-screen flex flex-col font-montserrat bg-[#faf8f6] dark:bg-neutral-900">
@@ -196,7 +150,7 @@ export default function Collection() {
                                             { name: "Kids", value: "kids" },
                                         ].map(item =>
                                             <label key={item.value} className="flex items-center gap-2 cursor-pointer">
-                                                <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" onChange={categoryFilter} />
+                                                <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" checked={categories.includes(item.value)} onChange={e => handleParamChange(setSearchParams, "category", categories, e, v => v.toLowerCase())} />
                                                 {item.name}
                                             </label>
                                         )}
@@ -218,7 +172,7 @@ export default function Collection() {
                                             { name: "Leggings", value: "leggings" },
                                         ].map(item =>
                                             <label key={item.value} className="flex items-center gap-2 cursor-pointer">
-                                                <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" onChange={subCategoryFilter} />
+                                                <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" checked={type.includes(item.value)} onChange={e => handleParamChange(setSearchParams, "type", type, e, v => v.toLowerCase())} />
                                                 {item.name}
                                             </label>
                                         )}
@@ -239,7 +193,7 @@ export default function Collection() {
                                             { name: "XXL", value: "XXL" }
                                         ].map(item =>
                                             <label key={item.value} className="flex items-center gap-2 cursor-pointer text-[#555] dark:text-neutral-300">
-                                                <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" onChange={sizeFilter} />
+                                                <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" checked={sizes.includes(item.value)} onChange={e => handleParamChange(setSearchParams, "sizes", sizes, e, v => v.toUpperCase())} />
                                                 {item.name}
                                             </label>
                                         )}
@@ -256,10 +210,23 @@ export default function Collection() {
                                             { name: "10", value: "10" }
                                         ].map(item =>
                                             <label key={item.value} className="flex items-center gap-2 cursor-pointer text-[#555] dark:text-neutral-300">
-                                                <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" onChange={sizeFilter} />
+                                                <input type="checkbox" value={item.value} className="accent-[#c1a875] w-4 h-4" checked={sizes.includes(item.value)} onChange={e => handleParamChange(setSearchParams, "sizes", sizes, e, v => v.toUpperCase())} />
                                                 {item.name}
                                             </label>
                                         )}
+                                    </div>
+                                    {/* Separator */}
+                                    <hr className='border-gray-200 dark:border-neutral-700 my-2' />
+                                    {/* Clear Filters Button */}
+                                    <div className='flex justify-center'>
+                                        <button onClick={() => setSearchParams(prev => {
+                                            const params = new URLSearchParams(prev)
+                                            params.delete("category")
+                                            params.delete("type")
+                                            params.delete("sizes")
+                                            params.set("page", "1")
+                                            return params
+                                        })} className="text-sm text-[#c1a875] hover:underline mt-2 cursor-pointer">Clear Filters</button>
                                     </div>
                                 </div>
                             </div>
@@ -269,7 +236,7 @@ export default function Collection() {
                         <main className="flex-1 flex flex-col gap-6">
                             {/* Sort Bar */}
                             <div className="flex justify-end mb-2">
-                                <select onChange={e => setSortBy(e.target.value)} className="rounded-2xl border border-gray-200 dark:border-neutral-700 px-4 py-2 text-base bg-neutral-50 dark:bg-neutral-800 shadow-sm focus:ring-2 focus:ring-[#c1a875] focus:outline-none w-auto dark:text-white">
+                                <select onChange={e => handleParamChange(setSearchParams, "sort", sortBy, e, v => v.toLowerCase())} value={sortBy} className="rounded-2xl border border-gray-200 dark:border-neutral-700 px-4 py-2 text-base bg-neutral-50 dark:bg-neutral-800 shadow-sm focus:ring-2 focus:ring-[#c1a875] focus:outline-none w-auto dark:text-white">
                                     {[
                                         { name: "Sort By: Featured", value: "featured" },
                                         { name: "Sort By: Newest Arrivals", value: "new" },
@@ -286,13 +253,13 @@ export default function Collection() {
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-12 gap-y-12">
                                     {loading
                                         ? Array.from({ length: 20 }).map((_, i) => <LoadingSkeleton key={i} />)
-                                        : currentProducts.map(item =>
+                                        : productsList.map(item =>
                                             <div key={item._id} onClick={() => nav(`/product/${item._id}`)} className="flex flex-col items-center group cursor-pointer">
-                                                <div className="relative w-[170px] h-[210px] md:w-[140px] md:h-[280px] lg:w-[180px] xl:[220px] flex items-center justify-center overflow-hidden mb-4 md:mb-5 rounded-2xl">
+                                                <div className="relative w-[170px] h-[210px] md:w-[140px] md:h-[280px] lg:w-[180px] xl:w-[220px] flex items-center justify-center overflow-hidden mb-4 md:mb-5 rounded-2xl">
                                                     <img src={item.image} alt={item.title} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110 active:scale-95 rounded-2xl" style={{ background: "#faf8f6" }} />
 
                                                     {/* Sale Tag */}
-                                                    {item.onSale == true && <SaleProduct />}
+                                                    {item.onSale && <SaleProduct />}
                                                 </div>
                                                 <div className="flex flex-col items-center w-full">
                                                     <h3 className="font-prata text-base md:text-lg text-[#232323] dark:text-neutral-100 mb-1 text-center">
@@ -300,7 +267,7 @@ export default function Collection() {
                                                     </h3>
 
                                                     {/* Sale */}
-                                                    {item.onSale == true
+                                                    {item.onSale
                                                         ? <div className="flex flex-col items-center text-center">
                                                             <div className="flex items-baseline justify-center gap-2">
                                                                 <p className="text-[#c1a875] dark:text-[#d3b988] font-bold text-base">${(item.price * (1 - item.discountPercent / 100)).toFixed(2)}</p>

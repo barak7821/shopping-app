@@ -74,3 +74,49 @@ export const getProductsByIds = async (req, res) => {
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
+
+// Controller to get products by query parameters for pagination + filters + sort
+export const getProductsByQuery = async (req, res) => {
+    try {
+        const page = Math.max(1, +req.query.page || 1) // Default to page 1 if not provided
+        const limit = 20 // Default to 20 items per page
+
+        const categoryParam = (req.query.category || "").trim() // Default to empty string if not provided
+
+        const categoriesArray = categoryParam ? categoryParam.split(",").map(s => s.trim()).filter(Boolean) : [] // Split categories by comma and trim whitespace
+
+        const typeParam = (req.query.type || "").trim() // Default to empty string if not provided
+
+        const typesArray = typeParam ? typeParam.split(",").map(s => s.trim()).filter(Boolean) : [] // Split types by comma and trim whitespace
+
+        const sizes = (req.query.sizes || "").trim() // Default to empty string if not provided
+        const sort = (req.query.sort || "new").trim() // Default to "new" if not provided   
+
+        const query = {} // Empty query object
+        if (categoriesArray.length) query.category = { $in: categoriesArray } // Add category to query
+        if (typesArray.length) query.type = { $in: typesArray } // Add type to query 
+        if (sizes) { // Add sizes to query
+            const arr = sizes.split(",").map(s => s.trim()).filter(Boolean)
+            if (arr.length) query.sizes = { $in: arr }
+        }
+
+        let sortBy = { createdAt: -1 } // Default sort by createdAt in descending order
+        if (sort === "price-low") sortBy = { price: 1, _id: 1 } // Sort by price in ascending order 
+        if (sort === "price-high") sortBy = { price: -1, _id: 1 } // Sort by price in descending order
+        if (sort === "featured") sortBy = { createdAt: -1, _id: 1 } // Sort by createdAt in descending order - then by _id in ascending order
+
+        const total = await Product.countDocuments(query) // Count total number of products
+
+        const items = await Product.find(query).sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -updatedAt -description").lean()
+
+        const totalPages = Math.max(1, Math.ceil(total / limit)) // Calculate total number of pages
+        const hasNext = page < totalPages // Check if there are more pages
+        const hasPrev = page > 1 // Check if there are previous pages
+
+        log(`Fetched ${items.length} products for page ${page}`)
+        return res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
+    } catch (error) {
+        errorLog("Error in getProductsByQuery controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}

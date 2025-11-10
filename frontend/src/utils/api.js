@@ -134,7 +134,7 @@ export const findProductsLimited = async (search) => {
     return data
 }
 
-// Function to find products by search query
+// Function to find products by search query - Search
 export const findProductsQuery = async (query) => {
     if (!query || query.trim() === "") {
         log("Query is required")
@@ -231,5 +231,13 @@ export const fetchProductsByIds = async (ids) => {
     const { data } = await axios.post(`${baseApiUrl}/products/getProductsByIds`, { ids })
 
     log("Get products by ids response:", data)
+    return data
+}
+
+// Function to fetch products by query - pagination
+export const fetchProductsByQuery = async (query, opt = {}) => {
+    const { signal } = opt
+    const { data } = await axios.get(`${baseApiUrl}/products/page`, { params: { ...query }, signal })
+    log("Get products by query response:", data)
     return data
 }
