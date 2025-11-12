@@ -3,7 +3,7 @@ import NavBar from '../components/NavBar'
 import { errorLog, log } from '../utils/log'
 import { Notyf } from 'notyf'
 import 'notyf/notyf.min.css'
-import { fetchOrdersByQuery, fetchProductsByIds } from '../utils/api'
+import { fetchOrdersByQuery, fetchProductsByIdsOrders } from '../utils/api'
 import Loading from '../components/Loading';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import AboutCard from '../components/AboutCard';
@@ -62,7 +62,7 @@ export default function Orders() {
 
             const ids = data.items.map(item => item.orderItems.map(item => item.itemId)).flat()
 
-            const products = await fetchProductsByIds(ids)
+            const products = await fetchProductsByIdsOrders(ids)
             setProductsList(products)
         } catch (error) {
             if (error?.response?.data?.code === "page_not_found") {
@@ -113,10 +113,7 @@ export default function Orders() {
                     {/* Orders List */}
                     <div className="w-full max-w-5xl flex flex-col gap-10 md:gap-12">
                         {Array.from({ length: 2 }).map((_, cardIdx) => (
-                            <div
-                                key={`sk-card-${cardIdx}`}
-                                className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 flex flex-col gap-5"
-                            >
+                            <div key={`sk-card-${cardIdx}`} className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 flex flex-col gap-5">
                                 {/* Header - ID & Status */}
                                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
                                     {/* Order ID block */}
@@ -143,10 +140,7 @@ export default function Orders() {
                                 {/* Items */}
                                 <div className="flex flex-col gap-3 divide-y divide-gray-100 dark:divide-neutral-700">
                                     {Array.from({ length: 1 }).map((_, itemIdx) => (
-                                        <div
-                                            key={`sk-item-${cardIdx}-${itemIdx}`}
-                                            className="flex gap-4 py-3 items-center"
-                                        >
+                                        <div key={`sk-item-${cardIdx}-${itemIdx}`} className="flex gap-4 py-3 items-center">
                                             {/* image */}
                                             <div className="w-28 h-28 rounded-xl bg-gray-200 dark:bg-neutral-700 border border-[#f2e8db] dark:border-neutral-600 animate-pulse" />
                                             {/* text lines */}
@@ -197,6 +191,8 @@ export default function Orders() {
         )
     }
 
+    const upperCaseFormat = value => typeof value !== "string" || value.trim().length === 0 ? "Unknown" : value.replace(/\b\w/g, l => l.toUpperCase())
+
     return (
         <div className="min-h-screen bg-[#faf8f6] dark:bg-neutral-900 flex flex-col font-montserrat">
             <NavBar />
@@ -212,7 +208,7 @@ export default function Orders() {
 
                 {/* Orders List */}
                 <div className="w-full max-w-5xl flex flex-col gap-10 md:gap-12">
-                    {loading && ordersList.length === 0 ?
+                    {ordersList.length === 0 ?
                         <div className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow p-7 flex flex-col items-center">
                             <p className="text-gray-600 dark:text-neutral-300 text-lg">No orders found.</p>
                         </div>
@@ -232,7 +228,7 @@ export default function Orders() {
                                         <div>
                                             <span className="text-xs text-gray-500 dark:text-neutral-400">Status</span>
                                             <div className={`font-medium ${item.status === "delivered" ? "text-green-600" : "text-[#c1a875]"}`}>
-                                                {item.status.replace(/\b\w/g, l => l.toUpperCase())}
+                                                {upperCaseFormat(item.status)}
                                             </div>
                                         </div>
                                         <div>
@@ -250,10 +246,10 @@ export default function Orders() {
                                         const product = productsList.find(product => product._id === item.itemId)
                                         return (
                                             <div key={`${item._id}-${item.selectedSize}`} className="flex gap-4 py-3 items-center">
-                                                <img src={product ? product.image : "Unknown"} alt={product ? product.title : "Unknown"} className="w-28 h-28 object-cover rounded-xl border border-[#f2e8db] dark:border-neutral-600 shadow-sm" />
+                                                <img src={product ? product.image : "Unknown"} alt={item ? upperCaseFormat(item.itemTitle) : upperCaseFormat(product.title)} className="w-28 h-28 object-cover rounded-xl border border-[#f2e8db] dark:border-neutral-600 shadow-sm" />
                                                 <div className="flex flex-col gap-0.5">
                                                     <span className="font-medium text-base dark:text-neutral-100">
-                                                        {product ? product.title.replace(/\b\w/g, l => l.toUpperCase()) : "Unknown"}
+                                                        {item ? upperCaseFormat(item.itemTitle) : upperCaseFormat(product.title)}
                                                     </span>
                                                     <span className="text-xs text-gray-600 dark:text-neutral-400">Size: <b>{item.selectedSize?.toUpperCase()}</b></span>
                                                     <span className="text-xs text-gray-600 dark:text-neutral-400">Quantity: <b>{item.selectedQuantity}</b></span>

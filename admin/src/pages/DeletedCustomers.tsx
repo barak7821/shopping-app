@@ -4,44 +4,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchDeletedUsers } from "../utils/api";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
 import { useApiErrorHandler } from "../utils/useApiErrorHandler";
-
-interface User {
-  _id: string
-  name: string
-  email: string
-  role: string
-  deletedAt: string
-  createdAt: string
-  note: string
-}
-
-
-function getPageNumbers(totalPages: number, currentPage: number) {
-  const delta = 2
-  const range: number[] = []
-  const rangeWithDots: (number | string)[] = []
-  let last: number | null = null
-
-  for (let i = 1; i <= totalPages; i++) {
-    if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
-      range.push(i)
-    }
-  }
-
-  for (const page of range) {
-    if (last !== null) {
-      if (page - last === 2) {
-        rangeWithDots.push(last + 1)
-      } else if (page - last > 2) {
-        rangeWithDots.push("...")
-      }
-    }
-    rangeWithDots.push(page)
-    last = page
-  }
-
-  return rangeWithDots
-}
+import { type User } from "../utils/types";
+import getPageNumbers from "../utils/getPageNumbers";
 
 export default function DeletedCustomers() {
   const nav = useNavigate()

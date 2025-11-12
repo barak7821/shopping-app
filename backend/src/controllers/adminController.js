@@ -4,6 +4,7 @@ import Product, { productSchemaJoi, updateProductSchemaJoi } from "../models/pro
 import User, { localSchema } from "../models/userModel.js";
 import { BestSeller, bestSellerSchemaJoi, ContactInfo, contactInfoSchemaJoi, Hero, heroSchemaJoi } from "../models/homePageModel.js";
 import { errorLog, log } from "../utils/log.js";
+import ArchivedProduct from "../models/archivedProductModel.js";
 
 // Temp Controller - SHOULD ONLY BE USED FOR TESTING!!!
 
@@ -238,7 +239,7 @@ export const tempBestSeller = async (req, res) => {
 
 // Controller to add a new product
 export const addProduct = async (req, res) => {
-    const { title, category, price, image, description, sizes, type, onSale, discountPercent } = req.body
+    const { title, category, price, image, description, sizes, type, onSale, discountPercent, stock } = req.body
     if (!title || !category || !price || !image || !description || !sizes || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
 
     try {
@@ -259,7 +260,9 @@ export const addProduct = async (req, res) => {
             sizes,
             type: type.toLowerCase(),
             onSale,
-            discountPercent
+            discountPercent,
+            active: stock > 0 ? true : false,
+            stock
         })
 
         // Save the new product to the database
@@ -273,19 +276,28 @@ export const addProduct = async (req, res) => {
     }
 }
 
-// Controller for delete product by id
-export const deleteProductById = async (req, res) => {
+// Controller to archive product by id
+export const archiveProductById = async (req, res) => {
     const { id } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
+    log("Product with id ${id} deleted successfully")
 
     try {
-        const product = await Product.findByIdAndDelete(id)
+        const product = await Product.findById(id)
         if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
+
+        const archived = new ArchivedProduct({
+            ...product.toObject(),
+            deletedAt: new Date()
+        })
+
+        await archived.save()
+        await product.deleteOne()
 
         log(`Product with id ${id} deleted successfully`)
         res.status(200).json({ message: `Product with id ${id} deleted successfully` })
     } catch (error) {
-        errorLog("Error in deleteProductById controller", error.message)
+        errorLog("Error in archiveProductById controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -309,7 +321,7 @@ export const getProductById = async (req, res) => {
 
 // Controller to edit product by id
 export const updateProductById = async (req, res) => {
-    const { id, title, category, price, image, description, sizes, type, onSale, discountPercent } = req.body
+    const { id, title, category, price, image, description, sizes, type, onSale, discountPercent, stock } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
     if (!title || !category || !price || !image || !description || !sizes || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
 
@@ -328,14 +340,15 @@ export const updateProductById = async (req, res) => {
         if (type) updateFields.type = type.toLowerCase()
         if (onSale !== undefined) updateFields.onSale = onSale
         if (discountPercent !== undefined) updateFields.discountPercent = discountPercent
-
+        if (stock !== undefined) updateFields.stock = stock
+        stock > 0 ? updateFields.active = true : updateFields.active = false
 
         // If no fields are provided, return an error
         if (Object.keys(updateFields).length === 0) return res.status(400).json({ code: "!field", message: "No fields provided" })
 
         // Update product data
         const product = await Product.findByIdAndUpdate({ _id: req.body.id }, updateFields, { new: true })
-        if (!product) return res.status(404).json({ code: "not_found", message: "Product already exists" })
+        if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
         log(`Product with id ${req.body.id} updated successfully`)
         res.status(200).json({ message: `Product with id ${req.body.id} updated successfully` })
@@ -351,7 +364,7 @@ export const getProductsByIds = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
     try {
-        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold -active -discountPercent -onSale -price").lean()
+        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold -active -discountPercent -onSale -price -stock").lean()
         if (products.length !== ids.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
 
         log("Products found successfully")
@@ -372,7 +385,7 @@ export const getProductsByQuery = async (req, res) => {
 
         const total = await Product.countDocuments() // Count total number of products
 
-        const items = await Product.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -createAt -updatedAt -description -sizes -type").lean()
+        const items = await Product.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -createAt -updatedAt -description -sizes -type -active").lean()
 
         const totalPages = Math.max(1, Math.ceil(total / limit)) // Calculate total number of pages
         const hasNext = page < totalPages // Check if there are more pages
@@ -384,6 +397,76 @@ export const getProductsByQuery = async (req, res) => {
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
         errorLog("Error in getProductsByQuery controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+//////////// Archived Product Controllers //////////////
+
+// Controller to get products by query parameters for pagination
+export const getArchivedProductsByQuery = async (req, res) => {
+    try {
+        const page = Math.max(1, +req.query.page || 1) // Default to page 1 if not provided
+        const limit = 20 // Default to 20 items per page
+
+        const sortBy = { createdAt: -1, _id: 1 } // Default sort by createdAt in descending order
+
+        const total = await ArchivedProduct.countDocuments() // Count total number of products
+
+        const items = await ArchivedProduct.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -createAt -updatedAt -description -sizes -type -active").lean()
+
+        const totalPages = Math.max(1, Math.ceil(total / limit)) // Calculate total number of pages
+        const hasNext = page < totalPages // Check if there are more pages
+        const hasPrev = page > 1 // Check if there are previous pages
+
+        if (page > totalPages) return res.status(404).json({ code: "page_not_found", message: "Page not found" })
+
+        log(`Fetched ${items.length} products for page ${page}`)
+        res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
+    } catch (error) {
+        errorLog("Error in getArchivedProductsByQuery controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to restore archived product by Id
+export const restoreArchivedProduct = async (req, res) => {
+    const { id } = req.body
+    if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
+
+    try {
+        const archivedProduct = await ArchivedProduct.findById(id)
+        if (!archivedProduct) return res.status(404).json({ code: "not_found", message: "Product not found" })
+
+        const product = new Product({
+            ...archivedProduct.toObject(),
+            deletedAt: null
+        })
+
+        await product.save()
+        await archivedProduct.deleteOne()
+
+        log(`Product with id ${id} restored successfully`)
+        res.status(200).json({ message: `Product with id ${id} restored successfully` })
+    } catch (error) {
+        errorLog("Error in restoreArchivedProduct controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to get archived product by Id
+export const getArchivedProductById = async (req, res) => {
+    const { id } = req.query
+    if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
+
+    try {
+        const archivedProduct = await ArchivedProduct.findById(id).lean()
+        if (!archivedProduct) return res.status(404).json({ code: "not_found", message: "Product not found" })
+
+        log(`Product with id ${id} found successfully`)
+        res.status(200).json(archivedProduct)
+    } catch (error) {
+        errorLog("Error in getArchivedProductById controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

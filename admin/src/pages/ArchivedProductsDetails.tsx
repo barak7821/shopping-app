@@ -3,14 +3,14 @@ import SideBar from "../components/SideBar";
 import { log } from "../utils/log";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import { updateProductById, getProductById } from "../utils/api";
+import { getArchivedProductById, restoreArchivedProduct } from "../utils/api";
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import { useNavigate, useParams } from "react-router-dom";
 import ProductForm from "../components/ProductForm";
 import Loading from "../components/Loading";
 import { type Category, type ProductFormData } from "../utils/types";
 
-export default function EditProduct() {
+export default function ArchivedProductsDetails() {
     const nav = useNavigate()
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const [product, setProduct] = useState<ProductFormData | null>(null)
@@ -23,7 +23,7 @@ export default function EditProduct() {
             if (!id) return
             setLoading(true)
             try {
-                const data = await getProductById(id)
+                const data = await getArchivedProductById(id)
                 log(data)
                 setProduct({
                     title: data.title,
@@ -47,19 +47,14 @@ export default function EditProduct() {
         fetchProductById()
     }, [id])
 
-    const handleUpdateProduct = async (productData: ProductFormData) => {
-        const updatedProduct = {
-            id,
-            ...productData,
-            price: +productData.price,
-        }
 
+    const handleRestoreBtn = async () => {
         try {
-            await updateProductById(updatedProduct)
-            notyf.success("Product updated successfully!")
-            nav("/products")
+            await restoreArchivedProduct(id as string)
+            notyf.success("Product restored successfully!")
+            nav("/archivedProducts")
         } catch (error) {
-            handleApiError(error as ApiError, "handleUpdateProduct")
+            handleApiError(error as ApiError, "handleRestoreBtn")
         }
     }
 
@@ -73,7 +68,7 @@ export default function EditProduct() {
                         <Loading />
                     </div>
                 ) : (
-                    <ProductForm isEditing={true} initialData={product} onSubmit={handleUpdateProduct} />
+                    <ProductForm isEditing={false} initialData={product} onSubmit={handleRestoreBtn} isArchived={true} />
                 )}
             </div>
         </div>

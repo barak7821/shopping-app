@@ -14,7 +14,10 @@ export const productSchemaJoi = Joi.object(
             "shorts", "skirt", "jacket", "leggings"
         ).required(),
         onSale: Joi.boolean().default(false),
-        discountPercent: Joi.number().default(0)
+        discountPercent: Joi.number().default(0),
+        active: Joi.boolean().default(true),
+        stock: Joi.number().default(0),
+        lowStockThreshold: Joi.number().default(3)
     }
 )
 
@@ -31,7 +34,10 @@ export const updateProductSchemaJoi = Joi.object(
             "shorts", "skirt", "jacket", "leggings"
         ).allow(""),
         onSale: Joi.boolean().default(false).allow(""),
-        discountPercent: Joi.number().default(0).allow("")
+        discountPercent: Joi.number().default(0).allow(""),
+        active: Joi.boolean().default(true).allow(""),
+        stock: Joi.number().default(0).allow(""),
+        lowStockThreshold: Joi.number().default(3).allow("")
     }
 )
 

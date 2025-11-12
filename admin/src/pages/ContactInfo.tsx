@@ -6,16 +6,7 @@ import { fetchContactInfo, updateContactInfo } from "../utils/api";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import Loading from "../components/Loading";
-
-interface ContactInfo {
-    email: string
-    address: string
-    phone: string
-    facebookUrl: string
-    instagramUrl: string
-    twitterUrl: string
-    openingHours: string
-}
+import { type ContactInfo } from "../utils/types";
 
 export default function ContactInfo() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })

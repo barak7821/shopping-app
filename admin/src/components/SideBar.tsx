@@ -18,10 +18,11 @@ export default function SideBar() {
                             { text: "Products", link: "/products", aria: "Products" },
                             { text: "Orders", link: "/orders", aria: "Orders" },
                             { text: "Customers", link: "/customers", aria: "Customers" },
-                            { text: "Deleted Customers", link: "/deletedCustomers", aria: "Deleted Customers" },
                             { text: "Hero Section Editor", link: "/hero", aria: "Hero" },
                             { text: "Best Sellers Editor", link: "/bestSeller", aria: "Best Sellers" },
                             { text: "Contact Info Editor", link: "/contact", aria: "Contact Info" },
+                            { text: "Archived Products", link: "/archivedProducts", aria: "Archived Products" },
+                            { text: "Deleted Customers", link: "/deletedCustomers", aria: "Deleted Customers" }
                         ].map((item, index) => (
                             <li key={index}>
                                 <NavLink
@@ -38,7 +39,7 @@ export default function SideBar() {
                         ))}
                     </ul>
                 </nav>
-                
+
                 {/* Theme */}
                 <Theme />
             </aside>

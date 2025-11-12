@@ -14,6 +14,8 @@ import OrderDetails from './pages/OrderDetails.tsx';
 import HeroSection from './pages/HeroSection.tsx';
 import BestSeller from './pages/BestSeller.tsx';
 import ContactInfo from './pages/ContactInfo.tsx';
+import ArchivedProducts from './pages/ArchivedProducts.tsx';
+import ArchivedProductsDetails from './pages/ArchivedProductsDetails.tsx';
 
 function App() {
     return (
@@ -33,6 +35,8 @@ function App() {
             <Route path="/hero" element={<ProtectedRouteAdmin><HeroSection /></ProtectedRouteAdmin>} />
             <Route path="/bestSeller" element={<ProtectedRouteAdmin><BestSeller /></ProtectedRouteAdmin>}></Route>
             <Route path="/contact" element={<ProtectedRouteAdmin><ContactInfo /></ProtectedRouteAdmin>}></Route>
+            <Route path="/archivedProducts" element={<ProtectedRouteAdmin><ArchivedProducts /></ProtectedRouteAdmin>} />
+            <Route path="/archivedProducts/edit/:id" element={<ProtectedRouteAdmin><ArchivedProductsDetails /></ProtectedRouteAdmin>} />
         </Routes>
     )
 }

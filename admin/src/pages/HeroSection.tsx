@@ -6,16 +6,7 @@ import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import Loading from "../components/Loading";
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-
-interface HeroSection {
-    title: string;
-    subtitle: string;
-    description: string;
-    buttonText: string;
-    buttonLink: string;
-    imageUrl: string;
-    imageAlt: string;
-}
+import { type HeroSection } from "../utils/types";
 
 export default function HeroSection() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })

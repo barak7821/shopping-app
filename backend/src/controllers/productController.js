@@ -1,5 +1,6 @@
 import Product from "../models/productModel.js";
 import { errorLog, log } from "../utils/log.js";
+import ArchivedProduct from "../models/archivedProductModel.js";
 
 // Controller to find products - Search Bar and Admin Best Seller
 export const findProductsSearch = async (req, res) => {
@@ -7,7 +8,7 @@ export const findProductsSearch = async (req, res) => {
     if (!search || search.trim() === "") return res.status(400).json({ code: "!field", message: "Search input is required" })
 
     try {
-        const products = await Product.find({ title: { $regex: search, $options: "i" } }).select("-__v -createdAt -updatedAt -description -sizes -type -category").limit(10).lean()
+        const products = await Product.find({ title: { $regex: search, $options: "i" }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category").limit(10).lean()
 
         log(`Found ${products.length} products for search: ${search}`)
         res.status(200).json(products)
@@ -23,7 +24,7 @@ export const findProductsQuery = async (req, res) => {
     if (!search || search.trim() === "") return res.status(400).json({ code: "!field", message: "Search query is required" })
 
     try {
-        const products = await Product.find({ title: { $regex: search, $options: "i" } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold").limit(10).lean()
+        const products = await Product.find({ title: { $regex: search, $options: "i" }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold").limit(10).lean()
 
         log(`Found ${products.length} products for search: ${search}`)
         res.status(200).json(products)
@@ -36,7 +37,7 @@ export const findProductsQuery = async (req, res) => {
 // Controller to get latest 10 products
 export const getLatestProducts = async (req, res) => {
     try {
-        const products = await Product.find().sort({ createdAt: -1 }).limit(10).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold").lean()
+        const products = await Product.find({ active: true }).sort({ createdAt: -1 }).limit(10).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold").lean()
 
         log(`Fetched ${products.length} latest products`)
         res.status(200).json(products)
@@ -52,7 +53,32 @@ export const getProductsByIds = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
     try {
+        const products = await Product.find({ _id: { $in: ids }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold")
+
+        log("Products found successfully")
+        res.status(200).json(products)
+    } catch (error) {
+        errorLog("Error in getProductsByIds controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to gets multiple products by list of IDs - exclusive for ORDERS!!!!!
+export const getProductsByIdsOrders = async (req, res) => {
+    const { ids } = req.body
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
+
+    try {
         const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold")
+
+        // If some of products not found, search in archive products
+        if (products.length !== ids.length) {
+            const archivedProducts = await ArchivedProduct.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold")
+            products.push(...archivedProducts)
+        }
+
+        // Check if all products found
+        if (products.length !== ids.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
 
         log("Products found successfully")
         res.status(200).json(products)
@@ -92,6 +118,8 @@ export const getProductsByQuery = async (req, res) => {
         if (sort === "price-high") sortBy = { price: -1, _id: 1 } // Sort by price in descending order
         if (sort === "featured") sortBy = { createdAt: -1, _id: 1 } // Sort by createdAt in descending order - then by _id in ascending order
 
+        query.active = true // Add active to query
+
         const total = await Product.countDocuments(query) // Count total number of products
 
         const items = await Product.find(query).sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -updatedAt -description -sizes -type -category -stock -createdAt").lean()
@@ -116,7 +144,7 @@ export const getProductById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
     try {
-        const product = await Product.findById(id).select("-__v -createdAt -updatedAt -stock -lowStockThreshold").lean()
+        const product = await Product.findOne({ _id: id, active: true }).select("-__v -createdAt -updatedAt -stock -lowStockThreshold").lean()
         if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
         log(`Product with id ${id} found successfully`)

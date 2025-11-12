@@ -1,50 +1,14 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { deleteProductById, fetchProductsByQuery } from "../utils/api";
-import { errorLog, log } from "../utils/log";
+import { archiveProductById, fetchProductsByQuery } from "../utils/api";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { useAdminAuth } from "../utils/AdminAuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-
-interface Product {
-  _id: number
-  image: string
-  title: string
-  price: number
-  category: string
-  discountPercent: number
-  onSale: boolean
-}
-
-function getPageNumbers(totalPages: number, currentPage: number) {
-  const delta = 2
-  const range: number[] = []
-  const rangeWithDots: (number | string)[] = []
-  let last: number | null = null
-
-  for (let i = 1; i <= totalPages; i++) {
-    if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
-      range.push(i)
-    }
-  }
-
-  for (const page of range) {
-    if (last !== null) {
-      if (page - last === 2) {
-        rangeWithDots.push(last + 1)
-      } else if (page - last > 2) {
-        rangeWithDots.push("...")
-      }
-    }
-    rangeWithDots.push(page)
-    last = page
-  }
-
-  return rangeWithDots
-}
+import { type Product } from "../utils/types";
+import getPageNumbers from "../utils/getPageNumbers";
 
 export default function Products() {
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
@@ -96,7 +60,7 @@ export default function Products() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleDeleteBtn = async (productId: number) => {
+  const handleArchiveBtn = async (productId: number) => {
     if (!token) {
       notyf.error("You must be logged in to delete products.")
       return
@@ -104,16 +68,14 @@ export default function Products() {
 
     setUpdatingDelete(true)
     try {
-      const data = await deleteProductById(productId) // Call API to delete product
+      await archiveProductById(productId) // Call API to delete product
 
       const updatedProducts = productsList.filter(product => product._id !== productId) // Update local state
       setProductsList(updatedProducts) // Save updated list to state
 
-      log(`Deleted product ID ${productId}:`, data)
       notyf.success(`Product deleted successfully.`)
     } catch (error) {
-      errorLog("Error in handleDeleteBtn", error)
-      notyf.error("Something went wrong. Please try again later.")
+      handleApiError(error as ApiError, "handleArchiveBtn")
     } finally {
       setUpdatingDelete(false)
     }
@@ -151,7 +113,7 @@ export default function Products() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-[#f5f2ee] dark:bg-neutral-700/40">
                 <tr>
-                  {["Image", "Name", "Price", "Category", "Actions"].map((title) => (
+                  {["Image", "Name", "Price", "Category", "Stock", "Actions"].map((title) => (
                     <th key={title} className="px-6 py-3 text-sm font-semibold text-[#c1a875] uppercase tracking-wide">
                       {title}
                     </th>
@@ -181,6 +143,10 @@ export default function Products() {
                     <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
                       {product.category}
                     </td>
+                    {/* Stock */}
+                    <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200">
+                      {product.stock}
+                    </td>
 
                     {/* Actions */}
                     <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
@@ -191,12 +157,11 @@ export default function Products() {
                             <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
                           </svg>
                         </button>
-                        <button onClick={() => handleDeleteBtn(product._id)} disabled={updatingDelete} title="Delete" className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                        <button onClick={() => handleArchiveBtn(product._id)} disabled={updatingDelete} title="Archive" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                           <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 0V4a2 2 0 012-2h0a2 2 0 012 2v2" />
-                            <line x1="10" y1="11" x2="10" y2="17" />
-                            <line x1="14" y1="11" x2="14" y2="17" />
+                            <path d="M9 12c0-.466 0-.699.076-.883a1 1 0 0 1 .541-.541C9.801 10.5 10.034 10.5 10.5 10.5h3c.466 0 .699 0 .883.076a1 1 0 0 1 .541.541C15 11.301 15 11.534 15 12s0 .699-.076.883a1 1 0 0 1-.541.541C14.199 13.5 13.966 13.5 13.5 13.5h-3c-.466 0-.699 0-.883-.076a1 1 0 0 1-.541-.541C9 12.699 9 12.466 9 12Z" />
+                            <path d="M20.5 7v6c0 3.771 0 5.657-1.172 6.828C18.157 21 16.271 21 12.5 21h-1M3.5 7v6c0 3.771 0 5.657 1.172 6.828.705.705 1.668.986 3.144 1.098" />
+                            <path d="M12 3H4c-1 0-1.5 0-1.707.293C2 3.586 2 4.057 2 5s0 .414.293.707C2.586 7 3.057 7 4 7h16c.943 0 1.414 0 1.707-.293C22 6.414 22 5.943 22 5s0-.414-.293-.707C21.414 3 20.943 3 20 3h-4" />
                           </svg>
                         </button>
                       </div>

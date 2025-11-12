@@ -4,45 +4,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import { fetchOrdersByQuery } from "../utils/api";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
-
-interface Order {
-  _id: string
-  userEmail: string
-  orderItems: []
-  paymentMethod: string
-  shippingAddress: {
-    email: string
-  }
-  status: string
-  createdAt: string
-}
-
-function getPageNumbers(totalPages: number, currentPage: number) {
-  const delta = 2
-  const range: number[] = []
-  const rangeWithDots: (number | string)[] = []
-  let last: number | null = null
-
-  for (let i = 1; i <= totalPages; i++) {
-    if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
-      range.push(i)
-    }
-  }
-
-  for (const page of range) {
-    if (last !== null) {
-      if (page - last === 2) {
-        rangeWithDots.push(last + 1)
-      } else if (page - last > 2) {
-        rangeWithDots.push("...")
-      }
-    }
-    rangeWithDots.push(page)
-    last = page
-  }
-
-  return rangeWithDots
-}
+import { type Order } from "../utils/types";
+import getPageNumbers from "../utils/getPageNumbers";
 
 export default function Orders() {
   const nav = useNavigate()

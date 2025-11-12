@@ -55,6 +55,7 @@ export const useApiErrorHandler = () => {
       "not_found": "Requested resource not found.",
       "same_hero": "The current Hero section is identical to the existing one.",
       "same_best_seller": "The current Best seller section is identical to the existing one.",
+      "Page not found": "Requested page not found."
     }
 
     if (code && errorMap[code]) message = errorMap[code]

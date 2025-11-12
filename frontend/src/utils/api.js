@@ -263,11 +263,24 @@ export const fetchOrdersByQuery = async (query, opt = {}) => {
         log("No token found")
         return
     }
-    const { data } = await axios.get(`${baseApiUrl}/order/`, {
+    const { data } = await axios.get(`${baseApiUrl}/order`, {
         params: { ...query }, signal,
         headers: { Authorization: `Bearer ${token}` }
     })
 
     log("Get order by query response:", data)
+    return data
+}
+
+// Function to gets multiple products by list of IDs - exclusive for ORDERS!!!!!!
+export const fetchProductsByIdsOrders = async (ids) => {
+    if (!Array.isArray(ids) || ids.length === 0) {
+        log("Product ids are required")
+        return
+    }
+    
+    const { data } = await axios.post(`${baseApiUrl}/products/orders`, { ids })
+
+    log("Get products by ids response:", data)
     return data
 }

@@ -4,8 +4,9 @@ import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { addProduct } from "../utils/api";
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-import ProductForm, { type ProductFormData } from "../components/ProductForm";
+import ProductForm from "../components/ProductForm";
 import { useNavigate } from "react-router-dom";
+import { type ProductFormData } from "../utils/types";
 
 export default function AddProduct() {
   const nav = useNavigate()

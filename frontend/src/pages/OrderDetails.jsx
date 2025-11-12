@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Notyf } from 'notyf'
 import 'notyf/notyf.min.css'
-import { fetchOrderById, fetchProductsByIds } from '../utils/api'
+import { fetchOrderById, fetchProductsByIdsOrders } from '../utils/api'
 import { errorLog, log } from '../utils/log'
 import Loading from '../components/Loading';
 import NavBar from '../components/NavBar'
@@ -25,7 +25,7 @@ export default function OrderDetails() {
       const data = await fetchOrderById(orderId)
       setOrder(data)
 
-      const products = await fetchProductsByIds(data.orderItems.map(item => item.itemId))
+      const products = await fetchProductsByIdsOrders(data.orderItems.map(item => item.itemId))
       setProductsList(products)
     } catch (error) {
       handleApiError(error, "getOrders")

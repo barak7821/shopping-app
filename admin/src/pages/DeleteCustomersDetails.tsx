@@ -4,24 +4,7 @@ import { useParams } from "react-router-dom"
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import Loading from "../components/Loading";
 import { getDeletedUserById } from "../utils/api";
-
-interface User {
-  _id: string
-  name: string
-  email: string
-  role: string
-  lastLogin: string
-  updatedAt: string
-  deletedAt: string
-  createdAt: string
-  note: string
-  provider: string
-  city: string
-  country: string
-  zip: string
-  phone: string
-  street: string
-}
+import { type User } from "../utils/types";
 
 export default function DeleteCustomersDetails() {
   const [user, setUser] = useState<User | null>(null)

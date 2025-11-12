@@ -1,5 +1,6 @@
 import Order from '../models/orderModel.js'
 import { orderUserSchemaJoi, orderGuestSchemaJoi } from '../models/orderModel.js'
+import Product from '../models/productModel.js'
 import User from '../models/userModel.js'
 import { log, errorLog } from "../utils/log.js"
 
@@ -11,6 +12,16 @@ export const createOrder = async (req, res) => {
     try {
         // Ensure userId is set to "guest"
         orderDetails.userId = "guest"
+
+        // Verify if product exists
+        const products = await Product.find({ _id: { $in: orderDetails.orderItems.map(item => item.itemId) }, active: true })
+        if (products.length !== orderDetails.orderItems.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
+
+        // Verify if product is in stock
+        for (const item of orderDetails.orderItems) {
+            const product = products.find(product => product._id.toString() === item.itemId, { active: true })
+            if (product.stock < item.selectedQuantity) return res.status(400).json({ code: "low_stock", message: "Product has low stock" })
+        }
 
         // // Validate against Joi schema
         await orderGuestSchemaJoi.validateAsync(orderDetails)
@@ -42,6 +53,16 @@ export const createOrderForUser = async (req, res) => {
 
         // Add user details to order details
         orderDetails.userId = userId
+
+        // Verify if product exists
+        const products = await Product.find({ _id: { $in: orderDetails.orderItems.map(item => item.itemId) }, active: true })
+        if (products.length !== orderDetails.orderItems.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
+
+        // Verify if product is in stock
+        for (const item of orderDetails.orderItems) {
+            const product = products.find(product => product._id.toString() === item.itemId, { active: true })
+            if (product.stock < item.selectedQuantity) return res.status(400).json({ code: "low_stock", message: "Product has low stock" })
+        }
 
         // Validate against Joi schema
         await orderUserSchemaJoi.validateAsync(orderDetails)

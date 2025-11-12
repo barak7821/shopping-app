@@ -29,7 +29,7 @@ export default function Cart() {
                         size: cartItem.size,
                         quantity: cartItem.quantity
                     }
-                    : null
+                    : removeFromCart(cartItem.id, cartItem.size) // remove the item from the cart if it doesn't exist in the server
             }).filter(Boolean) // remove null values
 
             setFullCart(items)

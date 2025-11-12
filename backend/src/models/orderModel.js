@@ -7,6 +7,7 @@ export const orderUserSchemaJoi = Joi.object(
         orderItems: Joi.array().items(
             Joi.object({
                 itemId: Joi.string().required(),
+                itemTitle: Joi.string().required(),
                 itemPricePerUnit: Joi.number().required(),
                 selectedQuantity: Joi.number().required(),
                 selectedSize: Joi.string().required()
@@ -30,6 +31,7 @@ export const orderGuestSchemaJoi = Joi.object(
         orderItems: Joi.array().items(
             Joi.object({
                 itemId: Joi.string().required(),
+                itemTitle: Joi.string().required(),
                 itemPricePerUnit: Joi.number().required(),
                 selectedQuantity: Joi.number().required(),
                 selectedSize: Joi.string().required()
@@ -63,6 +65,7 @@ const orderSchema = new mongoose.Schema(
         orderItems: [
             {
                 itemId: String,
+                itemTitle: String,
                 itemPricePerUnit: Number,
                 selectedQuantity: Number,
                 selectedSize: String

@@ -5,16 +5,7 @@ import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler"
 import { log } from "../utils/log"
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-
-interface Product {
-    discountPercent: number
-    onSale: number
-    _id: string
-    image: string
-    title: string
-    price: number
-    category: string
-}
+import { type Product } from "../utils/types";
 
 export default function BestSeller() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })

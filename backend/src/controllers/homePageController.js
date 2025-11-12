@@ -24,7 +24,7 @@ export const getBestSellers = async (req, res) => {
 
         log("Best seller section found successfully")
 
-        const products = await Product.find({ _id: { $in: bestSeller.products } }).select("-__v -createdAt -updatedAt -description -sizes -type -category").lean() // get products from best seller section
+        const products = await Product.find({ _id: { $in: bestSeller.products }, active: true}).select("-__v -createdAt -updatedAt -description -sizes -type -category").lean() // get products from best seller section
         if (products.length !== bestSeller.products.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
 
         log("Best seller products found successfully")

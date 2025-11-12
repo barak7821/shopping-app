@@ -1,18 +1,23 @@
 import Express from 'express';
 import adminAuthMiddleware from '../middlewares/adminAuthMiddleware.js';
-import { deleteAllProducts, deleteProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery } from '../controllers/adminController.js';
+import { deleteAllProducts, archiveProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery, getArchivedProductsByQuery, restoreArchivedProduct, getArchivedProductById } from '../controllers/adminController.js';
 
 const router = Express.Router()
 
 // Define route handlers
 
 // Products
-router.get('/', adminAuthMiddleware, getProductsByQuery) - // Get products - pagination in Products page
-router.post('/', adminAuthMiddleware, addProduct) - // Add new product
-router.delete('/', adminAuthMiddleware, deleteProductById) - // Delete product by id
-router.patch('/', adminAuthMiddleware, updateProductById) - // Update product by id
+router.get('/', adminAuthMiddleware, getProductsByQuery) // Get products - pagination in Products page
+router.post('/', adminAuthMiddleware, addProduct) // Add new product
+router.post('/productArchive', adminAuthMiddleware, archiveProductById) // Move to archive
+router.patch('/', adminAuthMiddleware, updateProductById) // Update product by id
 router.post('/getByIds', adminAuthMiddleware, getProductsByIds) // Get List of products by their IDs - used for order details page
 router.get('/getById', adminAuthMiddleware, getProductById) // Get product by id
+
+// Archive Products
+router.get('/archived', adminAuthMiddleware, getArchivedProductsByQuery) // Get archived products - pagination in Archived Products page
+router.post('/archived', adminAuthMiddleware, restoreArchivedProduct) // Restore archived product
+router.get('/archivedById', adminAuthMiddleware, getArchivedProductById) // Get archived product by id
 
 // Users
 router.get('/users', adminAuthMiddleware, getUsersByQuery) // Get users - pagination in Users page

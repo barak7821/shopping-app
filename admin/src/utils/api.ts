@@ -17,21 +17,21 @@ export const checkUserAuth = async () => {
     return data
 }
 
-// Function to delete a product by ID
-export const deleteProductById = async (productId: number) => {
+// Function to archive a product by ID
+export const archiveProductById = async (productId: number) => {
     const token = localStorage.getItem("token")
     if (!token) {
         throw new Error("No token found")
     }
-    const { data } = await axios.delete(`${baseApiUrl}/admin`, {
+    const { data } = await axios.post(`${baseApiUrl}/admin/productArchive`, {
+        id: productId
+    }, {
         headers: {
             Authorization: `Bearer ${token}`
-        },
-        data: {
-            id: productId
         }
     })
-    log(`Delete product by ID (${productId}) response:`, data)
+
+    log("Archive product by id response:", data)
     return data
 }
 
@@ -372,5 +372,58 @@ export const fetchProductsByQuery = async (query: any, opt: { signal?: AbortSign
     })
 
     log("Get products by query response:", data)
+    return data
+}
+
+// Function to fetch archived products by query - pagination
+export const fetchArchivedProducts = async (query: any, opt: { signal?: AbortSignal } = {}) => {
+    const { signal } = opt
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+    const { data } = await axios.get(`${baseApiUrl}/admin/archived`, {
+        params: { ...query }, signal,
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Get archived products response:", data)
+    return data
+}
+
+// Function to restore product
+export const restoreArchivedProduct = async (productId: string) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+    const { data } = await axios.post(`${baseApiUrl}/admin/archived`, {
+        id: productId
+    }, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Restore product response:", data)
+    return data
+
+}
+
+// Function to get archived product by id
+export const getArchivedProductById = async (productId: string) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+    const { data } = await axios.get(`${baseApiUrl}/admin/archivedById?id=${productId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Get product by id response:", data)
     return data
 }

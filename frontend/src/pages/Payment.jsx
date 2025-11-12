@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar';
 import { useCart } from '../utils/CartContext';
-import {  log } from '../utils/log';
+import { log } from '../utils/log';
 import { FaCreditCard, FaPaypal, FaApplePay, FaGooglePay } from "react-icons/fa6"
 import AboutCard from '../components/AboutCard';
 import Footer from '../components/Footer';
@@ -15,7 +15,7 @@ import { useApiErrorHandler } from '../utils/useApiErrorHandler';
 export default function Payment() {
     const nav = useNavigate()
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
-    const { cart, address, setCart } = useCart()
+    const { cart, address, setCart, removeFromCart } = useCart()
     const [fullCart, setFullCart] = useState([])
     const [paymentMethod, setPaymentMethod] = useState("creditCard")
     const [shippingPrice, setShippingPrice] = useState(0)
@@ -42,7 +42,7 @@ export default function Payment() {
                         selectedSize: cartItem.size,
                         selectedQuantity: cartItem.quantity
                     }
-                    : null
+                    : removeFromCart(cartItem.id, cartItem.size) // remove the item from the cart if it doesn't exist in the server
             }).filter(Boolean) // remove null values
 
             setFullCart(items)
@@ -66,7 +66,7 @@ export default function Payment() {
         }
 
         log("Address", address)
-
+        log("Cart", cart)
         getProductsByIds() // get products from server
     }, [address, cart])
 
@@ -89,6 +89,12 @@ export default function Payment() {
     }
 
     const handleClick = async () => {
+        if (fullCart.length === 0) {
+            notyf.error("Please add something to cart")
+            log("Please add something to cart")
+            return
+        }
+
         if (!paymentMethod) {
             notyf.error("Please select a payment method")
             return
@@ -188,6 +194,7 @@ export default function Payment() {
         const orderDetails = {
             orderItems: fullCart.map(item => ({
                 itemId: item._id,
+                itemTitle: item.title,
                 itemPricePerUnit: item.price * (1 - item.discountPercent / 100),
                 selectedQuantity: item.selectedQuantity,
                 selectedSize: item.selectedSize
@@ -201,7 +208,7 @@ export default function Payment() {
         // Send order details to backend
         try {
             // check if user is authenticated, to set route
-            const data = isAuthenticated
+            isAuthenticated
                 ? await handleOrder(orderDetails)
                 : await handleGuestOrder(orderDetails)
 

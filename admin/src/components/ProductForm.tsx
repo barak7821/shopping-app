@@ -1,7 +1,5 @@
 import { useState, type ChangeEvent, useEffect } from "react";
-
-type Category = "men" | "women" | "kids"
-type SizeOptions = Record<Exclude<Category, "">, string[]>
+import { type Category, type SizeOptions, type ProductFormData } from "../utils/types";
 
 const sizeOptions: SizeOptions = {
   men: ["XS", "S", "M", "L", "XL", "XXL"],
@@ -9,25 +7,14 @@ const sizeOptions: SizeOptions = {
   kids: ["4", "6", "8", "10"],
 }
 
-export interface ProductFormData {
-  title: string
-  category: Category | ""
-  price: string
-  image: string
-  description: string
-  sizes: string[]
-  type: string
-  discountPercent: string
-  onSale: boolean
-}
-
 interface ProductFormProps {
   initialData?: Partial<ProductFormData>
   onSubmit: (productData: ProductFormData) => Promise<void>
   isEditing: boolean
+  isArchived?: boolean
 }
 
-export default function ProductForm({ initialData, onSubmit, isEditing }: ProductFormProps) {
+export default function ProductForm({ initialData, onSubmit, isEditing, isArchived }: ProductFormProps) {
   const [formData, setFormData] = useState<ProductFormData>({
     title: "",
     category: "",
@@ -38,6 +25,7 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
     type: "",
     discountPercent: "",
     onSale: false,
+    stock: "",
     ...initialData,
   })
 
@@ -89,17 +77,17 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
     if (!isEditing) { // Reset form only for "Add Product"
       setFormData({
         title: "", category: "", price: "", image: "",
-        description: "", sizes: [], type: "", discountPercent: "", onSale: false,
+        description: "", sizes: [], type: "", discountPercent: "", onSale: false, stock: ""
       })
     }
   }
 
-  const { title, category, price, image, description, sizes, type, discountPercent, onSale } = formData
+  const { title, category, price, image, description, sizes, type, discountPercent, onSale, stock } = formData
 
   return (
     <div className="flex-1 bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-10">
       <h1 className="text-3xl font-prata text-[#181818] dark:text-neutral-100 mb-6 tracking-tight">
-        {isEditing ? "Edit Product" : "Add New Product"}
+        {isArchived ? "Archived Product Details" : isEditing ? "Edit Product" : "Add Product"}
       </h1>
 
       {/* Grid Layout */}
@@ -107,25 +95,25 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
         {/* Name */}
         <div>
           <label htmlFor="title" className="block text-sm font-semibold text-[#c1a875] mb-1">Product Name</label>
-          <input value={title} onChange={handleChange} id="title" type="text" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm" />
+          <input value={title} onChange={handleChange} id="title" type="text" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm disabled:cursor-not-allowed" disabled={isArchived} />
         </div>
 
         {/* Price */}
         <div>
           <label htmlFor="price" className="block text-sm font-semibold text-[#c1a875] mb-1">Price</label>
-          <input value={price} onChange={handleChange} id="price" type="number" step="0.01" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm" />
+          <input value={price} onChange={handleChange} id="price" type="number" step="0.01" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm disabled:cursor-not-allowed" disabled={isArchived} />
         </div>
 
         {/* On Sale */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <input id="onSale" type="checkbox" checked={onSale} onChange={(e) => setFormData((prev) => ({ ...prev, onSale: e.target.checked }))} />
+            <input id="onSale" type="checkbox" className="disabled:cursor-not-allowed" checked={onSale} onChange={(e) => setFormData((prev) => ({ ...prev, onSale: e.target.checked }))} disabled={isArchived} />
             <label htmlFor="onSale" className="text-sm font-semibold text-[#c1a875]">On Sale</label>
           </div>
           {onSale &&
             <div>
               <label htmlFor="discountPercent" className="block text-sm font-semibold text-[#c1a875] mb-1">Sale Percentage</label>
-              <input value={discountPercent} onChange={handleChange} id="discountPercent" type="number" step="0.1" min="0" max="100" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm" />
+              <input value={discountPercent} onChange={handleChange} id="discountPercent" type="number" step="0.1" min="0" max="100" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm disabled:cursor-not-allowed" disabled={isArchived} />
             </div>
           }
         </div>
@@ -133,7 +121,7 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
         {/* Category */}
         <div>
           <label htmlFor="category" className="block text-sm font-semibold text-[#c1a875] mb-1">Category</label>
-          <select id="category" value={category} onChange={handleCategoryChange} className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-pointer">
+          <select id="category" value={category} onChange={handleCategoryChange} className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-pointer disabled:cursor-not-allowed" disabled={isArchived}>
             <option value="" disabled>Select Category</option>
             <option value="men">Men</option>
             <option value="women">Women</option>
@@ -149,9 +137,9 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
             </label>
             <div className="mt-2 flex flex-wrap gap-2 items-center">
               {sizeOptions[category].map((size) => (
-                <button key={size} type="button" onClick={() => toggleSize(size)} disabled={isEditing && sizes.includes("outOfStock")} className={`px-4 py-2 border rounded-md text-sm transition cursor-pointer ${sizes.includes(size)
+                <button key={size} type="button" onClick={() => toggleSize(size)} disabled={isArchived ? isArchived : isEditing && sizes.includes("outOfStock")} className={`px-4 py-2 border rounded-md text-sm transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${sizes.includes(size)
                   ? "bg-[#c1a875] text-white border-[#c1a875]"
-                  : "border-gray-300 text-gray-700 hover:bg-[#c1a875]/10 dark:text-gray-300 dark:border-neutral-600"} ${isEditing && sizes.includes("outOfStock") && "opacity-50 cursor-not-allowed"}`}>
+                  : "border-gray-300 text-gray-700 hover:bg-[#c1a875]/10 dark:text-gray-300 dark:border-neutral-600"} ${isEditing && sizes.includes("outOfStock")}`}>
                   {size}
                 </button>
               ))}
@@ -176,16 +164,22 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
           </div>
         )}
 
+        {/* Stock */}
+        <div>
+          <label htmlFor="stock" className="block text-sm font-semibold text-[#c1a875] mb-1">Stock</label>
+          <input value={stock} onChange={handleChange} id="stock" type="number" min="0" step="1" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm  disabled:cursor-not-allowed" disabled={isArchived} />
+        </div>
+
         {/* Image */}
         <div>
           <label htmlFor="image" className="block text-sm font-semibold text-[#c1a875] mb-1">Image URL</label>
-          <input value={image} onChange={handleChange} id="image" type="text" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm" />
+          <input value={image} onChange={handleChange} id="image" type="text" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm disabled:cursor-not-allowed" disabled={isArchived} />
         </div>
 
         {/* Type */}
         <div>
           <label htmlFor="type" className="block text-sm font-semibold text-[#c1a875] mb-1">Type</label>
-          <select id="type" value={type} onChange={handleChange} className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-pointer">
+          <select id="type" value={type} onChange={handleChange} className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm cursor-pointer disabled:cursor-not-allowed" disabled={isArchived}>
             <option value="" disabled>Select Type</option>
             <option value="t-shirt">T-Shirt</option>
             <option value="shirt">Shirt</option>
@@ -202,13 +196,13 @@ export default function ProductForm({ initialData, onSubmit, isEditing }: Produc
         {/* Description */}
         <div>
           <label htmlFor="description" className="block text-sm font-semibold text-[#c1a875] mb-1">Description</label>
-          <textarea value={description} id="description" onChange={handleChange} className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm" rows={4}></textarea>
+          <textarea value={description} id="description" onChange={handleChange} className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm  disabled:cursor-not-allowed" rows={4} disabled={isArchived} />
         </div>
 
         {/* Button */}
         <div>
           <button onClick={handleSubmit} className="px-8 py-3 rounded-xl font-semibold bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer">
-            {isEditing ? "Update Product" : "Add Product"}
+            {isArchived ? "Restore Product" : isEditing ? "Edit Product" : "Add Product"}
           </button>
         </div>
       </div>

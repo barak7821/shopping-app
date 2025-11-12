@@ -7,24 +7,7 @@ import { getOrderById, getProductsByIds, updateOrderStatusById } from "../utils/
 import { log } from "../utils/log";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-
-interface Order {
-    userId: string
-    _id: string
-    userEmail: string
-    orderItems: {
-        _id: string
-        itemId: string
-        selectedSize: string
-        selectedQuantity: number
-        itemPricePerUnit: number
-    }[]
-    paymentMethod: string
-    shippingAddress: { name: string, email: string, phone: string, street: string, city: string, zip: string, country: string }
-    status: string
-    createdAt: string
-    updatedAt: string
-}
+import { type Order } from "../utils/types";
 
 export default function OrderDetails() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })

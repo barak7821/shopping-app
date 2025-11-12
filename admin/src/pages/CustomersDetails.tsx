@@ -6,23 +6,7 @@ import Loading from "../components/Loading";
 import { addNoteToUser, deleteUserById, getUserById, makeAdmin, removeAdmin } from "../utils/api";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-
-interface User {
-  _id: string
-  name: string
-  email: string
-  role: string
-  lastLogin: string
-  updatedAt: string
-  createdAt: string
-  note: string
-  provider: string
-  city: string
-  country: string
-  zip: string
-  phone: string
-  street: string
-}
+import { type User } from "../utils/types";
 
 export default function CustomersDetails() {
   const nav = useNavigate()
