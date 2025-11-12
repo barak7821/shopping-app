@@ -240,7 +240,7 @@ export const tempBestSeller = async (req, res) => {
 // Controller to add a new product
 export const addProduct = async (req, res) => {
     const { title, category, price, image, description, sizes, type, onSale, discountPercent, stock } = req.body
-    if (!title || !category || !price || !image || !description || !sizes || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
+    if (!title || !category || !price || !image || !description || !sizes || sizes.length === 0 || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
 
     try {
         // Validate input against Joi schema
@@ -308,7 +308,7 @@ export const getProductById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
     try {
-        const product = await Product.findById(id).lean()
+        const product = await Product.findById(id).lean({ virtuals: true })
         if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
         log(`Product with id ${id} found successfully`)
@@ -323,7 +323,7 @@ export const getProductById = async (req, res) => {
 export const updateProductById = async (req, res) => {
     const { id, title, category, price, image, description, sizes, type, onSale, discountPercent, stock } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
-    if (!title || !category || !price || !image || !description || !sizes || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
+    if (!title || !category || !price || !image || !description || !sizes || sizes.length === 0 || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
 
     try {
         // Validate input against Joi schema

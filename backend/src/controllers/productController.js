@@ -144,7 +144,7 @@ export const getProductById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
     try {
-        const product = await Product.findOne({ _id: id, active: true }).select("-__v -createdAt -updatedAt -stock -lowStockThreshold").lean()
+        const product = await Product.findOne({ _id: id, active: true }).select("-__v -createdAt -updatedAt -category -type")
         if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
         log(`Product with id ${id} found successfully`)

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Joi from "joi";
+import mongooseLeanVirtuals from "mongoose-lean-virtuals"
 
 export const productSchemaJoi = Joi.object(
     {
@@ -8,7 +9,7 @@ export const productSchemaJoi = Joi.object(
         price: Joi.number().required(),
         image: Joi.string().required(),
         description: Joi.string().required(),
-        sizes: Joi.array().required(),
+        sizes: Joi.array().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL").required(),
         type: Joi.string().valid(
             "t-shirt", "shirt", "hoodie", "dress", "pants",
             "shorts", "skirt", "jacket", "leggings"
@@ -28,7 +29,7 @@ export const updateProductSchemaJoi = Joi.object(
         price: Joi.number().allow(""),
         image: Joi.string().allow(""),
         description: Joi.string().allow(""),
-        sizes: Joi.array().allow(""),
+        sizes: Joi.array().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL").allow(""),
         type: Joi.string().valid(
             "t-shirt", "shirt", "hoodie", "dress", "pants",
             "shorts", "skirt", "jacket", "leggings"
@@ -72,7 +73,13 @@ const productSchema = new mongoose.Schema(
             trim: true,
             required: true
         },
-        sizes: [String],
+        sizes: {
+            type: [String],
+            enum: [
+                "XS", "S", "M", "L", "XL", "XXL", "XXXL"
+            ],
+            required: true
+        },
         type: {
             type: String,
             enum: [
@@ -116,6 +123,26 @@ productSchema.index({ sizes: 1 })
 productSchema.index({ category: 1, type: 1, price: 1 })
 productSchema.index({ category: 1, type: 1, createdAt: -1 })
 productSchema.index({ title: "text" })
+
+productSchema.virtual("availability").get(function () { // Check stock availability
+    if (this.stock <= 0) return "out"
+    if (this.stock <= this.lowStockThreshold) return "low"
+    if (this.stock <= this.lowStockThreshold * 3) return "medium"
+    return "available"
+})
+
+productSchema.set("toJSON", {
+    virtuals: true,
+    transform(doc, ret) {
+        delete ret.stock
+        delete ret.lowStockThreshold
+        delete ret.__v
+        delete ret.updatedAt
+        return ret
+    }
+})
+
+productSchema.plugin(mongooseLeanVirtuals) // Use lean virtuals
 
 export const Product = mongoose.model("Product", productSchema)
 export default Product

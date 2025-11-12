@@ -65,13 +65,6 @@ export default function ProductForm({ initialData, onSubmit, isEditing, isArchiv
     }))
   }
 
-  const handleOutOfStock = () => {
-    setFormData(prev => ({
-      ...prev,
-      sizes: prev.sizes.includes("outOfStock") ? [] : ["outOfStock"]
-    }))
-  }
-
   const handleSubmit = async () => {
     await onSubmit(formData)
     if (!isEditing) { // Reset form only for "Add Product"
@@ -130,39 +123,22 @@ export default function ProductForm({ initialData, onSubmit, isEditing, isArchiv
         </div>
 
         {/* Sizes */}
-        {category && (
+        {category &&
           <div>
             <label className="block text-sm font-semibold text-[#c1a875] mb-1">
               Available Sizes
             </label>
             <div className="mt-2 flex flex-wrap gap-2 items-center">
-              {sizeOptions[category].map((size) => (
-                <button key={size} type="button" onClick={() => toggleSize(size)} disabled={isArchived ? isArchived : isEditing && sizes.includes("outOfStock")} className={`px-4 py-2 border rounded-md text-sm transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${sizes.includes(size)
+              {sizeOptions[category].map((size) =>
+                <button key={size} type="button" onClick={() => toggleSize(size)} disabled={isArchived} className={`px-4 py-2 border rounded-md text-sm transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${sizes.includes(size)
                   ? "bg-[#c1a875] text-white border-[#c1a875]"
-                  : "border-gray-300 text-gray-700 hover:bg-[#c1a875]/10 dark:text-gray-300 dark:border-neutral-600"} ${isEditing && sizes.includes("outOfStock")}`}>
+                  : "border-gray-300 text-gray-700 hover:bg-[#c1a875]/10 dark:text-gray-300 dark:border-neutral-600"}`}>
                   {size}
                 </button>
-              ))}
-
-              {isEditing && (
-                <>
-                  <div className="w-px h-6 bg-gray-300 dark:bg-neutral-600 mx-2"></div>
-                  <button onClick={handleOutOfStock} className={`px-4 py-2 border rounded-md text-sm transition cursor-pointer font-semibold ${sizes.includes("outOfStock")
-                    ? "bg-red-500 text-white border-red-500"
-                    : "border-gray-300 text-gray-700 hover:bg-red-500/10 hover:text-red-600 dark:text-gray-300 dark:border-neutral-600"
-                    }`}>
-                    Out of Stock
-                  </button>
-                </>
               )}
             </div>
-            {isEditing && sizes.includes("outOfStock") && (
-              <p className="text-xs text-gray-500 mt-2">
-                Product is currently marked as out of stock. Click "Out of Stock" again to re-enable size selection.
-              </p>
-            )}
           </div>
-        )}
+        }
 
         {/* Stock */}
         <div>

@@ -7,6 +7,7 @@ export interface Product {
   discountPercent: number
   onSale: boolean
   stock: number
+  lowStockThreshold: number
 }
 
 export interface ContactInfo {
