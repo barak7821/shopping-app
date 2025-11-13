@@ -13,14 +13,30 @@ export const createOrder = async (req, res) => {
         // Ensure userId is set to "guest"
         orderDetails.userId = "guest"
 
+        // Get unique product IDs
+        const productIds = [...new Set(orderDetails.orderItems.map(item => item.itemId))]
+
+        // Fetch products
+        const products = await Product.find({ _id: { $in: productIds }, active: true })
+
         // Verify if product exists
-        const products = await Product.find({ _id: { $in: orderDetails.orderItems.map(item => item.itemId) }, active: true })
-        if (products.length !== orderDetails.orderItems.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
+        if (products.length !== productIds.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
+
+        const quantityByProductId = {}
+
+        // Calculate total quantity for each product
+        for (const item of orderDetails.orderItems) {
+            if (!quantityByProductId[item.itemId]) {
+                quantityByProductId[item.itemId] = 0
+            }
+            quantityByProductId[item.itemId] += item.selectedQuantity
+        }
 
         // Verify if product is in stock
-        for (const item of orderDetails.orderItems) {
-            const product = products.find(product => product._id.toString() === item.itemId, { active: true })
-            if (product.stock < item.selectedQuantity) return res.status(400).json({ code: "low_stock", message: "Product has low stock" })
+        for (const [productId, totalQty] of Object.entries(quantityByProductId)) {
+            const product = products.find(product => product._id.toString() === productId)
+            if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
+            if (product.stock < totalQty) return res.status(400).json({ code: "low_stock", message: "Product is out of stock" })
         }
 
         // // Validate against Joi schema
@@ -28,6 +44,14 @@ export const createOrder = async (req, res) => {
         const newOrder = new Order(orderDetails) // Create a new order instance
 
         await newOrder.save() // Save the order to the database
+
+        // Update product stock
+        for (const [productId, totalQty] of Object.entries(quantityByProductId)) {
+            const product = products.find(product => product._id.toString() === productId)
+            product.stock -= totalQty
+            product.active = false
+            await product.save()
+        }
 
         log("Order created successfully")
         res.status(201).json({ message: "Order created successfully" })
@@ -54,14 +78,30 @@ export const createOrderForUser = async (req, res) => {
         // Add user details to order details
         orderDetails.userId = userId
 
+        // Get unique product IDs
+        const productIds = [...new Set(orderDetails.orderItems.map(item => item.itemId))]
+
+        // Fetch products
+        const products = await Product.find({ _id: { $in: productIds }, active: true })
+
         // Verify if product exists
-        const products = await Product.find({ _id: { $in: orderDetails.orderItems.map(item => item.itemId) }, active: true })
-        if (products.length !== orderDetails.orderItems.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
+        if (products.length !== productIds.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
+
+        const quantityByProductId = {}
+
+        // Calculate total quantity for each product
+        for (const item of orderDetails.orderItems) {
+            if (!quantityByProductId[item.itemId]) {
+                quantityByProductId[item.itemId] = 0
+            }
+            quantityByProductId[item.itemId] += item.selectedQuantity
+        }
 
         // Verify if product is in stock
-        for (const item of orderDetails.orderItems) {
-            const product = products.find(product => product._id.toString() === item.itemId, { active: true })
-            if (product.stock < item.selectedQuantity) return res.status(400).json({ code: "low_stock", message: "Product has low stock" })
+        for (const [productId, totalQty] of Object.entries(quantityByProductId)) {
+            const product = products.find(product => product._id.toString() === productId)
+            if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
+            if (product.stock < totalQty) return res.status(400).json({ code: "low_stock", message: "Product is out of stock" })
         }
 
         // Validate against Joi schema
@@ -69,6 +109,14 @@ export const createOrderForUser = async (req, res) => {
         const newOrder = new Order(orderDetails) // Create a new order instance
 
         await newOrder.save() // Save the order to the database
+
+        // Update product stock
+        for (const [productId, totalQty] of Object.entries(quantityByProductId)) {
+            const product = products.find(product => product._id.toString() === productId)
+            product.stock -= totalQty
+            product.active = false
+            await product.save()
+        }
 
         log("Order created successfully")
         res.status(201).json({ message: "Order created successfully" })

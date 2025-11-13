@@ -77,9 +77,6 @@ export const getProductsByIdsOrders = async (req, res) => {
             products.push(...archivedProducts)
         }
 
-        // Check if all products found
-        if (products.length !== ids.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
-
         log("Products found successfully")
         res.status(200).json(products)
     } catch (error) {
