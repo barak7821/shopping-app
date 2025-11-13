@@ -19,7 +19,15 @@ export default function ProductDetails() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
     const { handleApiError } = useApiErrorHandler()
-    const sizes = Array.isArray(product?.sizes) ? product.sizes : []
+    const sizes = Array.isArray(product?.sizes)
+        ? product.sizes
+            .map(size => {
+                if (typeof size === "string") return size
+                if (size && typeof size === "object" && typeof size.code === "string") return size.code
+                return ""
+            })
+            .filter(Boolean)
+        : []
 
     const getProducts = async () => {
         setLoading(true)

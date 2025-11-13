@@ -8,7 +8,7 @@ import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import { useNavigate, useParams } from "react-router-dom";
 import ProductForm from "../components/ProductForm";
 import Loading from "../components/Loading";
-import { type Category, type ProductFormData } from "../utils/types";
+import { type Category, type ProductFormData, type ProductSize } from "../utils/types";
 
 export default function ArchivedProductsDetails() {
     const nav = useNavigate()
@@ -29,13 +29,15 @@ export default function ArchivedProductsDetails() {
                     title: data.title,
                     price: data.price.toString(),
                     category: data.category as Category,
-                    sizes: data.sizes,
+                    sizes: (data.sizes || []).map((size: ProductSize) => ({
+                        code: size.code,
+                        stock: size.stock?.toString() ?? ""
+                    })),
                     image: data.image,
                     type: data.type,
                     description: data.description,
-                    discountPercent: data.discountPercent.toString(),
+                    discountPercent: (data.discountPercent ?? 0).toString(),
                     onSale: data.onSale,
-                    stock: data.stock.toString(),
                 })
             } catch (error) {
                 handleApiError(error as ApiError, "fetchProductById")

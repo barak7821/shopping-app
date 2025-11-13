@@ -1,13 +1,20 @@
+export interface ProductSize {
+  code: string
+  stock: number
+}
+
 export interface Product {
-  _id: number
+  _id: string
   image: string
   title: string
   price: number
   category: string
   discountPercent: number
   onSale: boolean
-  stock: number
+  stock?: number
+  totalStock?: number
   lowStockThreshold: number
+  sizes?: ProductSize[]
 }
 
 export interface ContactInfo {
@@ -76,15 +83,19 @@ export const sizeOptions: SizeOptions = {
   kids: ["4", "6", "8", "10"],
 }
 
+export interface ProductSizeFormValue {
+  code: string
+  stock: string
+}
+
 export interface ProductFormData {
   title: string
   category: Category | ""
   price: string
   image: string
   description: string
-  sizes: string[]
+  sizes: ProductSizeFormValue[]
   type: string
   discountPercent: string
   onSale: boolean
-  stock: string
 }

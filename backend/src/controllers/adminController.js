@@ -31,14 +31,13 @@ export const addMultipleProducts = async (req, res) => {
         const formattedProducts = []
 
         for (const product of products) {
-            const { title, category, price, image, description, sizes, type, onSale, discountPercent, stock } = product
+            const { title, category, price, image, description, sizes, type, onSale, discountPercent } = product
 
             // Check for required fields
-            if (!title || !category || !price || !image || !description || !sizes || !sizes.length || !type || onSale === undefined || discountPercent === undefined || stock === undefined) return res.status(400).json({ code: "!field", message: `Missing fields in one of the products` })
-
+            if (!title || !category || !price || !image || !description || !sizes || !sizes.length || !type || onSale === undefined || discountPercent === undefined) return res.status(400).json({ code: "!field", message: `Missing fields in one of the products` })
 
             // Validate with Joi
-            await productSchemaJoi.validateAsync({ title, category, price, image, description, sizes, type, onSale, discountPercent, stock })
+            await productSchemaJoi.validateAsync({ title, category, price, image, description, sizes, type, onSale, discountPercent })
 
             // Check if product already exists
             const exists = await Product.findOne({ title: title.toLowerCase() })
@@ -46,6 +45,11 @@ export const addMultipleProducts = async (req, res) => {
                 log(`Skipped duplicate: ${title}`)
                 continue
             }
+
+            // Calculate total stock
+            const totalStock = sizes.reduce((sum, size) => {
+                return sum + (size.stock || 0)
+            }, 0)
 
             formattedProducts.push({
                 title: title.toLowerCase(),
@@ -57,8 +61,7 @@ export const addMultipleProducts = async (req, res) => {
                 type: type.toLowerCase(),
                 onSale,
                 discountPercent,
-                active: stock > 0 ? true : false,
-                stock
+                active: totalStock > 0
             })
         }
 
@@ -243,7 +246,7 @@ export const tempBestSeller = async (req, res) => {
 
 // Controller to add a new product
 export const addProduct = async (req, res) => {
-    const { title, category, price, image, description, sizes, type, onSale, discountPercent, stock } = req.body
+    const { title, category, price, image, description, sizes, type, onSale, discountPercent } = req.body
     if (!title || !category || !price || !image || !description || !sizes || sizes.length === 0 || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
 
     try {
@@ -253,6 +256,11 @@ export const addProduct = async (req, res) => {
         // Verify if the product already exists
         const product = await Product.findOne({ title: title.toLowerCase() })
         if (product) return res.status(400).json({ code: "exist", message: "Product already exists" })
+
+        // Calculate total stock
+        const totalStock = sizes.reduce((sum, size) => {
+            return sum + (size.stock || 0)
+        }, 0)
 
         // Create a new product
         const newProduct = new Product({
@@ -265,8 +273,7 @@ export const addProduct = async (req, res) => {
             type: type.toLowerCase(),
             onSale,
             discountPercent,
-            active: stock > 0 ? true : false,
-            stock
+            active: totalStock > 0
         })
 
         // Save the new product to the database
@@ -312,11 +319,18 @@ export const getProductById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
     try {
-        const product = await Product.findById(id).lean({ virtuals: true })
+        const product = await Product.findById(id).select("-__v -createdAt -updatedAt").lean({ virtuals: true })
         if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
+        const safeSizes = product.sizes.filter(size => (size.stock || 0) > 0)
+
+        const sanitizedProduct = {
+            ...product,
+            sizes: safeSizes
+        }
+
         log(`Product with id ${id} found successfully`)
-        res.status(200).json(product)
+        res.status(200).json(sanitizedProduct)
     } catch (error) {
         errorLog("Error in getProductById controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -325,9 +339,8 @@ export const getProductById = async (req, res) => {
 
 // Controller to edit product by id
 export const updateProductById = async (req, res) => {
-    const { id, title, category, price, image, description, sizes, type, onSale, discountPercent, stock } = req.body
+    const { id, title, category, price, image, description, sizes, type, onSale, discountPercent } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
-    if (!title || !category || !price || !image || !description || !sizes || sizes.length === 0 || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
 
     try {
         // Validate input against Joi schema
@@ -340,12 +353,19 @@ export const updateProductById = async (req, res) => {
         if (price) updateFields.price = price
         if (image) updateFields.image = image
         if (description) updateFields.description = description
-        if (sizes) updateFields.sizes = sizes
+        if (sizes) {
+            updateFields.sizes = sizes
+
+            // Calculate total stock
+            const totalStock = sizes.reduce((sum, size) => {
+                return sum + (size.stock || 0)
+            }, 0)
+
+            updateFields.active = totalStock > 0
+        }
         if (type) updateFields.type = type.toLowerCase()
         if (onSale !== undefined) updateFields.onSale = onSale
         if (discountPercent !== undefined) updateFields.discountPercent = discountPercent
-        if (stock !== undefined) updateFields.stock = stock
-        stock > 0 ? updateFields.active = true : updateFields.active = false
 
         // If no fields are provided, return an error
         if (Object.keys(updateFields).length === 0) return res.status(400).json({ code: "!field", message: "No fields provided" })
@@ -368,7 +388,7 @@ export const getProductsByIds = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
     try {
-        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold -active -discountPercent -onSale -price -stock").lean()
+        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold -active -discountPercent -onSale -price").lean()
         if (products.length !== ids.length) return res.status(404).json({ code: "not_found", message: "One or more products not found" })
 
         log("Products found successfully")
@@ -389,7 +409,7 @@ export const getProductsByQuery = async (req, res) => {
 
         const total = await Product.countDocuments() // Count total number of products
 
-        const items = await Product.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -createAt -updatedAt -description -sizes -type -active").lean()
+        const items = await Product.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -createAt -updatedAt -description -type -active").lean({virtuals: true})
 
         const totalPages = Math.max(1, Math.ceil(total / limit)) // Calculate total number of pages
         const hasNext = page < totalPages // Check if there are more pages

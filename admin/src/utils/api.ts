@@ -18,7 +18,7 @@ export const checkUserAuth = async () => {
 }
 
 // Function to archive a product by ID
-export const archiveProductById = async (productId: number) => {
+export const archiveProductById = async (productId: string) => {
     const token = localStorage.getItem("token")
     if (!token) {
         throw new Error("No token found")

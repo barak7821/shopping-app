@@ -24,7 +24,7 @@ export const findProductsQuery = async (req, res) => {
     if (!search || search.trim() === "") return res.status(400).json({ code: "!field", message: "Search query is required" })
 
     try {
-        const products = await Product.find({ title: { $regex: search, $options: "i" }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold").limit(10).lean()
+        const products = await Product.find({ title: { $regex: search, $options: "i" }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold -sizes.").limit(10).lean()
 
         log(`Found ${products.length} products for search: ${search}`)
         res.status(200).json(products)
@@ -37,7 +37,7 @@ export const findProductsQuery = async (req, res) => {
 // Controller to get latest 10 products
 export const getLatestProducts = async (req, res) => {
     try {
-        const products = await Product.find({ active: true }).sort({ createdAt: -1 }).limit(10).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold").lean()
+        const products = await Product.find({ active: true }).sort({ createdAt: -1 }).limit(10).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold").lean()
 
         log(`Fetched ${products.length} latest products`)
         res.status(200).json(products)
@@ -53,7 +53,7 @@ export const getProductsByIds = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
     try {
-        const products = await Product.find({ _id: { $in: ids }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold")
+        const products = await Product.find({ _id: { $in: ids }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold")
 
         log("Products found successfully")
         res.status(200).json(products)
@@ -69,11 +69,11 @@ export const getProductsByIdsOrders = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
     try {
-        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold")
+        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold")
 
         // If some of products not found, search in archive products
         if (products.length !== ids.length) {
-            const archivedProducts = await ArchivedProduct.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -stock -lowStockThreshold")
+            const archivedProducts = await ArchivedProduct.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold")
             products.push(...archivedProducts)
         }
 
@@ -119,7 +119,7 @@ export const getProductsByQuery = async (req, res) => {
 
         const total = await Product.countDocuments(query) // Count total number of products
 
-        const items = await Product.find(query).sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -updatedAt -description -sizes -type -category -stock -createdAt").lean()
+        const items = await Product.find(query).sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -updatedAt -description -sizes -type -category -createdAt").lean()
 
         const totalPages = Math.max(1, Math.ceil(total / limit)) // Calculate total number of pages
         const hasNext = page < totalPages // Check if there are more pages
@@ -141,11 +141,18 @@ export const getProductById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
     try {
-        const product = await Product.findOne({ _id: id, active: true }).select("-__v -createdAt -updatedAt -category -type")
+        const product = await Product.findOne({ _id: id, active: true }).select("-__v -createdAt -updatedAt -category -type").lean({ virtuals: true })
         if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
+        const safeSizes = product.sizes.filter(size => (size.stock || 0) > 0).map(size => size.code)
+
+        const sanitizedProduct = {
+            ...product,
+            sizes: safeSizes
+        }
+
         log(`Product with id ${id} found successfully`)
-        res.status(200).json(product)
+        res.status(200).json(sanitizedProduct)
     } catch (error) {
         errorLog("Error in getProductById controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })

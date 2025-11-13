@@ -9,7 +9,12 @@ export const productSchemaJoi = Joi.object(
         price: Joi.number().required(),
         image: Joi.string().required(),
         description: Joi.string().required(),
-        sizes: Joi.array().items(Joi.string().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10")).required(),
+        sizes: Joi.array().items(
+            Joi.object({
+                code: Joi.string().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10").required(),
+                stock: Joi.number().min(0).required()
+            })
+        ).min(1).required(),
         type: Joi.string().valid(
             "t-shirt", "shirt", "hoodie", "dress", "pants",
             "shorts", "skirt", "jacket", "leggings"
@@ -17,7 +22,6 @@ export const productSchemaJoi = Joi.object(
         onSale: Joi.boolean().default(false),
         discountPercent: Joi.number().default(0),
         active: Joi.boolean().default(true),
-        stock: Joi.number().default(0),
         lowStockThreshold: Joi.number().default(3)
     }
 )
@@ -29,7 +33,12 @@ export const updateProductSchemaJoi = Joi.object(
         price: Joi.number().allow(""),
         image: Joi.string().allow(""),
         description: Joi.string().allow(""),
-        sizes: Joi.array().items(Joi.string().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10")).required(),
+        sizes: Joi.array().items(
+            Joi.object({
+                code: Joi.string().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10").required(),
+                stock: Joi.number().min(0).required()
+            })
+        ).min(1).allow(""),
         type: Joi.string().valid(
             "t-shirt", "shirt", "hoodie", "dress", "pants",
             "shorts", "skirt", "jacket", "leggings"
@@ -37,7 +46,6 @@ export const updateProductSchemaJoi = Joi.object(
         onSale: Joi.boolean().default(false).allow(""),
         discountPercent: Joi.number().default(0).allow(""),
         active: Joi.boolean().default(true).allow(""),
-        stock: Joi.number().default(0).allow(""),
         lowStockThreshold: Joi.number().default(3).allow("")
     }
 )
@@ -74,9 +82,19 @@ const productSchema = new mongoose.Schema(
             required: true
         },
         sizes: {
-            type: [String],
-            enum: [
-                "XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10"
+            type: [
+                {
+                    code: {
+                        type: String,
+                        enum: ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10"],
+                        required: true
+                    },
+                    stock: {
+                        type: Number,
+                        min: 0,
+                        default: 0
+                    }
+                }
             ],
             required: true
         },
@@ -102,10 +120,6 @@ const productSchema = new mongoose.Schema(
             type: Boolean,
             default: true
         },
-        stock: {
-            type: Number,
-            default: 0
-        },
         lowStockThreshold: {
             type: Number,
             min: 0,
@@ -119,22 +133,30 @@ productSchema.index({ category: 1 })
 productSchema.index({ type: 1 })
 productSchema.index({ price: 1 })
 productSchema.index({ createdAt: -1 })
-productSchema.index({ sizes: 1 })
+productSchema.index({ "sizes.code": 1 })
 productSchema.index({ category: 1, type: 1, price: 1 })
 productSchema.index({ category: 1, type: 1, createdAt: -1 })
 productSchema.index({ title: "text" })
 
+productSchema.virtual("totalStock").get(function () { // Calculate total stock
+    if (!this.sizes || !Array.isArray(this.sizes)) return 0
+    return this.sizes.reduce((sum, size) => {
+        return sum + (size.stock || 0)
+    }, 0)
+})
+
 productSchema.virtual("availability").get(function () { // Check stock availability
-    if (this.stock <= 0) return "out"
-    if (this.stock <= this.lowStockThreshold) return "low"
-    if (this.stock <= this.lowStockThreshold * 3) return "medium"
+    const totalStock = this.totalStock
+
+    if (totalStock <= 0) return "out"
+    if (totalStock <= this.lowStockThreshold) return "low"
+    if (totalStock <= this.lowStockThreshold * 3) return "medium"
     return "available"
 })
 
 productSchema.set("toJSON", {
     virtuals: true,
     transform(doc, ret) {
-        delete ret.stock
         delete ret.lowStockThreshold
         delete ret.__v
         delete ret.updatedAt

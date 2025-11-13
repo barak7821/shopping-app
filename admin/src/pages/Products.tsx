@@ -60,7 +60,7 @@ export default function Products() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleArchiveBtn = async (productId: number) => {
+  const handleArchiveBtn = async (productId: string) => {
     if (!token) {
       notyf.error("You must be logged in to delete products.")
       return
@@ -144,8 +144,8 @@ export default function Products() {
                       {product.category}
                     </td>
                     {/* Stock */}
-                    <td className={`px-6 py-4 border-t border-[#eee] dark:border-neutral-700 ${product.lowStockThreshold >= product.stock ? "text-red-500 font-semibold" : "text-[#232323] dark:text-neutral-200"}`}>
-                      {product.stock}
+                    <td className={`px-6 py-4 border-t border-[#eee] dark:border-neutral-700 ${product.lowStockThreshold >= (product.totalStock || 0) ? "text-red-500 font-semibold" : "text-[#232323] dark:text-neutral-200"}`}>
+                      {product.totalStock}
                     </td>
 
                     {/* Actions */}

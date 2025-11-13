@@ -22,35 +22,55 @@ export const createOrder = async (req, res) => {
         // Verify if product exists
         if (products.length !== productIds.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
-        const quantityByProductId = {}
+        const quantityByProductAndSize = {}
 
-        // Calculate total quantity for each product
+        // Calculate total quantity by product and size
         for (const item of orderDetails.orderItems) {
-            if (!quantityByProductId[item.itemId]) {
-                quantityByProductId[item.itemId] = 0
+            const key = `${item.itemId}:${item.selectedSize}` // create a unique key based on product ID and size
+
+            if (!quantityByProductAndSize[key]) { // if the key doesn't exist
+                quantityByProductAndSize[key] = 0
             }
-            quantityByProductId[item.itemId] += item.selectedQuantity
+
+            quantityByProductAndSize[key] += item.selectedQuantity // increment the quantity
         }
 
-        // Verify if product is in stock
-        for (const [productId, totalQty] of Object.entries(quantityByProductId)) {
-            const product = products.find(product => product._id.toString() === productId)
-            if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
-            if (product.stock < totalQty) return res.status(400).json({ code: "low_stock", message: "Product is out of stock" })
+        // Verify if product size is in stock
+        for (const [key, totalQty] of Object.entries(quantityByProductAndSize)) {
+            const [productId, sizeCode] = key.split(":") // split the key
+
+            const product = products.find(product => product._id.toString() === productId) // find the product
+            if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" }) // if product not found
+
+            const size = product.sizes.find(size => size.code === sizeCode) // find the size
+            if (!size) return res.status(400).json({ code: "invalid_size", message: "Selected size not available" }) // if size not found
+
+            if (size.stock < totalQty) return res.status(400).json({ code: "low_stock", message: "Selected size is out of stock" }) // if size is out of stock
+
         }
 
-        // // Validate against Joi schema
+        // Validate against Joi schema
         await orderGuestSchemaJoi.validateAsync(orderDetails)
         const newOrder = new Order(orderDetails) // Create a new order instance
 
         await newOrder.save() // Save the order to the database
 
-        // Update product stock
-        for (const [productId, totalQty] of Object.entries(quantityByProductId)) {
-            const product = products.find(product => product._id.toString() === productId)
-            product.stock -= totalQty
-            product.active = false
-            await product.save()
+        // Update product size stock
+        for (const [key, totalQty] of Object.entries(quantityByProductAndSize)) {
+            const [productId, sizeCode] = key.split(":") // split the key
+
+            const product = products.find(product => product._id.toString() === productId) // find the product
+            if (!product) continue // if product not found
+
+            const size = product.sizes.find(size => size.code === sizeCode) // find the size
+            if (!size) continue // if size not found
+
+            size.stock -= totalQty // decrement the stock
+            
+            const totalStock = product.sizes.reduce((sum, size) => sum + (size.stock || 0), 0) // calculate total stock
+            product.active = totalStock > 0 // update active status
+
+            await product.save() // save the product
         }
 
         log("Order created successfully")
@@ -87,21 +107,29 @@ export const createOrderForUser = async (req, res) => {
         // Verify if product exists
         if (products.length !== productIds.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
-        const quantityByProductId = {}
+        const quantityByProductAndSize = {}
 
-        // Calculate total quantity for each product
         for (const item of orderDetails.orderItems) {
-            if (!quantityByProductId[item.itemId]) {
-                quantityByProductId[item.itemId] = 0
+            const key = `${item.itemId}:${item.selectedSize}` // create a unique key based on product ID and size
+
+            if (!quantityByProductAndSize[key]) { // if the key doesn't exist
+                quantityByProductAndSize[key] = 0
             }
-            quantityByProductId[item.itemId] += item.selectedQuantity
+
+            quantityByProductAndSize[key] += item.selectedQuantity // increment the quantity
         }
 
-        // Verify if product is in stock
-        for (const [productId, totalQty] of Object.entries(quantityByProductId)) {
-            const product = products.find(product => product._id.toString() === productId)
-            if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
-            if (product.stock < totalQty) return res.status(400).json({ code: "low_stock", message: "Product is out of stock" })
+        // Verify if product size is in stock
+        for (const [key, totalQty] of Object.entries(quantityByProductAndSize)) {
+            const [productId, sizeCode] = key.split(":") // split the key
+
+            const product = products.find(product => product._id.toString() === productId) // find the product
+            if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" }) // if product not found
+
+            const size = product.sizes.find(size => size.code === sizeCode) // find the size
+            if (!size) return res.status(400).json({ code: "invalid_size", message: "Selected size not available" }) // if size not found
+
+            if (size.stock < totalQty) return res.status(400).json({ code: "low_stock", message: "Selected size is out of stock" }) // if size is out of stock
         }
 
         // Validate against Joi schema
@@ -110,12 +138,22 @@ export const createOrderForUser = async (req, res) => {
 
         await newOrder.save() // Save the order to the database
 
-        // Update product stock
-        for (const [productId, totalQty] of Object.entries(quantityByProductId)) {
-            const product = products.find(product => product._id.toString() === productId)
-            product.stock -= totalQty
-            product.active = false
-            await product.save()
+        // Update product size stock
+        for (const [key, totalQty] of Object.entries(quantityByProductAndSize)) {
+            const [productId, sizeCode] = key.split(":") // split the key
+
+            const product = products.find(product => product._id.toString() === productId) // find the product
+            if (!product) continue // if product not found
+
+            const size = product.sizes.find(size => size.code === sizeCode) // find the size
+            if (!size) continue // if size not found
+
+            size.stock -= totalQty // decrement the stock
+
+            const totalStock = product.sizes.reduce((sum, size) => sum + (size.stock || 0), 0) // calculate total stock
+            product.active = totalStock > 0 // update active status
+
+            await product.save() // save the product
         }
 
         log("Order created successfully")

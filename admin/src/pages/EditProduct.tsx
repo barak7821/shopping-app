@@ -8,7 +8,7 @@ import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import { useNavigate, useParams } from "react-router-dom";
 import ProductForm from "../components/ProductForm";
 import Loading from "../components/Loading";
-import { type Category, type ProductFormData } from "../utils/types";
+import { type Category, type ProductFormData, type ProductSize } from "../utils/types";
 
 export default function EditProduct() {
     const nav = useNavigate()
@@ -29,13 +29,15 @@ export default function EditProduct() {
                     title: data.title,
                     price: data.price.toString(),
                     category: data.category as Category,
-                    sizes: data.sizes,
+                    sizes: (data.sizes || []).map((size: ProductSize) => ({
+                        code: size.code,
+                        stock: size.stock?.toString() ?? ""
+                    })),
                     image: data.image,
                     type: data.type,
                     description: data.description,
-                    discountPercent: data.discountPercent.toString(),
+                    discountPercent: (data.discountPercent ?? 0).toString(),
                     onSale: data.onSale,
-                    stock: data.stock.toString(),
                 })
             } catch (error) {
                 handleApiError(error as ApiError, "fetchProductById")
@@ -48,10 +50,20 @@ export default function EditProduct() {
     }, [id])
 
     const handleUpdateProduct = async (productData: ProductFormData) => {
+        const normalizedSizes = productData.sizes.map(({ code, stock }) => {
+            const numericStock = stock === "" ? 0 : Number(stock)
+            return {
+                code,
+                stock: Number.isNaN(numericStock) ? 0 : numericStock
+            }
+        })
+
         const updatedProduct = {
             id,
             ...productData,
             price: +productData.price,
+            discountPercent: productData.onSale ? +(productData.discountPercent || 0) : 0,
+            sizes: normalizedSizes,
         }
 
         try {

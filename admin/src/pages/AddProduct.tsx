@@ -14,9 +14,19 @@ export default function AddProduct() {
   const { handleApiError } = useApiErrorHandler()
 
   const handleAddProduct = async (productData: ProductFormData) => {
+    const normalizedSizes = productData.sizes.map(({ code, stock }) => {
+      const numericStock = stock === "" ? 0 : Number(stock)
+      return {
+        code,
+        stock: Number.isNaN(numericStock) ? 0 : numericStock
+      }
+    })
+
     const newProduct = {
       ...productData,
       price: +productData.price,
+      discountPercent: productData.onSale ? +(productData.discountPercent || 0) : 0,
+      sizes: normalizedSizes,
     }
 
     log("New product:", newProduct)
