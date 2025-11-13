@@ -31,14 +31,14 @@ export const addMultipleProducts = async (req, res) => {
         const formattedProducts = []
 
         for (const product of products) {
-            const { title, category, price, image, description, sizes, type } = product
+            const { title, category, price, image, description, sizes, type, onSale, discountPercent, stock } = product
 
             // Check for required fields
-            if (!title || !category || !price || !image || !description || !sizes || !type) return res.status(400).json({ code: "!field", message: `Missing fields in one of the products` })
+            if (!title || !category || !price || !image || !description || !sizes || !sizes.length || !type || onSale === undefined || discountPercent === undefined || stock === undefined) return res.status(400).json({ code: "!field", message: `Missing fields in one of the products` })
 
 
             // Validate with Joi
-            await productSchemaJoi.validateAsync({ title, category, price, image, description, sizes, type })
+            await productSchemaJoi.validateAsync({ title, category, price, image, description, sizes, type, onSale, discountPercent, stock })
 
             // Check if product already exists
             const exists = await Product.findOne({ title: title.toLowerCase() })
@@ -54,7 +54,11 @@ export const addMultipleProducts = async (req, res) => {
                 image,
                 description,
                 sizes,
-                type: type.toLowerCase()
+                type: type.toLowerCase(),
+                onSale,
+                discountPercent,
+                active: stock > 0 ? true : false,
+                stock
             })
         }
 

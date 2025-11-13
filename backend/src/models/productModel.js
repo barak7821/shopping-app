@@ -9,7 +9,7 @@ export const productSchemaJoi = Joi.object(
         price: Joi.number().required(),
         image: Joi.string().required(),
         description: Joi.string().required(),
-        sizes: Joi.array().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL").required(),
+        sizes: Joi.array().items(Joi.string().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10")).required(),
         type: Joi.string().valid(
             "t-shirt", "shirt", "hoodie", "dress", "pants",
             "shorts", "skirt", "jacket", "leggings"
@@ -29,7 +29,7 @@ export const updateProductSchemaJoi = Joi.object(
         price: Joi.number().allow(""),
         image: Joi.string().allow(""),
         description: Joi.string().allow(""),
-        sizes: Joi.array().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL").allow(""),
+        sizes: Joi.array().items(Joi.string().valid("XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10")).required(),
         type: Joi.string().valid(
             "t-shirt", "shirt", "hoodie", "dress", "pants",
             "shorts", "skirt", "jacket", "leggings"
@@ -76,7 +76,7 @@ const productSchema = new mongoose.Schema(
         sizes: {
             type: [String],
             enum: [
-                "XS", "S", "M", "L", "XL", "XXL", "XXXL"
+                "XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10"
             ],
             required: true
         },
