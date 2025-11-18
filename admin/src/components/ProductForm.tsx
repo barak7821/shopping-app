@@ -1,5 +1,29 @@
-import { useState, type ChangeEvent, useEffect } from "react";
+import { useState, type ChangeEvent, useEffect, useRef } from "react";
 import { type Category, type ProductFormData, type ProductSizeFormValue, sizeOptions } from "../utils/types";
+import axios from "axios";
+import { errorLog } from "../utils/log";
+
+const uploadImageToCloudinary = async (file: File) => {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Missing Cloudinary configuration. Please set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET.")
+  }
+
+  const formData = new FormData()
+  formData.append("file", file)
+  formData.append("upload_preset", uploadPreset)
+
+  const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" }
+    }
+  )
+
+  return res.data.secure_url
+}
 
 const normalizeSizes = (sizes: (ProductSizeFormValue | { code: string; stock: number })[] | undefined): ProductSizeFormValue[] => {
   if (!sizes) return []
@@ -28,6 +52,9 @@ export default function ProductForm({ initialData, onSubmit, isEditing, isArchiv
     onSale: initialData?.onSale ?? false,
     sizes: normalizeSizes(initialData?.sizes ?? []),
   })
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   useEffect(() => {
     if (initialData) {
@@ -98,6 +125,28 @@ export default function ProductForm({ initialData, onSubmit, isEditing, isArchiv
         title: "", category: "", price: "", image: "",
         description: "", sizes: [], type: "", discountPercent: "", onSale: false
       })
+    }
+  }
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0 || isArchived) return
+    const file = files[0]
+
+    try {
+      setIsUploadingImage(true)
+      const url = await uploadImageToCloudinary(file)
+
+      setFormData(prev => ({
+        ...prev,
+        image: url
+      }))
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        errorLog("Cloudinary error response:", error.response?.data)
+      }
+      errorLog("Failed to upload image to Cloudinary", error)
+    } finally {
+      setIsUploadingImage(false)
     }
   }
 
@@ -187,10 +236,61 @@ export default function ProductForm({ initialData, onSubmit, isEditing, isArchiv
           </div>
         }
 
-        {/* Image */}
-        <div>
-          <label htmlFor="image" className="block text-sm font-semibold text-[#c1a875] mb-1">Image URL</label>
-          <input value={image} onChange={handleChange} id="image" type="text" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-3 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm disabled:cursor-not-allowed" disabled={isArchived} />
+        {/* Image Upload */}
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-[#c1a875] mb-1">
+            Product Image
+          </label>
+          <div className={`w-full rounded-2xl border-2 border-dashed px-4 py-6 flex flex-col items-center justify-center text-center cursor-pointer transition
+            ${isArchived ? "cursor-not-allowed opacity-60" : "hover:border-[#c1a875] hover:bg-[#c1a875]/5"}
+            border-gray-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800`}
+            onClick={() => {
+              if (isArchived) return // Don't allow clicking if the product is archived
+              fileInputRef.current?.click() // Click the hidden file input when the div is clicked
+            }}
+            onDragOver={(e) => { // Prevent default behavior to allow dropping files
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+            onDrop={(e) => { // Handle dropped files
+              e.preventDefault()
+              e.stopPropagation()
+              if (isArchived) return // Don't allow dropping if the product is archived
+              void handleImageUpload(e.dataTransfer.files) // Upload the dropped files
+            }}>
+            {image
+              ? <div className="flex flex-col items-center gap-3">
+                <img src={image} alt="Product preview" className="max-h-40 rounded-xl object-contain shadow-sm" />
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Click or drop a new image to replace
+                </span>
+              </div>
+              : <div className="flex flex-col items-center gap-2">
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                  Drag &amp; drop an image here
+                </span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  or click to choose from your computer
+                </span>
+              </div>
+            }
+            {isUploadingImage &&
+              <div className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
+                Uploading image...
+              </div>
+            }
+          </div>
+
+          {/* Hidden file input */}
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" disabled={isArchived} onChange={(e) => void handleImageUpload(e.target.files)} />
+
+          {/* Image URL input */}
+          <div>
+            <label htmlFor="image" className="block text-xs font-semibold text-[#c1a875] mb-1">
+              Image URL (optional)
+            </label>
+            <input value={image} onChange={handleChange} id="image" type="text" className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700 text-[#1a1a1a] dark:text-neutral-100 px-4 py-2 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm disabled:cursor-not-allowed text-sm" disabled={isArchived} placeholder="Paste image URL or use the uploader above" />
+          </div>
         </div>
 
         {/* Type */}
@@ -218,7 +318,7 @@ export default function ProductForm({ initialData, onSubmit, isEditing, isArchiv
 
         {/* Button */}
         <div>
-          <button onClick={handleSubmit} className="px-8 py-3 rounded-xl font-semibold bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer">
+          <button onClick={handleSubmit} disabled={isUploadingImage} className="px-8 py-3 rounded-xl font-semibold bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:bg-[#1a1a1a] disabled:hover:text-white">
             {isArchived ? "Restore Product" : isEditing ? "Update Product" : "Add Product"}
           </button>
         </div>

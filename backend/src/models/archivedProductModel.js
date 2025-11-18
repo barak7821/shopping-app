@@ -31,7 +31,23 @@ const archivedProductSchema = new mongoose.Schema(
             trim: true,
             required: true
         },
-        sizes: [String],
+        sizes: {
+            type: [
+                {
+                    code: {
+                        type: String,
+                        enum: ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "4", "6", "8", "10"],
+                        required: true
+                    },
+                    stock: {
+                        type: Number,
+                        min: 0,
+                        default: 0
+                    }
+                }
+            ],
+            required: true
+        },
         type: {
             type: String,
             enum: [
@@ -54,10 +70,6 @@ const archivedProductSchema = new mongoose.Schema(
             type: Boolean,
             default: true
         },
-        stock: {
-            type: Number,
-            default: 0
-        },
         lowStockThreshold: {
             type: Number,
             min: 0,
@@ -71,7 +83,7 @@ archivedProductSchema.index({ category: 1 })
 archivedProductSchema.index({ type: 1 })
 archivedProductSchema.index({ price: 1 })
 archivedProductSchema.index({ createdAt: -1 })
-archivedProductSchema.index({ sizes: 1 })
+archivedProductSchema.index({ "sizes.code": 1 })
 archivedProductSchema.index({ category: 1, type: 1, price: 1 })
 archivedProductSchema.index({ category: 1, type: 1, createdAt: -1 })
 archivedProductSchema.index({ title: "text" })
