@@ -40,7 +40,9 @@ export default function Products() {
       }
       handleApiError(error as ApiError, "getProducts")
     } finally {
-      setLoading(false)
+      setTimeout(() => {
+        setLoading(false)
+      }, 1000)
     }
   }
 

@@ -18,25 +18,22 @@ export default function SideBar() {
                             { text: "Products", link: "/products", aria: "Products" },
                             { text: "Orders", link: "/orders", aria: "Orders" },
                             { text: "Customers", link: "/customers", aria: "Customers" },
+                            { text: "Archived Products", link: "/archivedProducts", aria: "Archived Products" },
+                            { text: "Deleted Customers", link: "/deletedCustomers", aria: "Deleted Customers" },
                             { text: "Hero Section Editor", link: "/hero", aria: "Hero" },
                             { text: "Best Sellers Editor", link: "/bestSeller", aria: "Best Sellers" },
                             { text: "Contact Info Editor", link: "/contact", aria: "Contact Info" },
-                            { text: "Archived Products", link: "/archivedProducts", aria: "Archived Products" },
-                            { text: "Deleted Customers", link: "/deletedCustomers", aria: "Deleted Customers" }
-                        ].map((item, index) => (
+                            { text: "Activity Logs", link: "/logs", aria: "Activity Logs" },
+                        ].map((item, index) =>
                             <li key={index}>
-                                <NavLink
-                                    to={item.link}
-                                    aria-label={item.aria}
-                                    className={({ isActive }) =>
-                                        isActive
-                                            ? "text-[#c1a875] font-semibold"
-                                            : "text-neutral-800 dark:text-neutral-100 hover:text-[#c1a875]"
-                                    }>
+                                <NavLink to={item.link} aria-label={item.aria} className={({ isActive }) =>
+                                    isActive
+                                        ? "text-[#c1a875] font-semibold"
+                                        : "text-neutral-800 dark:text-neutral-100 hover:text-[#c1a875]"}>
                                     {item.text}
                                 </NavLink>
                             </li>
-                        ))}
+                        )}
                     </ul>
                 </nav>
 

@@ -99,3 +99,21 @@ export interface ProductFormData {
   discountPercent: string
   onSale: boolean
 }
+
+export interface AdminSummary {
+  _id: string
+  name?: string
+  email?: string
+}
+
+export interface AdminLog {
+  _id: string
+  action: string
+  adminId: AdminSummary | string
+  targetId?: string | null
+  meta?: Record<string, unknown>
+  createdAt: string
+  updatedAt: string
+}
+
+export type ActionTone = "emerald" | "amber" | "rose" | "sky" | "violet" | "cyan" | "indigo" | "fuchsia" | "slate"

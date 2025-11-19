@@ -16,6 +16,7 @@ import BestSeller from './pages/BestSeller.tsx';
 import ContactInfo from './pages/ContactInfo.tsx';
 import ArchivedProducts from './pages/ArchivedProducts.tsx';
 import ArchivedProductsDetails from './pages/ArchivedProductsDetails.tsx';
+import ActivityLogs from './pages/ActivityLogs.tsx';
 
 function App() {
     return (
@@ -37,6 +38,7 @@ function App() {
             <Route path="/contact" element={<ProtectedRouteAdmin><ContactInfo /></ProtectedRouteAdmin>}></Route>
             <Route path="/archivedProducts" element={<ProtectedRouteAdmin><ArchivedProducts /></ProtectedRouteAdmin>} />
             <Route path="/archivedProducts/edit/:id" element={<ProtectedRouteAdmin><ArchivedProductsDetails /></ProtectedRouteAdmin>} />
+            <Route path="/logs" element={<ProtectedRouteAdmin><ActivityLogs /></ProtectedRouteAdmin>} />
         </Routes>
     )
 }

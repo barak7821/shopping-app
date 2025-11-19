@@ -33,7 +33,9 @@ export default function Orders() {
       }
       handleApiError(error as ApiError, "getOrders")
     } finally {
-      setLoading(false)
+      setTimeout(() => {
+        setLoading(false)
+      }, 1000)
     }
   }
 
@@ -89,54 +91,61 @@ export default function Orders() {
                 </tr>
               </thead>
               <tbody>
+
                 {/* Orders */}
-                {ordersList.map((order) => (
-                  <tr key={order._id} className="hover:bg-[#faf8f6] dark:hover:bg-neutral-700/60 transition">
-
-                    {/* Email */}
-                    <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200">
-                      {order.shippingAddress.email}
-                    </td>
-
-                    {/* Order Date */}
-                    <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
-                      {new Date(order.createdAt).toLocaleString('he-IL', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </td>
-
-                    {/* Payment Method */}
-                    <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
-                      {order.paymentMethod}
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
-                      {order.orderItems.length} items
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
-                      {order.status}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => nav(`/orders/edit/${order._id}`)} title="Edit" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer">
-                          <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                            <path d="M12 20h9" />
-                            <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
-                          </svg>
-                        </button>
-                      </div>
+                {ordersList.length === 0
+                  ? <tr className="text-center">
+                    <td colSpan={6} className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200">
+                      No orders found.
                     </td>
                   </tr>
-                ))}
+                  : ordersList.map((order) => (
+                    <tr key={order._id} className="hover:bg-[#faf8f6] dark:hover:bg-neutral-700/60 transition">
+
+                      {/* Email */}
+                      <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200">
+                        {order.shippingAddress.email}
+                      </td>
+
+                      {/* Order Date */}
+                      <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
+                        {new Date(order.createdAt).toLocaleString('he-IL', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </td>
+
+                      {/* Payment Method */}
+                      <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
+                        {order.paymentMethod}
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
+                        {order.orderItems.length} items
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
+                        {order.status}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => nav(`/orders/edit/${order._id}`)} title="Edit" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                              <path d="M12 20h9" />
+                              <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

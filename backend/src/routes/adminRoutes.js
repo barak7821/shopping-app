@@ -1,6 +1,6 @@
 import Express from 'express';
 import adminAuthMiddleware from '../middlewares/adminAuthMiddleware.js';
-import { deleteAllProducts, archiveProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery, getArchivedProductsByQuery, restoreArchivedProduct, getArchivedProductById } from '../controllers/adminController.js';
+import { deleteAllProducts, archiveProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery, getArchivedProductsByQuery, restoreArchivedProduct, getArchivedProductById, getLogsByQuery } from '../controllers/adminController.js';
 
 const router = Express.Router()
 
@@ -38,6 +38,9 @@ router.patch('/updateOrderStatus', adminAuthMiddleware, updateOrderStatus) // Up
 router.patch('/hero', adminAuthMiddleware, heroSection) // Update hero section
 router.patch('/bestSeller', adminAuthMiddleware, bestSellerSection) // Update best seller section
 router.patch('/contactInfo', adminAuthMiddleware, contactInfoSection) // Update contact info section
+
+// Logs
+router.get('/logs', adminAuthMiddleware, getLogsByQuery)
 
 // temp routes - SHOULD ONLY BE USED FOR TESTING!!!
 router.delete('/deleteAll', deleteAllProducts)

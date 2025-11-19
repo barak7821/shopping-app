@@ -5,6 +5,8 @@ import User, { localSchema } from "../models/userModel.js";
 import { BestSeller, bestSellerSchemaJoi, ContactInfo, contactInfoSchemaJoi, Hero, heroSchemaJoi } from "../models/homePageModel.js";
 import { errorLog, log } from "../utils/log.js";
 import ArchivedProduct from "../models/archivedProductModel.js";
+import logAdminAction from "../utils/adminLogger.js";
+import AdminLog from "../models/adminLogModel.js";
 
 // Temp Controller - SHOULD ONLY BE USED FOR TESTING!!!
 
@@ -281,6 +283,9 @@ export const addProduct = async (req, res) => {
 
         log(`${title} added successfully`)
         res.status(201).json({ message: `${title} added successfully`, exist: false })
+
+        // Log admin action
+        logAdminAction(req.user.id, "create_product", newProduct._id)
     } catch (error) {
         errorLog("Error in addProduct controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -307,6 +312,9 @@ export const archiveProductById = async (req, res) => {
 
         log(`Product with id ${id} deleted successfully`)
         res.status(200).json({ message: `Product with id ${id} deleted successfully` })
+
+        // Log admin action
+        logAdminAction(req.user.id, "archive_product", product._id)
     } catch (error) {
         errorLog("Error in archiveProductById controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -376,6 +384,9 @@ export const updateProductById = async (req, res) => {
 
         log(`Product with id ${req.body.id} updated successfully`)
         res.status(200).json({ message: `Product with id ${req.body.id} updated successfully` })
+
+        // Log admin action
+        logAdminAction(req.user.id, "update_product", product._id, updateFields)
     } catch (error) {
         errorLog("Error in updateProductById controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -409,7 +420,7 @@ export const getProductsByQuery = async (req, res) => {
 
         const total = await Product.countDocuments() // Count total number of products
 
-        const items = await Product.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -createAt -updatedAt -description -type -active").lean({virtuals: true})
+        const items = await Product.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -createAt -updatedAt -description -type -active").lean({ virtuals: true })
 
         const totalPages = Math.max(1, Math.ceil(total / limit)) // Calculate total number of pages
         const hasNext = page < totalPages // Check if there are more pages
@@ -472,6 +483,9 @@ export const restoreArchivedProduct = async (req, res) => {
 
         log(`Product with id ${id} restored successfully`)
         res.status(200).json({ message: `Product with id ${id} restored successfully` })
+
+        // Log admin action
+        logAdminAction(req.user.id, "restore_product", product._id)
     } catch (error) {
         errorLog("Error in restoreArchivedProduct controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -548,6 +562,9 @@ export const deleteUserById = async (req, res) => {
 
         log("User deleted successfully", user._id)
         res.status(200).json({ message: "User deleted successfully", id: user._id })
+
+        // Log admin action
+        logAdminAction(req.user.id, "delete_user", user._id)
     } catch (error) {
         errorLog("Error in deleteUserById controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -627,6 +644,11 @@ export const makeAdmin = async (req, res) => {
         await user.save()
         log(`User with id ${id} made admin successfully`)
         res.status(200).json({ message: `User with id ${id} made admin successfully` })
+
+        // Log admin action
+        await logAdminAction(req.user.id, "change_user_role", user._id, {
+            newRole: user.role
+        })
     } catch (error) {
         errorLog("Error in makeAdmin controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -649,6 +671,11 @@ export const removeAdmin = async (req, res) => {
         await user.save()
         log(`User with id ${id} removed admin successfully`)
         res.status(200).json({ message: `User with id ${id} removed admin successfully` })
+
+        // Log admin action
+        await logAdminAction(req.user.id, "change_user_role", user._id, {
+            newRole: user.role
+        })
     } catch (error) {
         errorLog("Error in removeAdmin controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -743,13 +770,16 @@ export const updateOrderStatus = async (req, res) => {
 
         log(`Order with id ${id} updated successfully`)
         res.status(200).json({ message: `Order with id ${id} updated successfully` })
+
+        // Log admin action
+        logAdminAction(req.user.id, "update_order_status", order._id)
     } catch (error) {
         errorLog("Error in updateOrderStatus controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
-/////////// Home Page Controller ///////////
+/////////// Home Page Controllers ///////////
 
 // Controller to update hero section
 export const heroSection = async (req, res) => {
@@ -807,6 +837,9 @@ export const heroSection = async (req, res) => {
 
         log("Hero section updated successfully")
         res.status(200).json({ message: "Hero section updated successfully" })
+
+        // Log admin action
+        logAdminAction(req.user.id, "update_hero_section")
     } catch (error) {
         errorLog("Error in heroSection controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -851,6 +884,9 @@ export const bestSellerSection = async (req, res) => {
 
         log("Best seller section updated successfully")
         res.status(200).json({ message: "Best seller section updated successfully" })
+
+        // Log admin action
+        logAdminAction(req.user.id, "update_best_seller_section")
     } catch (error) {
         errorLog("Error in bestSellerSection controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
@@ -911,8 +947,34 @@ export const contactInfoSection = async (req, res) => {
 
         log("Contact info section updated successfully")
         res.status(200).json({ message: "Contact info section updated successfully" })
+
+        // Log admin action
+        logAdminAction(req.user.id, "update_contact_info_section")
     } catch (error) {
         errorLog("Error in contactInfoSection controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+/////////// Logs Controllers ///////////
+
+export const getLogsByQuery = async (req, res) => {
+    try {
+        const page = Math.max(1, +req.query.page || 1)
+        const limit = 20
+
+        const total = await AdminLog.countDocuments()
+        const items = await AdminLog.find().populate("adminId", "name email").sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean()
+        const totalPages = Math.max(1, Math.ceil(total / limit))
+        const hasNext = page < totalPages
+        const hasPrev = page > 1
+
+        if (page > totalPages) return res.status(404).json({ code: "page_not_found", message: "Page not found" })
+
+        log(`Fetched ${items.length} logs for page ${page}`)
+        res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
+    } catch (error) {
+        errorLog("Error in getLogsByQuery controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

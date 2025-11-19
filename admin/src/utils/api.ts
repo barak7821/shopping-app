@@ -427,3 +427,21 @@ export const getArchivedProductById = async (productId: string) => {
     log("Get product by id response:", data)
     return data
 }
+
+// Function to fetch activity logs with pagination
+export const fetchAdminLogsByQuery = async (query: any, opt: { signal?: AbortSignal } = {}) => {
+    const { signal } = opt
+    const token = localStorage.getItem("token")
+    if (!token) {
+        throw new Error("No token found")
+    }
+    const { data } = await axios.get(`${baseApiUrl}/admin/logs`, {
+        params: { ...query }, signal,
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    log("Get admin logs response:", data)
+    return data
+}

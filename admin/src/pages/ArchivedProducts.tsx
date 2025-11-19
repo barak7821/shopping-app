@@ -41,7 +41,9 @@ export default function ArchivedProducts() {
             }
             handleApiError(error as ApiError, "getArchivedProducts")
         } finally {
-            setLoading(false)
+            setTimeout(() => {
+                setLoading(false)
+            }, 1000)
         }
     }
 
@@ -61,7 +63,7 @@ export default function ArchivedProducts() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
-    const handleRestoreBtn = async (productId: number) => {
+    const handleRestoreBtn = async (productId: string) => {
         if (!token) {
             notyf.error("You must be logged in to delete products.")
             return
@@ -120,49 +122,56 @@ export default function ArchivedProducts() {
                                 </tr>
                             </thead>
                             <tbody>
+
                                 {/* Products */}
-                                {productsList.map((product) => (
-                                    <tr key={product._id} className="hover:bg-[#faf8f6] dark:hover:bg-neutral-700/60 transition">
-                                        {/* Image */}
-                                        <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
-                                            <img src={product.image} alt={product.title} className="w-16 h-16 rounded-lg object-cover border border-[#f2e8db] dark:border-neutral-600 shadow-sm" />
-                                        </td>
-
-                                        {/* Title */}
-                                        <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 font-medium">
-                                            {product.title}
-                                        </td>
-
-                                        {/* Price */}
-                                        <td className={`px-6 py-4 border-t border-[#eee] dark:border-neutral-700 ${product.onSale === true ? "text-[#c1a875] font-semibold" : "text-[#232323] dark:text-neutral-200"}`}>
-                                            {product.onSale ? `$${(product.price * (1 - product.discountPercent / 100)).toFixed(2)} (On sale)` : `$${product.price}`}
-                                        </td>
-
-                                        {/* Category */}
-                                        <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
-                                            {product.category}
-                                        </td>
-
-                                        {/* Actions */}
-                                        <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
-                                            <div className="flex items-center gap-3">
-                                                <button onClick={() => nav(`/archivedProducts/edit/${product._id}`)} title="Edit" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer">
-                                                    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                                                        <path d="M12 20h9" />
-                                                        <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
-                                                    </svg>
-                                                </button>
-                                                <button onClick={() => handleRestoreBtn(product._id)} disabled={updatingRestore} title="Restore" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
-                                                    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                                                        <path d="M12 21V12l3 3.333M12 12l-3 3.333" strokeLinejoin="round" />
-                                                        <path d="M20.5 7v6c0 3.771 0 5.657-1.172 6.828C18.157 21 16.271 21 12.5 21h-1M3.5 7v6c0 3.771 0 5.657 1.172 6.828.705.705 1.668.986 3.144 1.098" />
-                                                        <path d="M12 3H4c-1 0-1.5 0-1.707.293C2 3.586 2 4.057 2 5s0 .414.293.707C2.586 7 3.057 7 4 7h16c.943 0 1.414 0 1.707-.293C22 6.414 22 5.943 22 5s0-.414-.293-.707C21.414 3 20.943 3 20 3h-4" />
-                                                    </svg>
-                                                </button>
-                                            </div>
+                                {productsList.length === 0
+                                    ? <tr className="text-center">
+                                        <td colSpan={6} className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200">
+                                            No products found.
                                         </td>
                                     </tr>
-                                ))}
+                                    : productsList.map((product) => (
+                                        <tr key={product._id} className="hover:bg-[#faf8f6] dark:hover:bg-neutral-700/60 transition">
+                                            {/* Image */}
+                                            <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
+                                                <img src={product.image} alt={product.title} className="w-16 h-16 rounded-lg object-cover border border-[#f2e8db] dark:border-neutral-600 shadow-sm" />
+                                            </td>
+
+                                            {/* Title */}
+                                            <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 font-medium">
+                                                {product.title}
+                                            </td>
+
+                                            {/* Price */}
+                                            <td className={`px-6 py-4 border-t border-[#eee] dark:border-neutral-700 ${product.onSale === true ? "text-[#c1a875] font-semibold" : "text-[#232323] dark:text-neutral-200"}`}>
+                                                {product.onSale ? `$${(product.price * (1 - product.discountPercent / 100)).toFixed(2)} (On sale)` : `$${product.price}`}
+                                            </td>
+
+                                            {/* Category */}
+                                            <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200 capitalize">
+                                                {product.category}
+                                            </td>
+
+                                            {/* Actions */}
+                                            <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
+                                                <div className="flex items-center gap-3">
+                                                    <button onClick={() => nav(`/archivedProducts/edit/${product._id}`)} title="Edit" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer">
+                                                        <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                                            <path d="M12 20h9" />
+                                                            <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
+                                                        </svg>
+                                                    </button>
+                                                    <button onClick={() => handleRestoreBtn(product._id)} disabled={updatingRestore} title="Restore" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                                        <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                                            <path d="M12 21V12l3 3.333M12 12l-3 3.333" strokeLinejoin="round" />
+                                                            <path d="M20.5 7v6c0 3.771 0 5.657-1.172 6.828C18.157 21 16.271 21 12.5 21h-1M3.5 7v6c0 3.771 0 5.657 1.172 6.828.705.705 1.668.986 3.144 1.098" />
+                                                            <path d="M12 3H4c-1 0-1.5 0-1.707.293C2 3.586 2 4.057 2 5s0 .414.293.707C2.586 7 3.057 7 4 7h16c.943 0 1.414 0 1.707-.293C22 6.414 22 5.943 22 5s0-.414-.293-.707C21.414 3 20.943 3 20 3h-4" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                             </tbody>
                         </table>
                     </div>
