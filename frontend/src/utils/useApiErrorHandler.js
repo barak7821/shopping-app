@@ -38,6 +38,8 @@ export const useApiErrorHandler = () => {
       "not_found": "Requested resource not found.",
       "low_stock": "Product has low stock.",
       "Page not found": "Requested page not found.",
+      "same_hero": "The current Hero section is identical to the existing one.",
+      "same_best_seller": "The current Best seller section is identical to the existing one.",
       "rate_limit": "Too many requests, Try again later.",
       "rate_limit_auth": "Too many login attempts, Try again later.",
       "rate_limit_order": "Too many order attempts, please try again"
