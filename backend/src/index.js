@@ -12,6 +12,7 @@ import compression from "compression"
 import morgan from "morgan"
 import adminRoutes from "./routes/adminRoutes.js"
 import homePageRoutes from "./routes/homePageRoutes.js"
+import rateLimiter from "./middlewares/rateLimiter.js"
 
 dotenv.config()
 const app = Express()
@@ -24,6 +25,7 @@ app.use(helmet())
 app.use(Express.json({ limit: "10mb" }))
 app.use(compression())
 app.use(morgan("dev"))
+app.use(rateLimiter)
 
 // Define route handlers
 app.use("/api/auth", authRoutes) // authentication routes (eg. register, login)
