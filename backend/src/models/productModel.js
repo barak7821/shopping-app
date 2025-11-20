@@ -157,6 +157,7 @@ productSchema.virtual("availability").get(function () { // Check stock availabil
 productSchema.set("toJSON", {
     virtuals: true,
     transform(doc, ret) {
+        delete ret.totalStock
         delete ret.lowStockThreshold
         delete ret.__v
         delete ret.updatedAt

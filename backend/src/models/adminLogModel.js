@@ -8,8 +8,7 @@ const adminLogSchema = new mongoose.Schema(
         },
         adminId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true
+            ref: "User"
         },
         targetId: {
             type: String,

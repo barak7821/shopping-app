@@ -53,7 +53,7 @@ export const getProductsByIds = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
     try {
-        const products = await Product.find({ _id: { $in: ids }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold")
+        const products = await Product.find({ _id: { $in: ids }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold -totalStock")
 
         log("Products found successfully")
         res.status(200).json(products)
@@ -69,7 +69,7 @@ export const getProductsByIdsOrders = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
     try {
-        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold")
+        const products = await Product.find({ _id: { $in: ids } }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold -totalStock")
 
         // If some of products not found, search in archive products
         if (products.length !== ids.length) {
@@ -141,7 +141,7 @@ export const getProductById = async (req, res) => {
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
     try {
-        const product = await Product.findOne({ _id: id, active: true }).select("-__v -createdAt -updatedAt -category -type").lean({ virtuals: true })
+        const product = await Product.findOne({ _id: id, active: true }).select("-__v -createdAt -updatedAt -category -type -totalStock").lean({ virtuals: ["availability"] })
         if (!product) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
         const safeSizes = product.sizes.filter(size => (size.stock || 0) > 0).map(size => size.code)

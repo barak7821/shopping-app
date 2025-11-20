@@ -1,16 +1,7 @@
-import nodemailer from "nodemailer"
+import { sendEmail } from "./emailService.js";
 
 export const sendOtpEmail = async (to, otp) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  })
-
-  await transporter.sendMail({
-    from: `"${process.env.APP_NAME}" <${process.env.EMAIL_USER}>`,
+  await sendEmail({
     to,
     subject: `Reset your password - ${process.env.APP_NAME}`,
     html: `
@@ -54,6 +45,10 @@ export const sendOtpEmail = async (to, otp) => {
           a, span, strong { color: #c1a875 !important; text-decoration: none !important; }
         </style>
       </div>
-`
+`,
+    meta: {
+      type: "otp",
+      userEmail: to
+    }
   })
 }

@@ -21,7 +21,7 @@ export const useApiErrorHandler = () => {
       "!email": "Email address is required.",
       "otp_invalid": "Invalid or expired verification code.",
       "otp_expired": "Verification code expired. Please request a new one.",
-      "otp_active": "A verification code has already been sent. Please check your email.",
+      "otp_active": "Too many attempts. Try again later.",
       "blocked": "Too many attempts. Try again later.",
       "too_fast": "Please wait before requesting another code.",
       "email_fail": "Failed to send verification code. Try again later.",

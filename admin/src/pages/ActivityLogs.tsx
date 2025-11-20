@@ -113,13 +113,13 @@ const formatDateTime = (timestamp: string) => {
 const getAdminSummary = (admin: AdminLog["adminId"]) => {
     if (admin && typeof admin === "object") {
         return {
-            name: admin.name || "Unknown admin",
+            name: admin.name || "System",
             email: admin.email || "No email",
             id: admin._id
         }
     }
     return {
-        name: "Unknown admin",
+        name: "System",
         email: "",
         id: typeof admin === "string" ? admin : ""
     }

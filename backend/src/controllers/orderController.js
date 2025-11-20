@@ -3,6 +3,7 @@ import { orderUserSchemaJoi, orderGuestSchemaJoi } from '../models/orderModel.js
 import Product from '../models/productModel.js'
 import User from '../models/userModel.js'
 import { log, errorLog } from "../utils/log.js"
+import { notifyAdminOnCurrentStockStatus } from "../utils/adminNotifications.js"
 
 // Controller to create a new order for guest users - not registered
 export const createOrder = async (req, res) => {
@@ -66,11 +67,14 @@ export const createOrder = async (req, res) => {
             if (!size) continue // if size not found
 
             size.stock -= totalQty // decrement the stock
-            
+
             const totalStock = product.sizes.reduce((sum, size) => sum + (size.stock || 0), 0) // calculate total stock
             product.active = totalStock > 0 // update active status
 
             await product.save() // save the product
+
+            // Notify admin on current stock status
+            notifyAdminOnCurrentStockStatus(product).catch(() => { })
         }
 
         log("Order created successfully")
@@ -154,6 +158,9 @@ export const createOrderForUser = async (req, res) => {
             product.active = totalStock > 0 // update active status
 
             await product.save() // save the product
+
+            // Notify admin on current stock status
+            notifyAdminOnCurrentStockStatus(product).catch(() => { })
         }
 
         log("Order created successfully")
