@@ -17,6 +17,7 @@ import ContactInfo from './pages/ContactInfo.tsx';
 import ArchivedProducts from './pages/ArchivedProducts.tsx';
 import ArchivedProductsDetails from './pages/ArchivedProductsDetails.tsx';
 import ActivityLogs from './pages/ActivityLogs.tsx';
+import NotificationEmails from './pages/NotificationEmails.tsx';
 
 function App() {
     return (
@@ -39,6 +40,7 @@ function App() {
             <Route path="/archivedProducts" element={<ProtectedRouteAdmin><ArchivedProducts /></ProtectedRouteAdmin>} />
             <Route path="/archivedProducts/edit/:id" element={<ProtectedRouteAdmin><ArchivedProductsDetails /></ProtectedRouteAdmin>} />
             <Route path="/logs" element={<ProtectedRouteAdmin><ActivityLogs /></ProtectedRouteAdmin>} />
+            <Route path="/settings/notifications" element={<ProtectedRouteAdmin><NotificationEmails /></ProtectedRouteAdmin>} />
         </Routes>
     )
 }

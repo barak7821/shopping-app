@@ -19,8 +19,8 @@ export default function OrderSuccess() {
     useEffect(() => {
         setLoading(true)
         if (!address || Object.keys(address).length === 0) {
-            notyf.error("placeholder")
-            log("Same")
+            notyf.error("No shipping address found")
+            log("No shipping address found")
             nav("/")
             return
         } else {

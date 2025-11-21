@@ -7,6 +7,7 @@ import { errorLog, log } from "../utils/log.js";
 import ArchivedProduct from "../models/archivedProductModel.js";
 import logAdminAction from "../utils/adminLogger.js";
 import AdminLog from "../models/adminLogModel.js";
+import AdminSettings from "../models/adminSettingsModel.js";
 
 // Temp Controller - SHOULD ONLY BE USED FOR TESTING!!!
 
@@ -975,6 +976,61 @@ export const getLogsByQuery = async (req, res) => {
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
         errorLog("Error in getLogsByQuery controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+/////////// Notification Controllers ///////////
+
+// Controller to get notification emails list
+export const getNotificationEmail = async (req, res) => {
+    try {
+        const emailsList = await AdminSettings.findById("notification_emails").lean()
+
+        // If there are no settings, create a new one
+        if (!emailsList) {
+            const newEmailsList = await AdminSettings.create({})
+            res.status(201).json(newEmailsList.notificationEmails)
+            return
+        }
+
+        log("Fetched notification emails list")
+        res.status(200).json(emailsList.notificationEmails)
+    } catch (error) {
+        errorLog("Error in getNotificationEmail controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to update notification emails list
+export const updateNotificationEmail = async (req, res) => {
+    const { emails } = req.body
+    if (!Array.isArray(emails)) return res.status(400).json({ code: "!field", message: "All fields are required" })
+
+    try {
+        let emailsList = await AdminSettings.findById("notification_emails")
+
+        // If there are no emailsList, create a new one
+        if (!emailsList) {
+            emailsList = await AdminSettings.create({ _id: "notification_emails", notificationEmails: emails })
+        }
+
+        // Check if provided email already exists
+        if (emailsList.notificationEmails.some(email => email.toLowerCase() === emails[0])) {
+            return res.status(409).json({ code: "exist", message: "Email already exists" })
+        }
+
+        // Update notification emails list
+        emailsList.notificationEmails = emails
+        await emailsList.save()
+
+        log("Notification emails list updated successfully")
+        res.status(200).json(emailsList.notificationEmails)
+
+        // Log admin action
+        logAdminAction(req.user.id, "update_notification_emails")
+    } catch (error) {
+        errorLog("Error in updateNotificationEmail controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

@@ -74,7 +74,7 @@ export const createOrder = async (req, res) => {
             await product.save() // save the product
 
             // Notify admin on current stock status
-            notifyAdminOnCurrentStockStatus(product).catch(() => { })
+            notifyAdminOnCurrentStockStatus(product, size).catch(() => { })
         }
 
         log("Order created successfully")
@@ -160,7 +160,7 @@ export const createOrderForUser = async (req, res) => {
             await product.save() // save the product
 
             // Notify admin on current stock status
-            notifyAdminOnCurrentStockStatus(product).catch(() => { })
+            notifyAdminOnCurrentStockStatus(product, size).catch(() => { })
         }
 
         log("Order created successfully")

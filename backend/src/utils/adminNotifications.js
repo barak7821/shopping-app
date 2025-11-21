@@ -1,8 +1,18 @@
 import { sendEmail } from "./emailService.js"
+import AdminSettings from "../models/adminSettingsModel.js"
 
-const ADMIN_ALERT_EMAIL = process.env.ADMIN_ALERT_EMAIL || process.env.EMAIL_USER
+export const getAdminNotificationEmails = async () => {
+    // Get admin settings
+    const settings = await AdminSettings.findById("notification_emails").lean()
 
-const canNotify = () => Boolean(ADMIN_ALERT_EMAIL)
+    // If there are no settings, create a new one
+    if (!settings) {
+        const newSettings = await AdminSettings.create({})
+        return newSettings.notificationEmails
+    }
+
+    return settings.notificationEmails
+}
 
 const formatAvailability = availability => {
     if (availability === "available") return "Available"
@@ -12,9 +22,8 @@ const formatAvailability = availability => {
     return availability
 }
 
-export const notifyAdminOnCurrentStockStatus = async product => {
-    if (!canNotify()) return
-
+export const notifyAdminOnCurrentStockStatus = async (product, size) => {
+    const emailList = await getAdminNotificationEmails()
     const availability = product.availability
     if (!availability || availability === "available") return
 
@@ -44,6 +53,9 @@ export const notifyAdminOnCurrentStockStatus = async product => {
                 <p style="margin: 8px 0 0; font-size: 15px; color: #444;">
                     <strong style="color: #c1a875;">Status:</strong> ${formatAvailability(availability)}
                 </p>
+                <p style="margin: 8px 0 0; font-size: 15px; color: #444;">
+                    <strong style="color: #c1a875;">Size:</strong> ${size?.code || size || "N/A"}
+                </p>
                 </div>
 
                 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
@@ -63,14 +75,15 @@ export const notifyAdminOnCurrentStockStatus = async product => {
     </div>`
 
     await sendEmail({
-        to: ADMIN_ALERT_EMAIL,
+        to: emailList.join(","),
         subject,
         html,
         meta: {
             type: "admin_stock_alert",
             productId: String(product._id),
             availability,
-            totalStock: product.totalStock
+            totalStock: product.totalStock,
+            size: size?.code || size || null
         }
     })
 }

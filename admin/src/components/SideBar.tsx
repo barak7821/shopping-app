@@ -4,7 +4,7 @@ import Theme from "./Theme";
 export default function SideBar() {
     return (
         <div className="hidden lg:block">
-            <aside className="lg:flex flex-col shrink-0 bg-white dark:bg-neutral-800 shadow-sm rounded-2xl p-6 h-full self-start">
+            <aside className="lg:flex sticky top-8 max-h-[calc(100vh-8rem)] h-screen flex-col shrink-0 bg-white dark:bg-neutral-800 shadow-sm rounded-2xl p-6 self-start overflow-y-auto">
                 <div className="flex items-center justify-center mb-6 border-b border-gray-200 dark:border-neutral-700 pb-3">
                     <h2 className="text-2xl font-bold text-[#181818] dark:text-neutral-100">
                         Admin Panel
@@ -24,6 +24,7 @@ export default function SideBar() {
                             { text: "Best Sellers Editor", link: "/bestSeller", aria: "Best Sellers" },
                             { text: "Contact Info Editor", link: "/contact", aria: "Contact Info" },
                             { text: "Activity Logs", link: "/logs", aria: "Activity Logs" },
+                            { text: "Notification Emails", link: "/settings/notifications", aria: "Notification Emails" },
                         ].map((item, index) =>
                             <li key={index}>
                                 <NavLink to={item.link} aria-label={item.aria} className={({ isActive }) =>
