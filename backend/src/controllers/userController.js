@@ -2,6 +2,7 @@ import DeletedUser from "../models/deletedUserModel.js"
 import User, { updatePasswordSchemaJoi, updateUserSchemaJoi } from "../models/userModel.js"
 import { log, errorLog } from "../utils/log.js"
 import { checkPassword, hashPassword } from "../utils/passwordUtils.js"
+import { sendAccountDeletedEmail, sendAccountEmailChangedEmail, sendAccountPasswordChangedEmail } from "../utils/userNotifications.js"
 
 // Controller to get the logged-in user's details
 export const getUser = async (req, res) => {
@@ -22,6 +23,9 @@ export const updateUser = async (req, res) => {
     if (Object.keys(req.body).length === 0) return res.status(400).json({ code: "!field", message: "No data provided" })
 
     try {
+        const existingUser = await User.findById(req.user.id).select("email")
+        if (!existingUser) return res.status(404).json({ code: "not_found", message: "User not found" })
+
         // Validate against Joi schema
         await updateUserSchemaJoi.validateAsync({ name, email, phone, street, city, zip, country })
 
@@ -41,6 +45,13 @@ export const updateUser = async (req, res) => {
         // Update user data
         const user = await User.findByIdAndUpdate({ _id: req.user.id }, updateFields, { new: true })
         if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
+
+        // Update last login
+        await User.findByIdAndUpdate(user._id, { lastLogin: new Date() })
+
+        if (email) {
+            sendAccountEmailChangedEmail({ user, email: email.toLowerCase() }).catch(error => errorLog("Failed to send account email changed email", error.message))
+        }
 
         log("User data updated successfully")
         res.status(200).json({ message: "User data updated successfully" })
@@ -66,6 +77,11 @@ export const deleteUser = async (req, res) => {
 
         await deletedUser.save()
         await user.deleteOne()
+
+        // Update last login
+        await User.findByIdAndUpdate(user._id, { lastLogin: new Date() })
+
+        sendAccountDeletedEmail(user).catch(error => errorLog("Failed to send account deleted email", error.message))
 
         log("User deleted successfully", user._id)
         res.status(200).json({ message: "User deleted successfully", id: user._id })
@@ -104,6 +120,11 @@ export const changePassword = async (req, res) => {
 
         // update the password
         await User.findByIdAndUpdate(user._id, { password: hashedPassword })
+
+        // Update last login
+        await User.findByIdAndUpdate(user._id, { lastLogin: new Date() })
+
+        sendAccountPasswordChangedEmail(user).catch(error => errorLog("Failed to send password changed email", error.message))
 
         log("Password changed successfully")
         res.status(200).json({ message: "Password changed successfully" })

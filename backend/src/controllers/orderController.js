@@ -4,6 +4,7 @@ import Product from '../models/productModel.js'
 import User from '../models/userModel.js'
 import { log, errorLog } from "../utils/log.js"
 import { notifyAdminOnCurrentStockStatus } from "../utils/adminNotifications.js"
+import { sendOrderConfirmationEmail } from '../utils/userNotifications.js'
 
 // Controller to create a new order for guest users - not registered
 export const createOrder = async (req, res) => {
@@ -74,8 +75,10 @@ export const createOrder = async (req, res) => {
             await product.save() // save the product
 
             // Notify admin on current stock status
-            notifyAdminOnCurrentStockStatus(product, size).catch(() => { })
+            notifyAdminOnCurrentStockStatus(product, size).catch(error => errorLog("Error in notifyAdminOnCurrentStockStatus", error.message))
         }
+
+        sendOrderConfirmationEmail({ order: newOrder }).catch(error => errorLog("Error in sendOrderConfirmationEmail", error.message))
 
         log("Order created successfully")
         res.status(201).json({ message: "Order created successfully" })
@@ -160,8 +163,10 @@ export const createOrderForUser = async (req, res) => {
             await product.save() // save the product
 
             // Notify admin on current stock status
-            notifyAdminOnCurrentStockStatus(product, size).catch(() => { })
+            notifyAdminOnCurrentStockStatus(product, size).catch(error => errorLog("Error in notifyAdminOnCurrentStockStatus", error.message))
         }
+
+        sendOrderConfirmationEmail({ user, order: newOrder }).catch(error => errorLog("Error in sendOrderConfirmationEmail", error.message))
 
         log("Order created successfully")
         res.status(201).json({ message: "Order created successfully" })

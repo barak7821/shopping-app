@@ -22,8 +22,10 @@ const formatAvailability = availability => {
     return availability
 }
 
+// Notify admins about current stock status of a product
 export const notifyAdminOnCurrentStockStatus = async (product, size) => {
     const emailList = await getAdminNotificationEmails()
+    if (!emailList || emailList.length === 0) return
     const availability = product.availability
     if (!availability || availability === "available") return
 
@@ -84,6 +86,62 @@ export const notifyAdminOnCurrentStockStatus = async (product, size) => {
             availability,
             totalStock: product.totalStock,
             size: size?.code || size || null
+        }
+    })
+}
+
+// Notify admins when a user email fails to send
+export const notifyAdminOnFailedUserEmail = async ({ to, type, meta, error }) => {
+    const emailList = await getAdminNotificationEmails()
+    if (!emailList?.length) return
+
+    const subject = `User email failed: ${type} → ${to}`
+
+    const html = `
+    <div style="font-family: 'Montserrat', Arial, sans-serif; background-color: #faf8f6; padding: 40px; color: #232323;">
+        <div style="max-width: 520px; margin: auto; background-color: #ffffff; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); padding: 32px 26px; text-align: left;">
+
+            <h2 style="font-family: 'Prata', serif; font-size: 22px; margin: 0 0 10px;">
+                Failed to send user email
+            </h2>
+
+            <p style="font-size: 14px; color: #555; margin: 0 0 16px;">
+                The system could not send an email to the user.
+            </p>
+
+            <div style="background-color: #faf8f6; border: 1px solid #c1a875; border-radius: 12px; padding: 16px; font-size: 13px; margin-bottom: 18px;">
+                <p style="margin: 0 0 6px;"><strong style="color:#c1a875;">To:</strong> ${to}</p>
+                <p style="margin: 0 0 6px;"><strong style="color:#c1a875;">Type:</strong> ${type}</p>
+                ${meta?.orderId ? `<p style="margin: 0 0 6px;"><strong style="color:#c1a875;">Order ID:</strong> ${meta.orderId}</p>` : ""}
+                ${meta?.userId ? `<p style="margin: 0;"><strong style="color:#c1a875;">User ID:</strong> ${meta.userId}</p>` : ""}
+            </div>
+
+            ${error ? `
+            <p style="font-size: 12px; color: #999; margin: 0 0 4px;">
+                <strong style="color:#c1a875;">Error:</strong> ${error.message || error}
+            </p>` : ""}
+
+            <hr style="border:none; border-top:1px solid #eee; margin: 20px 0 10px;" />
+
+            <p style="font-size: 12px; color: #aaa; line-height: 1.4;">
+                This is an automated admin notification from
+                <span style="color:#c1a875;">${process.env.APP_NAME}</span>.
+            </p>
+        </div>
+        <style>
+            a, span, strong { color: #c1a875 !important; text-decoration: none !important; }
+        </style>
+    </div>`
+
+    await sendEmail({
+        to: emailList.join(","),
+        subject,
+        html,
+        meta: {
+            type: "admin_user_email_failed",
+            to,
+            failedType: type,
+            ...meta
         }
     })
 }

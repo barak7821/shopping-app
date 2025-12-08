@@ -5,6 +5,7 @@ import { log, errorLog } from "../utils/log.js"
 import { sendOtpEmail } from "../utils/sendOtpEmail.js"
 import { generate6DigitOtp, hashOtp, verifyOtpHash } from "../utils/otpUtils.js"
 import axios from "axios"
+import { sendAccountCreatedEmail, sendAccountPasswordChangedEmail } from "../utils/userNotifications.js"
 
 // Controller to register
 export const register = async (req, res) => {
@@ -33,6 +34,8 @@ export const register = async (req, res) => {
 
         // Save the new user to the database
         await newUser.save()
+
+        sendAccountCreatedEmail(newUser).catch(error => errorLog("Failed to send account created email", error.message))
 
         // Generate a JWT token
         const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
@@ -231,9 +234,12 @@ export const resetPassword = async (req, res) => {
         user.passwordChangedAt = Date.now()
         await user.save({ validateBeforeSave: false })
 
-        // Clear cached data for the current user
-        apicache.clear(req.user?.id)
-
+        
+        // // Clear cached data for the current user
+        // apicache.clear(req.user?.id)
+        
+        sendAccountPasswordChangedEmail(user).catch(error => errorLog("Failed to send password changed email", error.message))
+        
         log(`Password reset successfully for ${user.email}`)
         res.status(200).json({ message: "Password reset successfully" })
     } catch (error) {
