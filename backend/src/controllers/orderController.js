@@ -5,6 +5,7 @@ import User from '../models/userModel.js'
 import { log, errorLog } from "../utils/log.js"
 import { notifyAdminOnCurrentStockStatus } from "../utils/adminNotifications.js"
 import { sendOrderConfirmationEmail } from '../utils/userNotifications.js'
+import { generateOrderNumber } from '../utils/OrderNumberGenerator.js'
 
 // Controller to create a new order for guest users - not registered
 export const createOrder = async (req, res) => {
@@ -51,11 +52,28 @@ export const createOrder = async (req, res) => {
 
         }
 
-        // Validate against Joi schema
-        await orderGuestSchemaJoi.validateAsync(orderDetails)
-        const newOrder = new Order(orderDetails) // Create a new order instance
+        let lastError = null // to store the last error encountered
+        let newOrder = null // to store the newly created order
 
-        await newOrder.save() // Save the order to the database
+        // Attempt to create and save the order with a unique order number
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+            orderDetails.orderNumber = generateOrderNumber() // Generate a new order number
+            await orderGuestSchemaJoi.validateAsync(orderDetails) // Validate against Joi schema
+            newOrder = new Order(orderDetails) // Create a new order instance
+
+            try {
+                await newOrder.save() // Save the order to the database
+                break // Exit loop if successful
+            } catch (error) {
+                if (error?.code === 11000 && error?.keyPattern?.orderNumber) { // Check for duplicate order number error
+                    lastError = error
+                    continue // Retry
+                }
+                throw error // Rethrow other errors
+            }
+        }
+
+        if (!newOrder || !newOrder._id) throw lastError || new Error("order_id_conflict") // If order creation failed after retries
 
         // Update product size stock
         for (const [key, totalQty] of Object.entries(quantityByProductAndSize)) {
@@ -83,7 +101,7 @@ export const createOrder = async (req, res) => {
         log("Order created successfully")
         res.status(201).json({ message: "Order created successfully" })
     } catch (error) {
-        errorLog("Error in createOrder controller", error.message)
+        errorLog("Error in createOrderForUser controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -139,11 +157,29 @@ export const createOrderForUser = async (req, res) => {
             if (size.stock < totalQty) return res.status(400).json({ code: "low_stock", message: "Selected size is out of stock" }) // if size is out of stock
         }
 
-        // Validate against Joi schema
-        await orderUserSchemaJoi.validateAsync(orderDetails)
-        const newOrder = new Order(orderDetails) // Create a new order instance
+        let lastError = null // to store the last error encountered
+        let newOrder = null // to store the newly created order
 
-        await newOrder.save() // Save the order to the database
+        // Attempt to create and save the order with a unique order number
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+            orderDetails.orderNumber = generateOrderNumber() // Generate a new order number
+            await orderUserSchemaJoi.validateAsync(orderDetails) // Validate against Joi schema
+            newOrder = new Order(orderDetails) // Create a new order instance
+
+            try {
+                await newOrder.save() // Save the order to the database
+                break // Exit loop if successful
+            } catch (error) {
+                if (error?.code === 11000 && error?.keyPattern?.orderNumber) { // Check for duplicate order number error
+                    lastError = error
+                    continue // Retry
+                }
+                throw error // Rethrow other errors
+            }
+        }
+
+        if (!newOrder || !newOrder._id) throw lastError || new Error("order_id_conflict") // If order creation failed after retries
+
 
         // Update product size stock
         for (const [key, totalQty] of Object.entries(quantityByProductAndSize)) {
@@ -176,19 +212,19 @@ export const createOrderForUser = async (req, res) => {
     }
 }
 
-// Controller to get order by ID
-export const getOrderById = async (req, res) => {
-    const { id } = req.params
-    if (!id) return res.status(400).json({ code: "!field", message: "Order id is required" })
+// Controller to get order by order number
+export const getOrderByOrderNumber = async (req, res) => {
+    const { number } = req.params
+    if (!number) return res.status(400).json({ code: "!field", message: "Order number is required" })
 
     try {
-        const orders = await Order.findById(id).select("-__v -updatedAt").lean()
+        const orders = await Order.findOne({ orderNumber: number }).select("-__v -updatedAt").lean()
         if (!orders) return res.status(404).json({ code: "not_found", message: "Order not found" })
 
         log("Order found successfully")
         res.status(200).json(orders)
     } catch (error) {
-        errorLog("Error in getOrderById controller", error.message)
+        errorLog("Error in getOrderByOrderNumber controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

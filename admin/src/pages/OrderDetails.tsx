@@ -3,7 +3,7 @@ import SideBar from "../components/SideBar"
 import { Link, useParams } from "react-router-dom"
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import Loading from "../components/Loading";
-import { getOrderById, getProductsByIds, updateOrderStatusById } from "../utils/api";
+import { getOrderByOrderNumber, getProductsByIds, updateOrderStatusById } from "../utils/api";
 import { log } from "../utils/log";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
@@ -13,7 +13,7 @@ export default function OrderDetails() {
     const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
     const [loading, setLoading] = useState(true)
     const { handleApiError } = useApiErrorHandler()
-    const { id } = useParams()
+    const { number } = useParams()
     const [order, setOrder] = useState<Order | null>(null)
     const [productsList, setProductsList] = useState<any[]>([])
     const [newStatus, setNewStatus] = useState("")
@@ -22,11 +22,11 @@ export default function OrderDetails() {
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
     const fetchOrderAndProducts = async () => {
-        if (!id) return
+        if (!number) return
         setLoading(true)
 
         try {
-            const orderData = await getOrderById(id)
+            const orderData = await getOrderByOrderNumber(number)
             setOrder(orderData)
 
             const productIds = orderData.orderItems.map((item: { itemId: any; }) => item.itemId)
@@ -43,7 +43,7 @@ export default function OrderDetails() {
 
     useEffect(() => {
         fetchOrderAndProducts()
-    }, [id])
+    }, [number])
 
     const handleUpdateStatus = () => {
         if (!order) return
@@ -126,7 +126,7 @@ export default function OrderDetails() {
                                     Order Details
                                 </h1>
                                 <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">
-                                    Order ID: <span className="font-mono">{order._id}</span>
+                                    Order Number: <span className="font-mono">{order.orderNumber}</span>
                                 </p>
                                 <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">
                                     User ID: <span className="font-mono">{order.userId}</span>

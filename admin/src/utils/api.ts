@@ -144,11 +144,11 @@ export const fetchOrdersByQuery = async (query: any, opt: { signal?: AbortSignal
     return data
 }
 
-// Function to get order by id
-export const getOrderById = async (orderId: string) => {
-    const { data } = await axios.get(`${baseApiUrl}/admin/getOrderById?id=${orderId}`, { headers: authHeaders() })
+// Function to get order by order number
+export const getOrderByOrderNumber = async (orderNumber: string) => {
+    const { data } = await axios.get(`${baseApiUrl}/admin/getOrderByOrderNumber?number=${orderNumber}`, { headers: authHeaders() })
 
-    log("Get order by id response:", data)
+    log("Get order by order number response:", data)
     return data
 }
 

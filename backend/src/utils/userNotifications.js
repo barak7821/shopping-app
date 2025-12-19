@@ -279,7 +279,7 @@ export const sendAccountDeletedEmail = async user => {
 export const sendOrderConfirmationEmail = async ({ user, order }) => {
     const to = user?.email || order?.shippingAddress?.email || order?.userEmail
     if (!to) return
-    const subject = `Thank you for your order – #${order._id}`
+    const subject = `Thank you for your order - ${order.orderNumber}`
 
     const formatPrice = amount => {
         if (amount == null || Number.isNaN(+amount)) return "-"
@@ -340,7 +340,7 @@ export const sendOrderConfirmationEmail = async ({ user, order }) => {
 
                 <!-- Order meta -->
                 <p style="font-size: 14px; color: #444; margin: 0 0 4px;">
-                    <strong style="color: #c1a875;">Order ID:</strong> ${order._id}
+                    <strong style="color: #c1a875;">Order Number:</strong> ${order.orderNumber}
                 </p>
                 <p style="font-size: 14px; color: #444; margin: 0 0 8px;">
                     <strong style="color: #c1a875;">Date:</strong> ${createdAt}
@@ -433,7 +433,7 @@ export const sendOrderConfirmationEmail = async ({ user, order }) => {
         type: USER_EMAIL_TYPES.ORDER_CONFIRMED,
         meta: {
             userId: user?._id ? String(user._id) : String(order.userId || ""),
-            orderId: String(order._id),
+            orderNumber: String(order.orderNumber),
             total: subtotal
         }
     })

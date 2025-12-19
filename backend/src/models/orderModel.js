@@ -3,6 +3,7 @@ import Joi from "joi";
 
 export const orderUserSchemaJoi = Joi.object(
     {
+        orderNumber: Joi.string().required(),
         userId: Joi.string().required(),
         orderItems: Joi.array().items(
             Joi.object({
@@ -27,6 +28,7 @@ export const orderUserSchemaJoi = Joi.object(
 )
 export const orderGuestSchemaJoi = Joi.object(
     {
+        orderNumber: Joi.string().required(),
         userId: Joi.string().valid("guest").default("guest"),
         orderItems: Joi.array().items(
             Joi.object({
@@ -52,6 +54,11 @@ export const orderGuestSchemaJoi = Joi.object(
 
 const orderSchema = new mongoose.Schema(
     {
+        orderNumber: {
+            type: String,
+            unique: true,
+            required: true
+        },
         userId: {
             type: mongoose.Schema.Types.Mixed,
             ref: "User"

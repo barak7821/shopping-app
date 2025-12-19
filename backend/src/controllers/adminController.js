@@ -730,19 +730,19 @@ export const getOrderByQuery = async (req, res) => {
     }
 }
 
-// Controller to get order by ID
-export const getOrderById = async (req, res) => {
-    const { id } = req.query
-    if (!id) return res.status(400).json({ code: "!field", message: "Order id is required" })
+// Controller to get order by Number
+export const getOrderByOrderNumber = async (req, res) => {
+    const { number } = req.query
+    if (!number) return res.status(400).json({ code: "!field", message: "Order id is required" })
 
     try {
-        const order = await Order.findById(id).select("-__v -updatedAt").lean()
+        const order = await Order.findOne({ orderNumber: number }).select("-__v -updatedAt").lean()
         if (!order) return res.status(404).json({ code: "not_found", message: "Order not found" })
 
-        log(`Order with id ${id} found successfully`)
+        log(`Order ${number} found successfully`)
         res.status(200).json(order)
     } catch (error) {
-        errorLog("Error in getOrderById controller", error.message)
+        errorLog("Error in getOrderByOrderNumber controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

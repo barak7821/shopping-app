@@ -58,6 +58,7 @@ export interface HeroSection {
 }
 
 export interface Order {
+  orderNumber: string
   userId: string
   _id: string
   userEmail: string

@@ -1,6 +1,6 @@
 import Express from 'express';
 import adminAuthMiddleware from '../middlewares/adminAuthMiddleware.js';
-import { deleteAllProducts, archiveProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderById, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery, getArchivedProductsByQuery, restoreArchivedProduct, getArchivedProductById, getLogsByQuery, getNotificationEmail, updateNotificationEmail } from '../controllers/adminController.js';
+import { deleteAllProducts, archiveProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderByOrderNumber, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery, getArchivedProductsByQuery, restoreArchivedProduct, getArchivedProductById, getLogsByQuery, getNotificationEmail, updateNotificationEmail } from '../controllers/adminController.js';
 
 const router = Express.Router()
 
@@ -31,7 +31,7 @@ router.patch('/removeAdmin', adminAuthMiddleware, removeAdmin) // Remove admin r
 
 // Orders
 router.get('/orders', adminAuthMiddleware, getOrderByQuery) // Get orders - pagination in Orders page
-router.get('/getOrderById', adminAuthMiddleware, getOrderById) // Get order by id
+router.get('/getOrderByOrderNumber', adminAuthMiddleware, getOrderByOrderNumber) // Get order by order number
 router.patch('/updateOrderStatus', adminAuthMiddleware, updateOrderStatus) // Update order status by id
 
 // Home Page

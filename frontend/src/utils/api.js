@@ -6,6 +6,7 @@ const token = localStorage.getItem("token")
 
 // Function to send order details to the server - logged in user only
 export const handleOrder = async (orderDetails) => {
+    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -40,6 +41,7 @@ export const handleRegister = async (userData) => {
 
 // Function to check if a user is authenticated - logged in or guest
 export const checkUserAuth = async () => {
+    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -53,6 +55,7 @@ export const checkUserAuth = async () => {
 
 // Function to fetch user data from the server
 export const fetchUserData = async () => {
+    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -66,6 +69,7 @@ export const fetchUserData = async () => {
 
 // Function to update user data in the server
 export const handleUpdateUser = async (userData) => {
+    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -79,6 +83,7 @@ export const handleUpdateUser = async (userData) => {
 
 // Function to change password
 export const handleChangePassword = async (userData) => {
+    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -92,6 +97,7 @@ export const handleChangePassword = async (userData) => {
 
 // Function to verify password
 export const verifyPassword = async (password) => {
+    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -105,6 +111,7 @@ export const verifyPassword = async (password) => {
 
 // Function to fetch order by ID
 export const fetchOrderById = async (id) => {
+    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -149,6 +156,7 @@ export const findProductsQuery = async (query) => {
 
 // Function to delete the user
 export const handleDeleteUser = async () => {
+    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -259,6 +267,7 @@ export const fetchProductById = async (id) => {
 // Function to fetch order by query - pagination
 export const fetchOrdersByQuery = async (query, opt = {}) => {
     const { signal } = opt
+    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -278,7 +287,7 @@ export const fetchProductsByIdsOrders = async (ids) => {
         log("Product ids are required")
         return
     }
-    
+
     const { data } = await axios.post(`${baseApiUrl}/products/orders`, { ids })
 
     log("Get products by ids response:", data)

@@ -114,11 +114,11 @@ export default function Orders() {
                     <div className="w-full max-w-5xl flex flex-col gap-10 md:gap-12">
                         {Array.from({ length: 2 }).map((_, cardIdx) => (
                             <div key={`sk-card-${cardIdx}`} className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 flex flex-col gap-5">
-                                {/* Header - ID & Status */}
+                                {/* Header - Number & Status */}
                                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-                                    {/* Order ID block */}
+                                    {/* Order Number block */}
                                     <div className="flex flex-col gap-1 animate-pulse">
-                                        {/* label 'Order ID' size ~ text-sm */}
+                                        {/* label 'Order Number' size ~ text-sm */}
                                         <div className="h-3 w-16 rounded bg-gray-200 dark:bg-neutral-700" />
                                         {/* value size ~ text-base bold tracking-wider */}
                                         <div className="h-5 w-44 rounded bg-gray-200 dark:bg-neutral-700" />
@@ -214,11 +214,11 @@ export default function Orders() {
                         </div>
                         : ordersList.map(item => (
                             <div key={item._id} className="bg-white/90 dark:bg-neutral-800/90 rounded-2xl shadow-xl p-7 flex flex-col gap-5">
-                                {/* Header - ID & Status */}
+                                {/* Header - Number & Status */}
                                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-sm text-gray-500 dark:text-neutral-400 font-medium">Order ID</span>
-                                        <span className="font-bold text-[#232323] dark:text-neutral-100 tracking-wider text-base">{item._id}</span>
+                                        <span className="text-sm text-gray-500 dark:text-neutral-400 font-medium">Order Number</span>
+                                        <span className="font-bold text-[#232323] dark:text-neutral-100 tracking-wider text-base">{item.orderNumber}</span>
                                     </div>
                                     <div className="flex gap-7 flex-wrap">
                                         <div>
@@ -262,7 +262,7 @@ export default function Orders() {
 
                                 {/* More Details Button */}
                                 <div className="flex justify-end mt-2">
-                                    <button onClick={() => nav(`/orders/${item._id}`)} className="px-6 py-2 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-base shadow-md transition hover:bg-white hover:text-black active:scale-95 cursor-pointer">
+                                    <button onClick={() => nav(`/orders/${item.orderNumber}`)} className="px-6 py-2 rounded-2xl bg-[#1a1a1a] text-white border border-[#1a1a1a] font-semibold text-base shadow-md transition hover:bg-white hover:text-black active:scale-95 cursor-pointer">
                                         More Details
                                     </button>
                                 </div>

@@ -23,8 +23,8 @@ export default function TableLoadingSkeleton() {
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-[#f5f2ee] dark:bg-neutral-700/40">
                                 <tr>
-                                    {["Image", "Name", "Price", "Category", "Actions"].map((title) => (
-                                        <th key={title} className="px-6 py-3 text-sm font-semibold text-[#c1a875] uppercase tracking-wide">
+                                    {["Loading", "Loading", "Loading", "Loading", "Loading"].map((title, index) => (
+                                        <th key={`${title}-${index}`} className="px-6 py-3 text-sm font-semibold text-[#c1a875] uppercase tracking-wide">
                                             {title}
                                         </th>
                                     ))}

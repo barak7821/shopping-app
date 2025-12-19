@@ -83,7 +83,7 @@ export default function Orders() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-[#f5f2ee] dark:bg-neutral-700/40">
                 <tr>
-                  {["Email", "Order Date", "Payment Method", "Total", "Status", "Actions"].map((title) => (
+                  {["Order Number", "Email", "Order Date", "Payment Method", "Total", "Status", "Actions"].map((title) => (
                     <th key={title} className="px-6 py-3 text-sm font-semibold text-[#c1a875] uppercase tracking-wide">
                       {title}
                     </th>
@@ -101,6 +101,11 @@ export default function Orders() {
                   </tr>
                   : ordersList.map((order) => (
                     <tr key={order._id} className="hover:bg-[#faf8f6] dark:hover:bg-neutral-700/60 transition">
+
+                      {/* Order Number */}
+                      <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200">
+                        {order.orderNumber}
+                      </td>
 
                       {/* Email */}
                       <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700 text-[#232323] dark:text-neutral-200">
@@ -136,7 +141,7 @@ export default function Orders() {
                       {/* Actions */}
                       <td className="px-6 py-4 border-t border-[#eee] dark:border-neutral-700">
                         <div className="flex items-center gap-3">
-                          <button onClick={() => nav(`/orders/edit/${order._id}`)} title="Edit" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer">
+                          <button onClick={() => nav(`/orders/edit/${order.orderNumber}`)} title="Edit" className="p-2 rounded-full hover:bg-[#c1a875]/10 text-[#c1a875] transition cursor-pointer">
                             <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                               <path d="M12 20h9" />
                               <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />

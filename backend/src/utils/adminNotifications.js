@@ -112,7 +112,7 @@ export const notifyAdminOnFailedUserEmail = async ({ to, type, meta, error }) =>
             <div style="background-color: #faf8f6; border: 1px solid #c1a875; border-radius: 12px; padding: 16px; font-size: 13px; margin-bottom: 18px;">
                 <p style="margin: 0 0 6px;"><strong style="color:#c1a875;">To:</strong> ${to}</p>
                 <p style="margin: 0 0 6px;"><strong style="color:#c1a875;">Type:</strong> ${type}</p>
-                ${meta?.orderId ? `<p style="margin: 0 0 6px;"><strong style="color:#c1a875;">Order ID:</strong> ${meta.orderId}</p>` : ""}
+                ${meta?.orderNumber ? `<p style="margin: 0 0 6px;"><strong style="color:#c1a875;">Order ID:</strong> ${meta.orderNumber}</p>` : ""}
                 ${meta?.userId ? `<p style="margin: 0;"><strong style="color:#c1a875;">User ID:</strong> ${meta.userId}</p>` : ""}
             </div>
 

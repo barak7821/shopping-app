@@ -11,7 +11,7 @@ import Footer from '../components/Footer';
 import { useApiErrorHandler } from '../utils/useApiErrorHandler';
 
 export default function OrderDetails() {
-  const { orderId } = useParams()
+  const { orderNumber } = useParams()
   const notyf = new Notyf({ position: { x: 'center', y: 'top', }, })
   const [order, setOrder] = useState({})
   const [loading, setLoading] = useState(true)
@@ -22,7 +22,7 @@ export default function OrderDetails() {
   const getOrders = async () => {
     setLoading(true)
     try {
-      const data = await fetchOrderById(orderId)
+      const data = await fetchOrderById(orderNumber)
       setOrder(data)
 
       const products = await fetchProductsByIdsOrders(data.orderItems.map(item => item.itemId))
@@ -36,7 +36,7 @@ export default function OrderDetails() {
 
   useEffect(() => {
     getOrders()
-  }, [orderId])
+  }, [orderNumber])
 
   if (loading) {
     return (
@@ -59,8 +59,8 @@ export default function OrderDetails() {
           {/* Top Info */}
           <div className="flex flex-col md:flex-row md:justify-between gap-6">
             <div className="flex flex-col gap-2">
-              <h3 className="text-[#c1a875] font-semibold text-sm">Order ID</h3>
-              <p className="text-sm dark:text-neutral-300">{order._id}</p>
+              <h3 className="text-[#c1a875] font-semibold text-sm">Order Number</h3>
+              <p className="text-sm dark:text-neutral-300">{order.orderNumber}</p>
 
               <h3 className="text-[#c1a875] font-semibold text-sm mt-4">Order Date</h3>
               <p className="text-sm dark:text-neutral-300">{new Date(order.createdAt).toLocaleString("en-GB")}</p>
