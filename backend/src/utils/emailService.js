@@ -3,14 +3,15 @@ import logAdminAction from "./adminLogger.js";
 import { errorLog } from "./log.js";
 
 // Function to send an email
-export const sendEmail = async ({ to, subject, html, text, meta = {} }) => {
+export const sendEmail = async ({ to, subject, html, text, attachments = [], meta = {} }) => {
     try {
         await transporter.sendMail({
             from: `"${process.env.APP_NAME}" <${process.env.EMAIL_USER}>`,
             to,
             subject,
             html,
-            text
+            text,
+            attachments
         })
     } catch (error) {
         logAdminAction(null, "email_failed", null, {

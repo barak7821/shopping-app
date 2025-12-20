@@ -1,6 +1,7 @@
 import { notifyAdminOnFailedUserEmail } from "./adminNotifications.js"
 import { sendEmail } from "./emailService.js"
 import { errorLog } from "./log.js"
+import { generateReceiptPdfBuffer } from "./receiptPdf.js"
 
 export const USER_EMAIL_TYPES = {
     ACCOUNT_CREATED: "account_created",
@@ -9,12 +10,13 @@ export const USER_EMAIL_TYPES = {
     ACCOUNT_DELETED: "account_deleted",
     ORDER_CONFIRMED: "order_confirmed"
 }
-const sendUserEmail = async ({ to, subject, html, type, meta = {} }) => {
+const sendUserEmail = async ({ to, subject, html, attachments = [], type, meta = {} }) => {
     try {
         await sendEmail({
             to,
             subject,
             html,
+            attachments,
             meta: {
                 type,
                 ...meta
@@ -276,8 +278,8 @@ export const sendAccountDeletedEmail = async user => {
 }
 
 // Send order confirmation email
-export const sendOrderConfirmationEmail = async ({ user, order }) => {
-    const to = user?.email || order?.shippingAddress?.email || order?.userEmail
+export const sendOrderConfirmationEmail = async ({ user, order, overrideEmail }) => {
+    const to = overrideEmail || user?.email || order?.shippingAddress?.email || order?.userEmail
     if (!to) return
     const subject = `Thank you for your order - ${order.orderNumber}`
 
@@ -345,12 +347,6 @@ export const sendOrderConfirmationEmail = async ({ user, order }) => {
                 <p style="font-size: 14px; color: #444; margin: 0 0 8px;">
                     <strong style="color: #c1a875;">Date:</strong> ${createdAt}
                 </p>
-                ${order.paymentMethod ? `
-                <p style="font-size: 14px; color: #444; margin: 0 0 14px;">
-                    <strong style="color: #c1a875;">Payment:</strong> ${order.paymentMethod}
-                </p>` : `
-                <p style="margin: 0 0 14px;"></p>
-                `}
 
                 <!-- Divider -->
                 <div style="width: 60px; height: 3px; background-color: #c1a875; border-radius: 6px; margin: 0 0 18px 0;"></div>
@@ -426,10 +422,34 @@ export const sendOrderConfirmationEmail = async ({ user, order }) => {
         </div>
     `
 
+    let receiptPdfBuffer = null
+
+    try {
+        receiptPdfBuffer = await generateReceiptPdfBuffer({
+            orderNumber: order.orderNumber,
+            createdAt: order.createdAt || new Date(),
+            shippingAddress,
+            orderItems: items,
+            userName: user?.name || order.userName || shippingAddress?.name,
+            userEmail: to
+        })
+    } catch (error) {
+        errorLog("Failed to generate receipt PDF", error.message)
+    }
+
+    const attachments = receiptPdfBuffer
+        ? [{
+            filename: `Receipt-${order.orderNumber}.pdf`,
+            content: receiptPdfBuffer,
+            contentType: "application/pdf",
+        }]
+        : []
+
     await sendUserEmail({
         to,
         subject,
         html,
+        attachments,
         type: USER_EMAIL_TYPES.ORDER_CONFIRMED,
         meta: {
             userId: user?._id ? String(user._id) : String(order.userId || ""),

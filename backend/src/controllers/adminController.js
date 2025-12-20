@@ -1,9 +1,10 @@
 import DeletedUser from "../models/deletedUserModel.js";
 import Order from "../models/orderModel.js";
 import Product, { productSchemaJoi, updateProductSchemaJoi } from "../models/productModel.js";
-import User, { localSchema } from "../models/userModel.js";
+import User from "../models/userModel.js";
 import { BestSeller, bestSellerSchemaJoi, ContactInfo, contactInfoSchemaJoi, Hero, heroSchemaJoi } from "../models/homePageModel.js";
 import { errorLog, log } from "../utils/log.js";
+import { sendOrderConfirmationEmail } from "../utils/userNotifications.js";
 import ArchivedProduct from "../models/archivedProductModel.js";
 import logAdminAction from "../utils/adminLogger.js";
 import AdminLog from "../models/adminLogModel.js";
@@ -776,6 +777,36 @@ export const updateOrderStatus = async (req, res) => {
         logAdminAction(req.user.id, "update_order_status", order._id)
     } catch (error) {
         errorLog("Error in updateOrderStatus controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to resend order receipt email
+export const resendOrderReceipt = async (req, res) => {
+    const { orderId, orderNumber, email } = req.body
+    if (!orderId && !orderNumber) return res.status(400).json({ code: "!field", message: "Order id or order number is required" })
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ code: "invalid_email", message: "Invalid email" })
+    }
+
+    try {
+        const query = orderId ? { _id: orderId } : { orderNumber }
+        const order = await Order.findOne(query).lean()
+        if (!order) return res.status(404).json({ code: "not_found", message: "Order not found" })
+
+        let user = null
+        if (order.userId && order.userId !== "guest") {
+            user = await User.findById(order.userId).lean()
+        }
+
+        await sendOrderConfirmationEmail({ user, order, overrideEmail: email })
+
+        log(`Order receipt resent for order ${order.orderNumber}`)
+        res.status(200).json({ message: "Receipt sent successfully" })
+
+        logAdminAction(req.user.id, "resend_order_receipt", order._id)
+    } catch (error) {
+        errorLog("Error in resendOrderReceipt controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

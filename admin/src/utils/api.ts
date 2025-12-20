@@ -168,6 +168,14 @@ export const updateOrderStatusById = async (orderId: string, newStatus: string) 
     return data
 }
 
+// Function to resend order receipt
+export const resendOrderReceipt = async (orderId: string, email?: string) => {
+    const { data } = await axios.post(`${baseApiUrl}/admin/resendReceipt`, { orderId, email }, { headers: authHeaders() })
+
+    log("Resend order receipt response:", data)
+    return data
+}
+
 // Function to get hero section
 export const fetchHeroSection = async () => {
     const { data } = await axios.get(`${baseApiUrl}/home`)

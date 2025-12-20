@@ -1,6 +1,6 @@
 import Express from 'express';
 import adminAuthMiddleware from '../middlewares/adminAuthMiddleware.js';
-import { deleteAllProducts, archiveProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderByOrderNumber, getProductsByIds, updateOrderStatus, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery, getArchivedProductsByQuery, restoreArchivedProduct, getArchivedProductById, getLogsByQuery, getNotificationEmail, updateNotificationEmail } from '../controllers/adminController.js';
+import { deleteAllProducts, archiveProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderByOrderNumber, getProductsByIds, updateOrderStatus, resendOrderReceipt, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery, getArchivedProductsByQuery, restoreArchivedProduct, getArchivedProductById, getLogsByQuery, getNotificationEmail, updateNotificationEmail } from '../controllers/adminController.js';
 
 const router = Express.Router()
 
@@ -33,6 +33,7 @@ router.patch('/removeAdmin', adminAuthMiddleware, removeAdmin) // Remove admin r
 router.get('/orders', adminAuthMiddleware, getOrderByQuery) // Get orders - pagination in Orders page
 router.get('/getOrderByOrderNumber', adminAuthMiddleware, getOrderByOrderNumber) // Get order by order number
 router.patch('/updateOrderStatus', adminAuthMiddleware, updateOrderStatus) // Update order status by id
+router.post('/resendReceipt', adminAuthMiddleware, resendOrderReceipt) // Resend receipt to user
 
 // Home Page
 router.patch('/hero', adminAuthMiddleware, heroSection) // Update hero section

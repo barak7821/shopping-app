@@ -3,7 +3,7 @@ import SideBar from "../components/SideBar"
 import { Link, useParams } from "react-router-dom"
 import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
 import Loading from "../components/Loading";
-import { getOrderByOrderNumber, getProductsByIds, updateOrderStatusById } from "../utils/api";
+import { getOrderByOrderNumber, getProductsByIds, resendOrderReceipt, updateOrderStatusById } from "../utils/api";
 import { log } from "../utils/log";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
@@ -20,6 +20,8 @@ export default function OrderDetails() {
     const [showConfirmModal, setShowConfirmModal] = useState(false)
     const [statusPendingConfirmation, setStatusPendingConfirmation] = useState<string | null>(null)
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+    const [resendEmail, setResendEmail] = useState("")
+    const [isSendingReceipt, setIsSendingReceipt] = useState(false)
 
     const fetchOrderAndProducts = async () => {
         if (!number) return
@@ -88,6 +90,26 @@ export default function OrderDetails() {
     const handleCancelConfirmation = () => {
         setShowConfirmModal(false)
         setStatusPendingConfirmation(null)
+    }
+
+    const handleResendReceipt = async () => {
+        if (!order) return
+        const trimmedEmail = resendEmail.trim()
+        if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+            notyf.error("Please enter a valid email address")
+            return
+        }
+
+        setIsSendingReceipt(true)
+        try {
+            await resendOrderReceipt(order._id, trimmedEmail || undefined)
+            notyf.success("Receipt sent successfully!")
+            setResendEmail("")
+        } catch (error) {
+            handleApiError(error as ApiError, "handleResendReceipt")
+        } finally {
+            setIsSendingReceipt(false)
+        }
     }
 
     if (loading || !order) {
@@ -181,6 +203,22 @@ export default function OrderDetails() {
                                     </p>
                                     <p><span className="font-semibold">Created At:</span> {new Date(order.createdAt).toLocaleString("en-GB")}</p>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Receipt */}
+                        <div className="bg-[#faf8f6] dark:bg-neutral-700/60 rounded-xl p-6 border border-[#eee] dark:border-neutral-700 shadow-sm">
+                            <h2 className="text-xl font-semibold text-[#c1a875] mb-2">
+                                Receipt
+                            </h2>
+                            <p className="text-sm text-gray-500 dark:text-neutral-300 mb-4">
+                                Resend the receipt to the user. Leave email empty to use the default order email.
+                            </p>
+                            <div className="flex flex-col md:flex-row gap-3 md:items-center">
+                                <input type="email" value={resendEmail} onChange={(e) => setResendEmail(e.target.value)} placeholder={`Email (default: ${order.shippingAddress.email || order.userEmail || "not set"})`} className="flex-1 rounded-xl border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-[#1a1a1a] dark:text-neutral-100 px-4 py-2 focus:ring-2 focus:ring-[#c1a875] focus:outline-none shadow-sm" />
+                                <button onClick={handleResendReceipt} disabled={isSendingReceipt} className="px-6 py-2 rounded-xl font-semibold bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                    {isSendingReceipt ? "Sending..." : "Send Receipt"}
+                                </button>
                             </div>
                         </div>
 
