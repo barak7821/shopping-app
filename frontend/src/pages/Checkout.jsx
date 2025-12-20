@@ -16,16 +16,18 @@ import { fetchUserData } from '../utils/api';
 export default function Checkout() {
   const nav = useNavigate()
   const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [phone, setPhone] = useState("")
-  const [street, setStreet] = useState("")
-  const [city, setCity] = useState("")
-  const [zip, setZip] = useState("")
-  const [country, setCountry] = useState("")
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    street: "",
+    city: "",
+    zip: "",
+    country: "",
+  })
   const [matchCountry, setMatchCountry] = useState("")
   const countries = getNames() // Get all country names
-  const match = stringSimilarity.findBestMatch(country.toLocaleLowerCase(), countries) // find best match between user input and all country names
+  const match = stringSimilarity.findBestMatch(formData.country.toLocaleLowerCase(), countries) // find best match between user input and all country names
   const { setAddress, cart } = useCart()
   const { isAuthenticated } = useAuth()
   const [loading, setLoading] = useState(false)
@@ -41,14 +43,15 @@ export default function Checkout() {
     try {
       const data = await fetchUserData()
 
-      // Update states with fetched data
-      setName(data?.name || "")
-      setEmail(data?.email || "")
-      setPhone(data?.phone || "")
-      setStreet(data?.street || "")
-      setCity(data?.city || "")
-      setZip(data?.zip || "")
-      setCountry(data?.country || "")
+      setFormData({
+        name: data?.name || "",
+        email: data?.email || "",
+        phone: data?.phone || "",
+        street: data?.street || "",
+        city: data?.city || "",
+        zip: data?.zip || "",
+        country: data?.country || "",
+      })
 
       setLoading(false)
     } catch (error) {
@@ -67,19 +70,20 @@ export default function Checkout() {
   // Verify there is cart before continue with checkout page
   useEffect(() => {
     setLoading(true)
-    if (!cart || Object.keys(cart).length === 0) {
-      notyf.error("Please add placeholder something about add to cart")
-      log("Please add shipping address first")
+    if (!cart || cart.length === 0) {
+      notyf.error("Your cart is empty")
+      log("Your cart is empty")
       nav("/")
       return
     } else {
       setLoading(false)
     }
 
-    log(cart)
+    log("Cart:", cart)
   }, [cart])
 
   const handleClick = () => {
+    const { name, email, phone, street, city, zip, country } = formData
     // Input validation
     if (!name || !email || !phone || !street || !city || !zip || !country) {
       notyf.error("All fields are required")
@@ -154,6 +158,21 @@ export default function Checkout() {
     nav("/payment")
   }
 
+  const handleChange = (e) => {
+    const { id, value } = e.target
+
+    let formattedValue = value
+    if (id === 'name' || id === 'city') {
+      formattedValue = value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, "")
+    } else if (id === 'phone') {
+      formattedValue = value.replace(/[^0-9]/g, "")
+    } else if (id === 'country') {
+      formattedValue = value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, "")
+    }
+
+    setFormData(prev => ({ ...prev, [id]: formattedValue }))
+  }
+
   if (loading) {
     return (
       <Loading />
@@ -190,9 +209,9 @@ export default function Checkout() {
               {/* Name */}
               <div className="flex flex-col gap-2">
                 <label htmlFor='name' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">
-                  Name {error && name && name.length < 3 && <span className="text-red-500">*</span>}</label>
-                <input onChange={e => setName(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={name.replace(/\b\w/g, l => l.toUpperCase())} id='name' type="text" placeholder="Full Name" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
-                {error && name && name.length < 3 ?
+                  Name {error && formData.name && formData.name.length < 3 && <span className="text-red-500">*</span>}</label>
+                <input onChange={handleChange} value={formData.name.replace(/\b\w/g, l => l.toUpperCase())} disabled={isAuthenticated} id='name' type="text" placeholder="Full Name" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 disabled:text-gray-500 disabled:cursor-not-allowed" />
+                {error && formData.name && formData.name.length < 3 ?
                   <p className="text-xs text-red-500 pl-1 mt-1">Name must be at least 3 characters long</p>
                   : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter your full name. It should be at least 3 characters long.</p>
                 }
@@ -201,9 +220,9 @@ export default function Checkout() {
               {/* Email */}
               <div className="flex flex-col gap-2">
                 <label htmlFor='email' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">
-                  Email {error && email && !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email) && <span className="text-red-500">*</span>}</label>
-                <input onChange={e => setEmail(e.target.value)} value={email} id='email' type="email" placeholder="Email" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
-                {error && email && !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email) ?
+                  Email {error && formData.email && !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(formData.email) && <span className="text-red-500">*</span>}</label>
+                <input onChange={handleChange} value={formData.email} disabled={isAuthenticated} id='email' type="email" placeholder="Email" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100 disabled:text-gray-500 disabled:cursor-not-allowed" />
+                {error && formData.email && !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(formData.email) ?
                   <p className="text-xs text-red-500 pl-1 mt-1">Invalid email format</p>
                   : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter a valid email address.</p>
                 }
@@ -212,10 +231,10 @@ export default function Checkout() {
               {/* Phone */}
               <div className="flex flex-col gap-2">
                 <label htmlFor='phone' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">
-                  Phone {error && phone && !/^\d{10}$/.test(phone) && <span className="text-red-500">*</span>}
+                  Phone {error && formData.phone && !/^\d{10}$/.test(formData.phone) && <span className="text-red-500">*</span>}
                 </label>
-                <input onChange={e => (setPhone(e.target.value.replace(/[^0-9]/g, "")))} id='phone' inputMode="numeric" maxLength={10} value={phone} type="tel" placeholder="Phone" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
-                {error && phone && !/^\d{10}$/.test(phone)
+                <input onChange={handleChange} id='phone' inputMode="numeric" maxLength={10} value={formData.phone} type="tel" placeholder="Phone" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                {error && formData.phone && !/^\d{10}$/.test(formData.phone)
                   ? <p className="text-xs text-red-500 pl-1 mt-1">Invalid phone number format</p>
                   : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter a valid phone number.</p>
                 }
@@ -225,9 +244,9 @@ export default function Checkout() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
               {/* Street */}
               <div className="flex flex-col gap-2">
-                <label htmlFor='street' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Street {error && !street && !street.trim() && <span className="text-red-500">*</span>}</label>
-                <input onChange={(e) => setStreet(e.target.value)} value={street} id='street' type="text" placeholder="Street" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
-                {error && !street && !street.trim()
+                <label htmlFor='street' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Street {error && !formData.street && !formData.street.trim() && <span className="text-red-500">*</span>}</label>
+                <input onChange={handleChange} value={formData.street} id='street' type="text" placeholder="Street" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                {error && !formData.street && !formData.street.trim()
                   ? <p className="text-xs text-red-500 pl-1 mt-1">Invalid street address</p>
                   : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter your street address.</p>
                 }
@@ -235,9 +254,9 @@ export default function Checkout() {
 
               {/* City */}
               <div className="flex flex-col gap-2">
-                <label htmlFor='city' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">City {error && !city && !street.trim() && <span className="text-red-500">*</span>}</label>
-                <input onChange={(e) => setCity(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={city.replace(/\b\w/g, l => l.toUpperCase())} id='city' type="text" placeholder="City" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
-                {error && !city && !city.trim()
+                <label htmlFor='city' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">City {error && !formData.city && !formData.street.trim() && <span className="text-red-500">*</span>}</label>
+                <input onChange={handleChange} value={formData.city.replace(/\b\w/g, l => l.toUpperCase())} id='city' type="text" placeholder="City" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                {error && !formData.city && !formData.city.trim()
                   ? <p className="text-xs text-red-500 pl-1 mt-1">Invalid city name</p>
                   : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter your city.</p>
                 }
@@ -245,9 +264,9 @@ export default function Checkout() {
 
               {/* Zip Code */}
               <div className="flex flex-col gap-2">
-                <label htmlFor='zip' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Zip Code {error && zip && zip.length < 4 && <span className="text-red-500">*</span>}</label>
-                <input onChange={(e) => setZip(e.target.value)} value={zip} id='zip' type="text" placeholder="Zip Code" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
-                {error && zip && zip.length < 4
+                <label htmlFor='zip' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Zip Code {error && formData.zip && formData.zip.length < 4 && <span className="text-red-500">*</span>}</label>
+                <input onChange={handleChange} value={formData.zip} id='zip' type="text" placeholder="Zip Code" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                {error && formData.zip && formData.zip.length < 4
                   ? <p className="text-xs text-red-500 pl-1 mt-1">Invalid zip code format</p>
                   : <p className="text-xs text-gray-500 dark:text-neutral-400 pl-1 mt-1">Please enter a zip code number.</p>
                 }
@@ -255,8 +274,8 @@ export default function Checkout() {
 
               {/* Country */}
               <div className="flex flex-col gap-2">
-                <label htmlFor='country' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Country {error && country && match.bestMatch.rating < 0.7 && <span className="text-red-500">*</span>}</label>
-                <input onChange={(e) => setCountry(e.target.value.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, ""))} value={country.replace(/[^A-Za-z\u0590-\u05FF\s׳'-]/g, "")} id='country' type="text" placeholder="Country" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
+                <label htmlFor='country' className="font-semibold text-[#232323] dark:text-neutral-100 text-sm">Country {error && formData.country && match.bestMatch.rating < 0.7 && <span className="text-red-500">*</span>}</label>
+                <input onChange={handleChange} value={formData.country} id='country' type="text" placeholder="Country" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#c1a875] focus:outline-none text-base bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-100" />
 
                 {/* Matched country */}
                 {matchCountry &&
@@ -264,7 +283,7 @@ export default function Checkout() {
                     <p className="text-xs text-[#c1a875]">
                       Did you mean: <span className="font-semibold">{matchCountry}</span>?
                     </p>
-                    <button onClick={() => setCountry(matchCountry)} className="text-xs underline text-[#c1a875] cursor-pointer hover:text-[#7d6d4d] ">Use suggestion</button>
+                    <button onClick={() => setFormData(prev => ({ ...prev, country: matchCountry }))} className="text-xs underline text-[#c1a875] cursor-pointer hover:text-[#7d6d4d] ">Use suggestion</button>
                   </div>
                 }
               </div>

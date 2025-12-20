@@ -3,8 +3,22 @@ import { createContext, useContext, useEffect, useState } from "react";
 const CartContext = createContext()
 
 export const CartProvider = ({ children }) => {
-    const [cart, setCart] = useState([])
-    const [address, setAddress] = useState({})
+    const [cart, setCart] = useState(() => {
+        try {
+            const localCart = localStorage.getItem("cart")
+            return localCart ? JSON.parse(localCart) : []
+        } catch (error) {
+            return []
+        }
+    })
+    const [address, setAddress] = useState(() => {
+        try {
+            const localAddress = localStorage.getItem("address")
+            return localAddress ? JSON.parse(localAddress) : {}
+        } catch (error) {
+            return {}
+        }
+    })
 
     // get cart from local storage and set it to cart
     useEffect(() => {
@@ -72,6 +86,11 @@ export const CartProvider = ({ children }) => {
             return updated
         })
     }
+
+    // update local storage whenever address changes
+    useEffect(() => {
+        localStorage.setItem("address", JSON.stringify(address))
+    }, [address])
 
     return (
         <CartContext.Provider value={{ cart, setCart, addToCart, removeFromCart, address, setAddress, clearItem }}>

@@ -403,7 +403,7 @@ export const sendOrderConfirmationEmail = async ({ user, order }) => {
 
                 <!-- Button -->
                 <div style="text-align: center; margin-top: 24px;">
-                    <a href="${process.env.FRONTEND_URL ? process.env.FRONTEND_URL + "/orders/" + order._id : "#"}"
+                    <a href="${process.env.FRONTEND_URL ? process.env.FRONTEND_URL + "/orders/" + order.orderNumber : "#"}"
                     style="display: inline-block; background-color: #c1a875; color: #ffffff; padding: 11px 22px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none;">
                         View order
                     </a>
