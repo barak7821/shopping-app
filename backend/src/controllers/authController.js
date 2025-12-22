@@ -56,11 +56,11 @@ export const login = async (req, res) => {
     try {
         // Find user by email
         const user = await User.findOne({ email: email.toLowerCase() }).select("+password")
-        if (!user) return res.status(401).json({ code: "invalid_pass", message: "Invalid password" })
+        if (!user) return res.status(401).json({ code: "invalid_pass", message: "Invalid credentials" })
 
         // Verify the password
         const isPasswordValid = await checkPassword(password, user.password)
-        if (!isPasswordValid) return res.status(401).json({ code: "invalid_pass", message: "Invalid password" })
+        if (!isPasswordValid) return res.status(401).json({ code: "invalid_pass", message: "Invalid credentials" })
 
         // Ensure JWT_SECRET is defined in the environment variables
         if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined")
@@ -234,12 +234,12 @@ export const resetPassword = async (req, res) => {
         user.passwordChangedAt = Date.now()
         await user.save({ validateBeforeSave: false })
 
-        
+
         // // Clear cached data for the current user
         // apicache.clear(req.user?.id)
-        
+
         sendAccountPasswordChangedEmail(user).catch(error => errorLog("Failed to send password changed email", error.message))
-        
+
         log(`Password reset successfully for ${user.email}`)
         res.status(200).json({ message: "Password reset successfully" })
     } catch (error) {

@@ -25,7 +25,7 @@ export default function Login() {
     const redirect = params.get("redirect") // Get the redirect parameter
     const { handleApiError } = useApiErrorHandler()
 
-    // If user already logged in → redirect away from login page
+    // If user already logged in, redirect to home page or redirect parameter
     useEffect(() => {
         setLoading(true)
         if (isAuthenticated) {
@@ -68,7 +68,7 @@ export default function Login() {
         }
     })
 
-    // Handle email/password login
+    // Handle Login
     const handleClick = async () => {
         // Ensure all required fields are filled
         if (!email || !password) {
@@ -83,6 +83,13 @@ export default function Login() {
         if (!emailRegex.test(email)) {
             setError("email")
             log("Invalid email format")
+            return
+        }
+
+        // Validate password length
+        if (password.length < 6) {
+            setError("password")
+            log("Invalid password")
             return
         }
 
@@ -109,7 +116,7 @@ export default function Login() {
                 return
             }
         } catch (error) {
-            const { code } = handleApiError(error, "handleLogin")
+            const { code } = handleApiError(error, "handleClick")
 
             if (["invalid_pass"].includes(code)) setError("password")
         } finally {

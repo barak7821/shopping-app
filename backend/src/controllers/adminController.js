@@ -9,6 +9,10 @@ import ArchivedProduct from "../models/archivedProductModel.js";
 import logAdminAction from "../utils/adminLogger.js";
 import AdminLog from "../models/adminLogModel.js";
 import AdminSettings from "../models/adminSettingsModel.js";
+import { checkPassword } from "../utils/passwordUtils.js";
+import jwt from "jsonwebtoken"
+import { authenticator } from "otplib"
+import QRCode from "qrcode"
 
 // Temp Controller - SHOULD ONLY BE USED FOR TESTING!!!
 
@@ -1062,6 +1066,138 @@ export const updateNotificationEmail = async (req, res) => {
         logAdminAction(req.user.id, "update_notification_emails")
     } catch (error) {
         errorLog("Error in updateNotificationEmail controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller for checking if the admin is authenticated based on the JWT token
+export const checkAdminAuth = async (req, res) => {
+    try {
+        res.status(200).json({ exist: true, provider: req.user.provider, role: req.user.role, mfa: req.user.mfa, aud: req.user.aud })
+    } catch (error) {
+        errorLog("Error in checkAdminAuth controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to handle admin login
+export const adminLogin = async (req, res) => {
+    const { email, password } = req.body
+    if (!email || !password) return res.status(400).json({ code: "!field", message: "All fields are required" })
+
+    try {
+        // Ensure JWT_SECRET is defined in the environment variables
+        if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined in environment variables")
+
+        // Find admin user by email
+        const adminUser = await User.findOne({ email: email.toLowerCase(), role: "admin" }).select("+password +adminMFASecret +adminMFAEnabled")
+        // Generic message to prevent user enumeration
+        if (!adminUser) return res.status(401).json({ code: "invalid_pass", message: "Invalid credentials" })
+
+        // Check if password is correct
+        const isPasswordValid = await checkPassword(password, adminUser.password)
+        // Generic message to prevent user enumeration
+        if (!isPasswordValid) return res.status(401).json({ code: "invalid_pass", message: "Invalid credentials" })
+
+        // If MFA is not enabled, generate JWT token and return
+        if (!adminUser.adminMFAEnabled || !adminUser.adminMFASecret) {
+            // Generate JWT token for MFA setup only
+            const setupToken = jwt.sign({ sub: adminUser._id.toString(), aud: "admin_setup", purpose: "admin_setup" }, process.env.JWT_SECRET, { expiresIn: "10m" })
+            log(`MFA setup required for admin user ${adminUser._id}`)
+            return res.status(200).json({ code: "mfa_setup_required", message: "MFA setup required", token: setupToken })
+        }
+
+        // If MFA is enabled, generate MFA token for verification
+        const mfaToken = jwt.sign({ sub: adminUser._id.toString(), aud: "admin_mfa", purpose: "admin_mfa" }, process.env.JWT_SECRET, { expiresIn: "5m" })
+
+        log(`MFA required for admin user ${adminUser._id}`)
+        return res.status(200).json({ code: "mfa_required", message: "MFA required", token: mfaToken })
+    } catch (error) {
+        errorLog("Error in adminLogin controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to handle 2FA setup for admin
+export const setupAdmin2FA = async (req, res) => {
+    const { setupToken } = req.body
+    if (!setupToken) return res.status(400).json({ code: "!field", message: "All fields are required" })
+
+    try {
+        // Ensure JWT_SECRET is defined in the environment variables
+        if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined in environment variables")
+
+        // Verify setup token
+        const decoded = jwt.verify(setupToken, process.env.JWT_SECRET)
+        if (!decoded?.sub || decoded.aud !== "admin_setup" || decoded.purpose !== "admin_setup") return res.status(401).json({ code: "invalid_setup", message: "Invalid credentials" })
+
+        // Find admin user by ID
+        const adminUser = await User.findById(decoded.sub).select("email role provider +adminMFASecret +adminMFAEnabled")
+        if (!adminUser || adminUser.role !== "admin" || adminUser.provider !== "local") return res.status(401).json({ code: "invalid_setup", message: "Invalid credentials" })
+
+        // Check if MFA is already enabled
+        if (adminUser.adminMFAEnabled && adminUser.adminMFASecret) return res.status(409).json({ code: "mfa_already_enabled", message: "MFA is already enabled" })
+
+        // Generate MFA secret and otpauth URL
+        const secret = authenticator.generateSecret()
+        const issuer = process.env.APP_NAME || "MyApp"
+        const otpauthUrl = authenticator.keyuri(adminUser.email, issuer, secret)
+
+        // Generate QR code data URL
+        const qrDataUrl = await QRCode.toDataURL(otpauthUrl)
+
+        // Save MFA secret to admin user (MFA will be enabled after verification)
+        adminUser.adminMFASecret = secret
+        adminUser.adminMFAEnabled = false // Will be set to true after verification
+        await adminUser.save()
+
+        log(`MFA setup initiated for admin user ${adminUser._id}`)
+        return res.status(200).json({ qrDataUrl, manualKey: secret, issuer, email: adminUser.email })
+    } catch (error) {
+        errorLog("Error in setupAdmin2FA controller", error.message)
+        return res.status(500).json({ code: "server_error", message: "server_error" })
+    }
+}
+
+// Controller to verify 2FA code for admin
+export const verifyAdmin2FA = async (req, res) => {
+    const { token, code } = req.body
+    if (!token || !code) return res.status(400).json({ code: "!field", message: "All fields are required" })
+
+    try {
+        // Ensure JWT_SECRET is defined in the environment variables
+        if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined in environment variables")
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET) // Verify token
+        const isSetup = decoded?.aud === "admin_setup" && decoded?.purpose === "admin_setup" // Check if it's for setup
+        const isMFA = decoded?.aud === "admin_mfa" && decoded?.purpose === "admin_mfa" // Check if it's for MFA verification
+
+        // Invalid token
+        if (!decoded?.sub || (!isSetup && !isMFA)) return res.status(401).json({ code: "invalid_token", message: "Invalid credentials" })
+
+        // Find admin user by ID
+        const adminUser = await User.findById(decoded.sub).select("role provider +adminMFASecret +adminMFAEnabled +adminMFALastVerifiedAt")
+        // If user not found or not admin or not local provider, return error
+        if (!adminUser || adminUser.role !== "admin" || adminUser.provider !== "local") return res.status(401).json({ code: "invalid_mfa", message: "Invalid credentials" })
+
+        // If secret is not set, return error
+        if (!adminUser.adminMFASecret) return res.status(403).json({ code: "mfa_setup_required", message: "MFA setup required" })
+
+        // Verify the provided 2FA code
+        const isVerified = authenticator.verify({ token: String(code).trim(), secret: adminUser.adminMFASecret })
+        if (!isVerified) return res.status(401).json({ code: "invalid_mfa", message: "Invalid credentials" })
+
+        if (isSetup) adminUser.adminMFAEnabled = true // Enable MFA after successful setup verification
+        adminUser.adminMFALastVerifiedAt = new Date() // Update last verified timestamp
+        await adminUser.save()
+
+        // Generate JWT token for admin access
+        const adminToken = jwt.sign({ sub: adminUser._id.toString(), aud: "admin", role: "admin", mfa: true }, process.env.JWT_SECRET, { expiresIn: "60m" })
+
+        log(`MFA verified for admin user ${adminUser._id}`)
+        return res.status(200).json({ message: "MFA verified successfully", token: adminToken })
+    } catch (error) {
+        errorLog("Error in verifyAdmin2FA controller", error.message)
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

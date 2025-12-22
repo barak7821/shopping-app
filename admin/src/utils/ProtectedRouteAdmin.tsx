@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-    const { isAuthenticated, isAdmin, loading } = useAdminAuth()
+    const { isAuthenticated, loading } = useAdminAuth()
 
     if (loading) {
         return (
@@ -41,12 +41,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (!isAuthenticated) {
         // If the user is not authenticated, remove the token from local storage and redirect to the login page
         localStorage.removeItem("token")
-        window.location.replace(import.meta.env.VITE_FRONTEND_URL)
-        return null
-    }
-
-    if (!isAdmin) {
-        window.location.replace(import.meta.env.VITE_FRONTEND_URL)
+        window.location.replace("/login")
         return null
     }
 

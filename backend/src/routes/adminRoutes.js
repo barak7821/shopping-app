@@ -1,10 +1,16 @@
 import Express from 'express';
 import adminAuthMiddleware from '../middlewares/adminAuthMiddleware.js';
-import { deleteAllProducts, archiveProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderByOrderNumber, getProductsByIds, updateOrderStatus, resendOrderReceipt, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery, getArchivedProductsByQuery, restoreArchivedProduct, getArchivedProductById, getLogsByQuery, getNotificationEmail, updateNotificationEmail } from '../controllers/adminController.js';
+import { deleteAllProducts, archiveProductById, addProduct, addMultipleProducts, getProductById, updateProductById, getUsersByQuery, deleteUserById, getUserById, seedUsers, getDeletedUsersByQuery, getDeletedUserById, makeAdmin, removeAdmin, getOrderByQuery, getOrderByOrderNumber, getProductsByIds, updateOrderStatus, resendOrderReceipt, heroSection, tempHeroSection, bestSellerSection, contactInfoSection, tempContactInfo, addNoteToUser, tempBestSeller, getProductsByQuery, getArchivedProductsByQuery, restoreArchivedProduct, getArchivedProductById, getLogsByQuery, getNotificationEmail, updateNotificationEmail, checkAdminAuth, adminLogin, setupAdmin2FA, verifyAdmin2FA } from '../controllers/adminController.js';
 
 const router = Express.Router()
 
 // Define route handlers
+
+// Auth
+router.post('/login', adminLogin) // Admin login
+router.post('/2fa/setup', setupAdmin2FA) // Set up 2FA
+router.post('/2fa/verify', verifyAdmin2FA) // Verify 2FA
+router.get('/auth', adminAuthMiddleware, checkAdminAuth) // Check admin auth
 
 // Products
 router.get('/', adminAuthMiddleware, getProductsByQuery) // Get products - pagination in Products page

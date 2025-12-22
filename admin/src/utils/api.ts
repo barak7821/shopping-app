@@ -4,7 +4,7 @@ import { log } from "./log"
 // Base API URL
 const baseApiUrl = `${import.meta.env.VITE_BACKEND_URL}/api`
 
-// Function to get auth headers - except checkUserAuth function cause it's passive
+// Function to get auth headers - except checkAdminAuth function cause it's passive
 const authHeaders = () => {
     const token = localStorage.getItem("token")
     if (!token) {
@@ -15,18 +15,39 @@ const authHeaders = () => {
     }
 }
 
-// Function to check if a user is authenticated - logged in or guest
-// This is passive authentication before access the admin panel - case of no token isn't error but redirect to home
-export const checkUserAuth = async () => {
+// Function to check if an admin is authenticated
+// Passive authentication before access the admin panel - no token redirects to home
+export const checkAdminAuth = async () => {
     const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
     }
-    const { data } = await axios.get(`${baseApiUrl}/auth`, {
+    const { data } = await axios.get(`${baseApiUrl}/admin/auth`, {
         headers: { Authorization: `Bearer ${token}` }
     })
-    log("Check user auth response:", data)
+    log("Check admin auth response:", data)
+    return data
+}
+
+// Function to login admin (email/password)
+export const adminLogin = async (email: string, password: string) => {
+    const { data } = await axios.post(`${baseApiUrl}/admin/login`, { email, password })
+    log("Admin login response:", data)
+    return data
+}
+
+// Function to start admin 2FA setup
+export const setupAdmin2FA = async (setupToken: string) => {
+    const { data } = await axios.post(`${baseApiUrl}/admin/2fa/setup`, { setupToken })
+    log("Admin 2FA setup response:", data)
+    return data
+}
+
+// Function to verify admin 2FA code
+export const verifyAdmin2FA = async (token: string, code: string) => {
+    const { data } = await axios.post(`${baseApiUrl}/admin/2fa/verify`, { token, code })
+    log("Admin 2FA verify response:", data)
     return data
 }
 

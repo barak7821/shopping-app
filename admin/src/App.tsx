@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router'
 import NotFound from './pages/NotFound'
 import Home from './pages/Home'
@@ -18,11 +19,23 @@ import ArchivedProducts from './pages/ArchivedProducts.tsx';
 import ArchivedProductsDetails from './pages/ArchivedProductsDetails.tsx';
 import ActivityLogs from './pages/ActivityLogs.tsx';
 import NotificationEmails from './pages/NotificationEmails.tsx';
+import Login from './pages/Login.tsx';
+import Setup2FA from './pages/Setup2FA.tsx';
+import Verify2FA from './pages/Verify2FA.tsx';
+import { initTheme } from './utils/darkMode';
 
 function App() {
+    useEffect(() => {
+        initTheme()
+    }, [])
+
     return (
         <Routes>
             <Route path="*" element={<NotFound />} />
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/setup2fa" element={<Setup2FA />} />
+            <Route path="/verify2fa" element={<Verify2FA />} />
             {/* Protected Routes */}
             <Route index element={<ProtectedRouteAdmin><Home /></ProtectedRouteAdmin>} />
             <Route path="/products" element={<ProtectedRouteAdmin><Products /></ProtectedRouteAdmin>} />

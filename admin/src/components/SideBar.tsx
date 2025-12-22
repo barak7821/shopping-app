@@ -38,8 +38,16 @@ export default function SideBar() {
                     </ul>
                 </nav>
 
-                {/* Theme */}
-                <Theme />
+                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-neutral-700 flex items-center justify-between gap-3">
+                    {/* Logout button */}
+                    <button onClick={() => { localStorage.removeItem("token"), window.location.reload() }} className="px-8 py-3 rounded-xl font-semibold bg-[#1a1a1a] text-white hover:bg-[#c1a875] hover:text-[#1a1a1a] transition shadow-md cursor-pointer">
+                        Logout
+                    </button>
+
+                    {/* Theme */}
+                    <Theme />
+                </div>
+
             </aside>
         </div>
     )

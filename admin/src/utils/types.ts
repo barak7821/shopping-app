@@ -118,3 +118,10 @@ export interface AdminLog {
 }
 
 export type ActionTone = "emerald" | "amber" | "rose" | "sky" | "violet" | "cyan" | "indigo" | "fuchsia" | "slate"
+
+export interface Setup2FAProps {
+  qrDataUrl: string
+  manualKey: string
+  issuer: string
+  email: string
+}

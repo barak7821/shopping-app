@@ -25,15 +25,15 @@ const adminAuthMiddleware = async (req, res, next) => {
 
         // Verify the token using the JWT secret
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        if (!decoded.id) {
-            throw new Error("Invalid token")
+        if (!decoded.sub || decoded.aud !== "admin" || decoded.mfa !== true) {
+            return res.status(401).json({ message: "Unauthorized" })
         }
 
-        req.user = decoded
+        req.user = { id: decoded.sub, aud: decoded.aud, mfa: decoded.mfa }
 
         // Find the user in the database based on the decoded ID
-        const user = await User.findById(decoded.id)
-        if (!user) return res.status(200).json({ exist: false }) // Not an error — just means the user doesn't exist
+        const user = await User.findById(decoded.sub)
+        if (!user) return res.status(401).json({ message: "Unauthorized" })
 
         // Check if the user has admin role and is a local user
         if (user.role !== "admin" || user.provider !== "local") return res.status(403).json({ message: "Forbidden" })
@@ -44,7 +44,7 @@ const adminAuthMiddleware = async (req, res, next) => {
         next()
     } catch (error) {
         errorLog("Token verification error:", error.message)
-        res.status(200).json({ message: "Unauthorized", exist: false })  // Not an error — just means the user doesn't exist
+        return res.status(401).json({ message: "Unauthorized" })
     }
 }
 

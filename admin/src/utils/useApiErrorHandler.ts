@@ -59,7 +59,14 @@ export const useApiErrorHandler = () => {
       "same_best_seller": "The current Best seller section is identical to the existing one.",
       "rate_limit": "Too many requests, Try again later.",
       "rate_limit_auth": "Too many login attempts, Try again later.",
-      "rate_limit_order": "Too many order attempts, please try again"
+      "rate_limit_order": "Too many order attempts, please try again",
+      "admin_setup": "MFA setup required. Please complete the setup process.",
+      "mfa_required": "Multi-factor authentication is required. Please verify to continue.",
+      "invalid_setup": "Invalid setup token. Please restart the MFA setup process.",
+      "mfa_already_enabled": "Multi-factor authentication is already enabled for this account.",
+      "invalid_token": "Invalid or expired token. Please log in again.",
+      "invalid_mfa": "Invalid multi-factor authentication code. Please try again.",
+      "mfa_setup_required": "Multi-factor authentication setup is required. Please complete the setup to proceed.",
     }
 
     if (code && errorMap[code]) message = errorMap[code]

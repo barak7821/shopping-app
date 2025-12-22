@@ -80,7 +80,19 @@ const userSchema = new mongoose.Schema(
             select: false
         },
         lastLogin: Date,
-        note: String
+        note: String,
+        adminMFASecret: { // Admin Multi-Factor Authentication secret
+            type: String,
+            select: false
+        },
+        adminMFAEnabled: {
+            type: Boolean,
+            default: false
+        },
+        adminMFALastVerifiedAt: {
+            type: Date,
+            select: false
+        }
     },
     { timestamps: true }  // Automatically adds 'createdAt' and 'updatedAt' fields
 )

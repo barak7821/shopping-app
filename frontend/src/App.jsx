@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
 import Home from './pages/Home.jsx';
@@ -18,8 +19,13 @@ import Contact from './pages/Contact.jsx';
 import SearchResults from './pages/SearchResults.jsx';
 import OrderSuccess from './pages/OrderSuccess.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+import { initTheme } from './utils/darkMode.js';
 
 function App() {
+  useEffect(() => {
+    initTheme()
+  }, [])
+
   return (
     <Routes>
       {/* Public Routes */}
