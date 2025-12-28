@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAdminAuth } from "../utils/AdminAuthContext";
-import { errorLog, log } from "../utils/log";
-import { useApiErrorHandler } from "../utils/useApiErrorHandler";
-import { adminLogin } from "../utils/api";
+import { useAdminAuth } from "../context/AdminAuthContext";
+import { errorLog, log } from "../lib/logger";
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
+import { adminLogin } from "../api/apiClient";
 import Loading from "../components/Loading";
 
 

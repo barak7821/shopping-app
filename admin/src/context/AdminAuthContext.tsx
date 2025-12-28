@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { errorLog } from "./log";
-import { checkAdminAuth } from "./api";
+import { errorLog } from "../lib/logger";
+import { checkAdminAuth } from "../api/apiClient";
 
 interface AuthResponse {
   exist: boolean

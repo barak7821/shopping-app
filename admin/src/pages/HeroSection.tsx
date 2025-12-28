@@ -1,15 +1,14 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import SideBar from "../components/SideBar";
-import { fetchHeroSection, updateHeroSection } from "../utils/api";
-import { log } from "../utils/log";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
+import { fetchHeroSection, updateHeroSection } from "../api/apiClient";
+import { log } from "../lib/logger";
 import Loading from "../components/Loading";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-import { type HeroSection } from "../utils/types";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
+import { type HeroSection } from "../types/types";
+import { useNotyf } from "../hooks/useNotyf";
 
 export default function HeroSection() {
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+    const notyf = useNotyf()
     const [heroSection, setHeroSection] = useState<HeroSection | null>(null)
     const [loading, setLoading] = useState(true)
     const [isEnabled, setIsEnabled] = useState(false)
@@ -46,7 +45,7 @@ export default function HeroSection() {
 
         // check if all fields are filled
         if (!heroSection.title || !heroSection.subtitle || !heroSection.description || !heroSection.buttonText || !heroSection.buttonLink || !heroSection.imageUrl || !heroSection.imageAlt) {
-            notyf.error("All fields are required!")
+            notyf?.error("All fields are required!")
             return
         }
 
@@ -58,7 +57,7 @@ export default function HeroSection() {
             heroSection.buttonLink === discardHeroSection?.buttonLink &&
             heroSection.imageUrl === discardHeroSection?.imageUrl &&
             heroSection.imageAlt === discardHeroSection?.imageAlt) {
-            notyf.error("No changes to save!")
+            notyf?.error("No changes to save!")
             return
         }
 
@@ -77,7 +76,7 @@ export default function HeroSection() {
             await updateHeroSection(newHeroSection)
             log("Hero section data:", newHeroSection)
             setDiscardHeroSection(newHeroSection)
-            notyf.success("Changes saved successfully!")
+            notyf?.success("Changes saved successfully!")
             setIsEnabled(false)
         } catch (error) {
             handleApiError(error as ApiError, "handleSaveBtn")
@@ -89,7 +88,7 @@ export default function HeroSection() {
     // discard changes - clear the fields
     const handleDiscardBtn = () => {
         setHeroSection(discardHeroSection)
-        notyf.success("Changes discarded successfully!")
+        notyf?.success("Changes discarded successfully!")
         setIsEnabled(false)
     }
 

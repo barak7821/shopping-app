@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { archiveProductById, fetchProductsByQuery } from "../utils/api";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { useAdminAuth } from "../utils/AdminAuthContext";
+import { archiveProductById, fetchProductsByQuery } from "../api/apiClient";
+import { useAdminAuth } from "../context/AdminAuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-import { type Product } from "../utils/types";
-import getPageNumbers from "../utils/getPageNumbers";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
+import { type Product } from "../types/types";
+import getPageNumbers from "../lib/getPageNumbers";
+import { useNotyf } from "../hooks/useNotyf";
 
 export default function Products() {
-  const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+  const notyf = useNotyf()
   const nav = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [productsList, setProductsList] = useState<Product[]>([])
@@ -64,7 +63,7 @@ export default function Products() {
 
   const handleArchiveBtn = async (productId: string) => {
     if (!token) {
-      notyf.error("You must be logged in to delete products.")
+      notyf?.error("You must be logged in to delete products.")
       return
     }
 
@@ -75,7 +74,7 @@ export default function Products() {
       const updatedProducts = productsList.filter(product => product._id !== productId) // Update local state
       setProductsList(updatedProducts) // Save updated list to state
 
-      notyf.success(`Product deleted successfully.`)
+      notyf?.success(`Product deleted successfully.`)
     } catch (error) {
       handleApiError(error as ApiError, "handleArchiveBtn")
     } finally {

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { log } from "../utils/log"
-import { setupAdmin2FA, verifyAdmin2FA } from "../utils/api"
-import { useApiErrorHandler } from "../utils/useApiErrorHandler"
+import { log } from "../lib/logger"
+import { setupAdmin2FA, verifyAdmin2FA } from "../api/apiClient"
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler"
 import Loading from "../components/Loading"
-import { type Setup2FAProps } from "../utils/types"
+import { type Setup2FAProps } from "../types/types"
 
 export default function Setup2FA() {
   const nav = useNavigate()

@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { log } from "../utils/log";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { updateProductById, getProductById } from "../utils/api";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
+import { log } from "../lib/logger";
+import { getArchivedProductById, restoreArchivedProduct } from "../api/apiClient";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
 import { useNavigate, useParams } from "react-router-dom";
 import ProductForm from "../components/ProductForm";
 import Loading from "../components/Loading";
-import { type Category, type ProductFormData, type ProductSize } from "../utils/types";
+import { type Category, type ProductFormData, type ProductSize } from "../types/types";
+import { useNotyf } from "../hooks/useNotyf";
 
-export default function EditProduct() {
+export default function ArchivedProductsDetails() {
     const nav = useNavigate()
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+    const notyf = useNotyf()
     const [product, setProduct] = useState<ProductFormData | null>(null)
     const [loading, setLoading] = useState(true)
     const { handleApiError } = useApiErrorHandler()
@@ -23,7 +22,7 @@ export default function EditProduct() {
             if (!id) return
             setLoading(true)
             try {
-                const data = await getProductById(id)
+                const data = await getArchivedProductById(id)
                 log(data)
                 setProduct({
                     title: data.title,
@@ -49,29 +48,14 @@ export default function EditProduct() {
         fetchProductById()
     }, [id])
 
-    const handleUpdateProduct = async (productData: ProductFormData) => {
-        const normalizedSizes = productData.sizes.map(({ code, stock }) => {
-            const numericStock = stock === "" ? 0 : Number(stock)
-            return {
-                code,
-                stock: Number.isNaN(numericStock) ? 0 : numericStock
-            }
-        })
 
-        const updatedProduct = {
-            id,
-            ...productData,
-            price: +productData.price,
-            discountPercent: productData.onSale ? +(productData.discountPercent || 0) : 0,
-            sizes: normalizedSizes,
-        }
-
+    const handleRestoreBtn = async () => {
         try {
-            await updateProductById(updatedProduct)
-            notyf.success("Product updated successfully!")
-            nav("/products")
+            await restoreArchivedProduct(id as string)
+            notyf?.success("Product restored successfully!")
+            nav("/archivedProducts")
         } catch (error) {
-            handleApiError(error as ApiError, "handleUpdateProduct")
+            handleApiError(error as ApiError, "handleRestoreBtn")
         }
     }
 
@@ -85,7 +69,7 @@ export default function EditProduct() {
                         <Loading />
                     </div>
                 ) : (
-                    <ProductForm isEditing={true} initialData={product} onSubmit={handleUpdateProduct} />
+                    <ProductForm isEditing={false} initialData={product} onSubmit={handleRestoreBtn} isArchived={true} />
                 )}
             </div>
         </div>

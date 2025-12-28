@@ -1,16 +1,15 @@
 import SideBar from "../components/SideBar";
-import { log } from "../utils/log";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { addProduct } from "../utils/api";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
+import { log } from "../lib/logger";
+import { addProduct } from "../api/apiClient";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
 import ProductForm from "../components/ProductForm";
 import { useNavigate } from "react-router-dom";
-import { type ProductFormData } from "../utils/types";
+import { type ProductFormData } from "../types/types";
+import { useNotyf } from "../hooks/useNotyf";
 
 export default function AddProduct() {
   const nav = useNavigate()
-  const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+  const notyf = useNotyf()
   const { handleApiError } = useApiErrorHandler()
 
   const handleAddProduct = async (productData: ProductFormData) => {
@@ -34,7 +33,7 @@ export default function AddProduct() {
     try {
       await addProduct(newProduct)
       log("Adding product:", newProduct)
-      notyf.success("Product added successfully!")
+      notyf?.success("Product added successfully!")
       nav("/products")
     } catch (error) {
       handleApiError(error as ApiError, "handleAddProduct")

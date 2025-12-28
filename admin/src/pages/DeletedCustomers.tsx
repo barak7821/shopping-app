@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { fetchDeletedUsers } from "../utils/api";
+import { fetchDeletedUsers } from "../api/apiClient";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
-import { useApiErrorHandler } from "../utils/useApiErrorHandler";
-import { type User } from "../utils/types";
-import getPageNumbers from "../utils/getPageNumbers";
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
+import { type User } from "../types/types";
+import getPageNumbers from "../lib/getPageNumbers";
 
 export default function DeletedCustomers() {
   const nav = useNavigate()

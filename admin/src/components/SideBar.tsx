@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import Theme from "./Theme";
+import Theme from "./ThemeSwitcher";
 
 export default function SideBar() {
     return (

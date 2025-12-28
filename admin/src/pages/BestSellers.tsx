@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react"
 import SideBar from "../components/SideBar"
-import { findProductsSearch, updateBestSellerSection } from "../utils/api"
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler"
-import { log } from "../utils/log"
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { type Product } from "../utils/types";
+import { findProductsSearch, updateBestSellerSection } from "../api/apiClient"
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler"
+import { log } from "../lib/logger"
+import { type Product } from "../types/types";
+import { useNotyf } from "../hooks/useNotyf"
 
 export default function BestSeller() {
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+    const notyf = useNotyf()
     const [searchInput, setSearchInput] = useState("")
     const [results, setResults] = useState<Product[]>([])
     const [selected, setSelected] = useState<Product[]>([])
@@ -38,8 +37,8 @@ export default function BestSeller() {
     }, [searchInput])
 
     const handleAddItem = (item: Product) => {
-        if (selected.find(product => product._id === item._id)) return notyf.error("Item already selected")
-        if (selected.length === 5) return notyf.error("You can only select 5 products")
+        if (selected.find(product => product._id === item._id)) return notyf?.error("Item already selected")
+        if (selected.length === 5) return notyf?.error("You can only select 5 products")
         setSelected(prev => [...prev, item])
     }
 
@@ -48,8 +47,8 @@ export default function BestSeller() {
     }
 
     const handleSave = async () => {
-        if (selected.length === 0) return notyf.error("Please select at least one product")
-        if (selected.length !== 5) return notyf.error("Please select 5 products")
+        if (selected.length === 0) return notyf?.error("Please select at least one product")
+        if (selected.length !== 5) return notyf?.error("Please select 5 products")
         log("Selected products:", selected)
 
         try {
@@ -58,7 +57,7 @@ export default function BestSeller() {
             setSelected([])
             setSearchInput("")
             setResults([])
-            notyf.success("Best seller section updated successfully!")
+            notyf?.success("Best seller section updated successfully!")
         } catch (error) {
             handleApiError(error as ApiError, "handleSave")
         }

@@ -1,4 +1,4 @@
-import { useAdminAuth } from './AdminAuthContext'
+import { useAdminAuth } from "../context/AdminAuthContext"
 import type { ReactNode } from 'react';
 
 interface ProtectedRouteProps {

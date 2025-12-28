@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react"
 import SideBar from "../components/SideBar"
 import { useNavigate, useParams } from "react-router-dom"
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
 import Loading from "../components/Loading";
-import { addNoteToUser, deleteUserById, getUserById, makeAdmin, removeAdmin } from "../utils/api";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { type User } from "../utils/types";
+import { addNoteToUser, deleteUserById, getUserById, makeAdmin, removeAdmin } from "../api/apiClient";
+import { type User } from "../types/types";
+import { useNotyf } from "../hooks/useNotyf";
 
 export default function CustomersDetails() {
   const nav = useNavigate()
-  const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+  const notyf = useNotyf()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [updatingDelete, setUpdatingDelete] = useState(false)
@@ -40,7 +39,7 @@ export default function CustomersDetails() {
 
     try {
       await makeAdmin(id)
-      notyf.success("User made admin successfully!")
+      notyf?.success("User made admin successfully!")
       nav("/customers")
     } catch (error) {
       handleApiError(error as ApiError, "handleMakeAdmin")
@@ -55,7 +54,7 @@ export default function CustomersDetails() {
 
     try {
       await removeAdmin(id)
-      notyf.success("User made admin successfully!")
+      notyf?.success("User made admin successfully!")
       nav("/customers")
     } catch (error) {
       handleApiError(error as ApiError, "handleRemoveAdmin")
@@ -66,14 +65,14 @@ export default function CustomersDetails() {
 
   const handleDeleteBtn = async (userId: string, email: string, role: string) => {
     if (role === "admin") {
-      notyf.error("You can't delete an admin account.")
+      notyf?.error("You can't delete an admin account.")
       return
     }
 
     setUpdatingDelete(true)
     try {
       await deleteUserById(userId)
-      notyf.success(`User ${email} deleted successfully.`)
+      notyf?.success(`User ${email} deleted successfully.`)
       nav("/customers")
     } catch (error) {
       handleApiError(error as ApiError, "handleDeleteBtn")
@@ -93,7 +92,7 @@ export default function CustomersDetails() {
 
     try {
       await addNoteToUser(user._id, user.note)
-      notyf.success("Note saved successfully!")
+      notyf?.success("Note saved successfully!")
     } catch (error) {
       handleApiError(error as ApiError, "handleSaveNote")
     } finally {

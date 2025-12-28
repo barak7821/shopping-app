@@ -2,27 +2,27 @@ import { useEffect } from 'react'
 import { Routes, Route } from 'react-router'
 import NotFound from './pages/NotFound'
 import Home from './pages/Home'
-import ProtectedRouteAdmin from './utils/ProtectedRouteAdmin.tsx';
-import Products from './pages/Products';
-import Orders from './pages/Orders';
+import ProtectedRouteAdmin from './routes/ProtectedRouteAdmin.tsx';
+import Products from './pages/ProductList.tsx ';
+import Orders from './pages/OrdersList.tsx';
 import Customers from './pages/Customers';
-import AddProduct from './pages/AddProduct';
-import EditProduct from './pages/EditProduct';
+import AddProduct from './pages/ProductCreate.tsx';
+import EditProduct from './pages/ProductEdit.tsx';
 import CustomersDetails from './pages/CustomersDetails.tsx';
 import DeletedCustomers from './pages/DeletedCustomers';
-import DeleteCustomersDetails from './pages/DeleteCustomersDetails.tsx';
+import DeleteCustomersDetails from './pages/DeletedCustomerDetails.tsx';
 import OrderDetails from './pages/OrderDetails.tsx';
 import HeroSection from './pages/HeroSection.tsx';
-import BestSeller from './pages/BestSeller.tsx';
+import BestSeller from './pages/BestSellers.tsx';
 import ContactInfo from './pages/ContactInfo.tsx';
 import ArchivedProducts from './pages/ArchivedProducts.tsx';
-import ArchivedProductsDetails from './pages/ArchivedProductsDetails.tsx';
+import ArchivedProductsDetails from './pages/ArchivedProductDetails.tsx';
 import ActivityLogs from './pages/ActivityLogs.tsx';
 import NotificationEmails from './pages/NotificationEmails.tsx';
 import Login from './pages/Login.tsx';
-import Setup2FA from './pages/Setup2FA.tsx';
-import Verify2FA from './pages/Verify2FA.tsx';
-import { initTheme } from './utils/darkMode';
+import Setup2FA from './pages/TwoFactorSetup.tsx ';
+import Verify2FA from './pages/TwoFactorVerify.tsx';
+import { initTheme } from './lib/themeMode.ts';
 
 function App() {
     useEffect(() => {

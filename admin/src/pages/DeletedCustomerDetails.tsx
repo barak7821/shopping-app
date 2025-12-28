@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import SideBar from "../components/SideBar"
 import { useParams } from "react-router-dom"
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
 import Loading from "../components/Loading";
-import { getDeletedUserById } from "../utils/api";
-import { type User } from "../utils/types";
+import { getDeletedUserById } from "../api/apiClient";
+import { type User } from "../types/types";
 
 export default function DeleteCustomersDetails() {
   const [user, setUser] = useState<User | null>(null)

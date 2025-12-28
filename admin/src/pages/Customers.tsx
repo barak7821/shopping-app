@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { deleteUserById, fetchUsersByQuery } from "../utils/api";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
+import { deleteUserById, fetchUsersByQuery } from "../api/apiClient";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
-import { log } from "../utils/log";
-import { type User } from "../utils/types";
-import getPageNumbers from "../utils/getPageNumbers";
+import { log } from "../lib/logger";
+import { type User } from "../types/types";
+import getPageNumbers from "../lib/getPageNumbers";
+import { useNotyf } from "../hooks/useNotyf";
 
 export default function Customers() {
   const nav = useNavigate()
-  const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+  const notyf = useNotyf()
   const [searchParams, setSearchParams] = useSearchParams()
   const [usersList, setUsersList] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -63,7 +62,7 @@ export default function Customers() {
 
   const handleDeleteBtn = async (userId: string, email: string, role: string) => {
     if (role === "admin") {
-      notyf.error("You can't delete an admin account.")
+      notyf?.error("You can't delete an admin account.")
       return
     }
 
@@ -75,7 +74,7 @@ export default function Customers() {
       setUsersList(updatedUsers) // Save updated list to state
 
       log(`Deleted user ID ${userId}:`)
-      notyf.success(`User ${email} deleted successfully.`)
+      notyf?.success(`User ${email} deleted successfully.`)
     } catch (error) {
       handleApiError(error as ApiError, "handleDeleteBtn")
     } finally {

@@ -1,6 +1,6 @@
 import axios from "axios"
 import { log } from "../lib/logger"
-import type { Order, OrderDetails, UserProfile } from "../types/types"
+import type { OrderDetails, UserProfile } from "../types/types"
 
 const baseApiUrl = `${import.meta.env.VITE_BACKEND_URL}/api`
 const token = localStorage.getItem("token")

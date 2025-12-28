@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-import { fetchOrdersByQuery } from "../utils/api";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
+import { fetchOrdersByQuery } from "../api/apiClient";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
-import { type Order } from "../utils/types";
-import getPageNumbers from "../utils/getPageNumbers";
+import { type Order } from "../types/types";
+import getPageNumbers from "../lib/getPageNumbers";
 
 export default function Orders() {
   const nav = useNavigate()

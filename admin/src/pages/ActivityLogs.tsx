@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import SideBar from "../components/SideBar";
-import { fetchAdminLogsByQuery } from "../utils/api";
-import { type AdminLog } from "../utils/types";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-import getPageNumbers from "../utils/getPageNumbers";
-import { type ActionTone } from "../utils/types";
+import { fetchAdminLogsByQuery } from "../api/apiClient";
+import { type AdminLog } from "../types/types";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
+import getPageNumbers from "../lib/getPageNumbers";
+import { type ActionTone } from "../types/types";
 
 // Action details
 const actionDetails: Record<string, { label: string; description: string; tone: ActionTone }> = {

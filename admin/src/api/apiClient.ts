@@ -1,5 +1,5 @@
 import axios from "axios";
-import { log } from "./log"
+import { log } from "../lib/logger"
 
 // Base API URL
 const baseApiUrl = `${import.meta.env.VITE_BACKEND_URL}/api`

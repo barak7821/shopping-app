@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent, useEffect, useRef } from "react";
-import { type Category, type ProductFormData, type ProductSizeFormValue, sizeOptions } from "../utils/types";
+import { type Category, type ProductFormData, type ProductSizeFormValue, sizeOptions } from "../types/types";
 import axios from "axios";
-import { errorLog } from "../utils/log";
+import { errorLog } from "../lib/logger";
 
 const uploadImageToCloudinary = async (file: File) => {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME

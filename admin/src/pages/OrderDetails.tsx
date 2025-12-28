@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react"
 import SideBar from "../components/SideBar"
 import { Link, useParams } from "react-router-dom"
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
 import Loading from "../components/Loading";
-import { getOrderByOrderNumber, getProductsByIds, resendOrderReceipt, updateOrderStatusById } from "../utils/api";
-import { log } from "../utils/log";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { type Order } from "../utils/types";
+import { getOrderByOrderNumber, getProductsByIds, resendOrderReceipt, updateOrderStatusById } from "../api/apiClient";
+import { log } from "../lib/logger";
+import { type Order } from "../types/types";
+import { useNotyf } from "../hooks/useNotyf";
 
 export default function OrderDetails() {
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+    const notyf = useNotyf()
     const [loading, setLoading] = useState(true)
     const { handleApiError } = useApiErrorHandler()
     const { number } = useParams()
@@ -50,7 +49,7 @@ export default function OrderDetails() {
     const handleUpdateStatus = () => {
         if (!order) return
         if (!newStatus || newStatus === order.status) {
-            notyf.error("Please select a new status!")
+            notyf?.error("Please select a new status!")
             return
         }
         if (newStatus === "delivered" || newStatus === "cancelled") {
@@ -72,7 +71,7 @@ export default function OrderDetails() {
 
             setOrder(prev => prev ? { ...prev, status: statusToUpdate } : prev)
             setNewStatus("")
-            notyf.success("Status updated successfully!")
+            notyf?.success("Status updated successfully!")
         } catch (error) {
             handleApiError(error as ApiError, "handleUpdateStatus")
         } finally {
@@ -96,14 +95,14 @@ export default function OrderDetails() {
         if (!order) return
         const trimmedEmail = resendEmail.trim()
         if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-            notyf.error("Please enter a valid email address")
+            notyf?.error("Please enter a valid email address")
             return
         }
 
         setIsSendingReceipt(true)
         try {
             await resendOrderReceipt(order._id, trimmedEmail || undefined)
-            notyf.success("Receipt sent successfully!")
+            notyf?.success("Receipt sent successfully!")
             setResendEmail("")
         } catch (error) {
             handleApiError(error as ApiError, "handleResendReceipt")

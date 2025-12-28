@@ -1,16 +1,14 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import SideBar from "../components/SideBar";
-import { log } from "../utils/log";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-import { fetchContactInfo, updateContactInfo } from "../utils/api";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
+import { log } from "../lib/logger";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
+import { fetchContactInfo, updateContactInfo } from "../api/apiClient";
 import Loading from "../components/Loading";
-import { type ContactInfo } from "../utils/types";
+import { type ContactInfo } from "../types/types";
+import { useNotyf } from "../hooks/useNotyf";
 
 export default function ContactInfo() {
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
-
+    const notyf = useNotyf()
     const [contactInfoData, setContactInfoData] = useState<ContactInfo | null>(null)
     const [discardContactInfo, setDiscardContactInfo] = useState<ContactInfo | null>(null)
     const [isEnabled, setIsEnabled] = useState(false)
@@ -42,7 +40,7 @@ export default function ContactInfo() {
 
     const handleDiscardBtn = () => {
         setContactInfoData(discardContactInfo)
-        notyf.success("Changes discarded successfully!")
+        notyf?.success("Changes discarded successfully!")
         setIsEnabled(false)
     }
 
@@ -51,7 +49,7 @@ export default function ContactInfo() {
 
         // check if all fields are filled
         if (!contactInfoData.email || !contactInfoData.address || !contactInfoData.phone || !contactInfoData.facebookUrl || !contactInfoData.instagramUrl || !contactInfoData.twitterUrl || !contactInfoData.openingHours) {
-            notyf.error("All fields are required!")
+            notyf?.error("All fields are required!")
             return
         }
 
@@ -63,7 +61,7 @@ export default function ContactInfo() {
             contactInfoData.instagramUrl === discardContactInfo?.instagramUrl &&
             contactInfoData.twitterUrl === discardContactInfo?.twitterUrl &&
             contactInfoData.openingHours === discardContactInfo?.openingHours) {
-            notyf.error("No changes to save!")
+            notyf?.error("No changes to save!")
             return
         }
 
@@ -82,7 +80,7 @@ export default function ContactInfo() {
             await updateContactInfo(newContactInfo)
             log("Contact info data:", newContactInfo)
             setDiscardContactInfo(newContactInfo)
-            notyf.success("Changes saved successfully!")
+            notyf?.success("Changes saved successfully!")
             setIsEnabled(false)
         } catch (error) {
             handleApiError(error as ApiError, "updateContactInfo")

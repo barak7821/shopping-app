@@ -1,13 +1,12 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import SideBar from "../components/SideBar";
-import { getNotificationEmails, updateNotificationEmails } from "../utils/api";
+import { getNotificationEmails, updateNotificationEmails } from "../api/apiClient";
 import Loading from "../components/Loading";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-import { Notyf } from "notyf";
-import "notyf/notyf.min.css";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
+import { useNotyf } from "../hooks/useNotyf";
 
 export default function NotificationEmails() {
-    const notyf = new Notyf({ position: { x: "center", y: "top" } })
+    const notyf = useNotyf()
     const [emails, setEmails] = useState<string[]>([])
     const [newEmail, setNewEmail] = useState("")
     const [loading, setLoading] = useState(true)
@@ -40,7 +39,7 @@ export default function NotificationEmails() {
         try {
             const updated = await updateNotificationEmails(nextEmails)
             setEmails(Array.isArray(updated) ? updated : nextEmails)
-            notyf.success("Notification emails updated")
+            notyf?.success("Notification emails updated")
         } catch (error) {
             handleApiError(error as ApiError, "updateNotificationEmails")
         } finally {
@@ -53,19 +52,19 @@ export default function NotificationEmails() {
 
         // Check if email is provided
         if (!trimmed) {
-            notyf.error("Email is required")
+            notyf?.error("Email is required")
             return
         }
 
         // Check if email is valid
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-            notyf.error("Invalid email address")
+            notyf?.error("Invalid email address")
             return
         }
 
         // Check if email already exists
         if (emails.some(email => email.toLowerCase() === trimmed)) {
-            notyf.error("Email already exists")
+            notyf?.error("Email already exists")
             return
         }
 

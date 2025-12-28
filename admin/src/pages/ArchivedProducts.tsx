@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { fetchArchivedProducts, restoreArchivedProduct } from "../utils/api";
-import { log } from "../utils/log";
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { useAdminAuth } from "../utils/AdminAuthContext";
+import { fetchArchivedProducts, restoreArchivedProduct } from "../api/apiClient";
+import { log } from "../lib/logger";
+import { useAdminAuth } from "../context/AdminAuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
-import { useApiErrorHandler, type ApiError } from "../utils/useApiErrorHandler";
-import { type Product } from "../utils/types";
-import getPageNumbers from "../utils/getPageNumbers";
+import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
+import { type Product } from "../types/types";
+import getPageNumbers from "../lib/getPageNumbers";
+import { useNotyf } from "../hooks/useNotyf";
 
 export default function ArchivedProducts() {
-    const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+    const notyf = useNotyf()
     const nav = useNavigate()
     const [searchParams, setSearchParams] = useSearchParams()
     const [productsList, setProductsList] = useState<Product[]>([])
@@ -65,7 +64,7 @@ export default function ArchivedProducts() {
 
     const handleRestoreBtn = async (productId: string) => {
         if (!token) {
-            notyf.error("You must be logged in to delete products.")
+            notyf?.error("You must be logged in to delete products.")
             return
         }
 
@@ -77,7 +76,7 @@ export default function ArchivedProducts() {
             setProductsList(updatedProducts) // Save updated list to state
 
             log(`Restored product ID ${productId}:`, data)
-            notyf.success(`Product restored successfully.`)
+            notyf?.success(`Product restored successfully.`)
         } catch (error) {
             handleApiError(error as ApiError, "handleRestoreBtn")
         } finally {

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { verifyAdmin2FA } from "../utils/api"
-import { useApiErrorHandler } from "../utils/useApiErrorHandler"
-import { log } from "../utils/log"
+import { verifyAdmin2FA } from "../api/apiClient"
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler"
+import { log } from "../lib/logger"
 
 export default function Verify2FA() {
   const nav = useNavigate()
