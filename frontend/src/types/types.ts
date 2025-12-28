@@ -78,6 +78,20 @@ export type Order = {
     orderItems: OrderItem[]
 }
 
+export type OrderDetails = {
+    orderItems: OrderItem[]
+    shippingAddress: {
+        name?: string
+        email?: string
+        phone?: string
+        street?: string
+        city?: string
+        zip?: string
+        country?: string
+    }
+    paymentMethod: string
+}
+
 export type PaymentDetails = {
     amount: number
     currency: string

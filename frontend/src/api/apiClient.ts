@@ -1,12 +1,12 @@
 import axios from "axios"
 import { log } from "../lib/logger"
-import type { Order } from "../types/types"
+import type { Order, OrderDetails, UserProfile } from "../types/types"
 
 const baseApiUrl = `${import.meta.env.VITE_BACKEND_URL}/api`
 const token = localStorage.getItem("token")
 
 // Function to send order details to the server - logged in user only
-export const handleOrder = async (orderDetails: Order) => {
+export const handleOrder = async (orderDetails: OrderDetails) => {
     if (!token) {
         log("No token found")
         return
@@ -19,7 +19,7 @@ export const handleOrder = async (orderDetails: Order) => {
 }
 
 // Function to send order details to the server - guest user only
-export const handleGuestOrder = async (orderDetails: Order) => {
+export const handleGuestOrder = async (orderDetails: OrderDetails) => {
     const { data } = await axios.post(`${baseApiUrl}/order/guest`, { orderDetails })
     log("Order response:", data)
     return data
@@ -66,7 +66,7 @@ export const fetchUserData = async () => {
 }
 
 // Function to update user data in the server
-export const handleUpdateUser = async (userData: string) => {
+export const handleUpdateUser = async (userData: UserProfile) => {
     if (!token) {
         log("No token found")
         return
@@ -79,7 +79,7 @@ export const handleUpdateUser = async (userData: string) => {
 }
 
 // Function to change password
-export const handleChangePassword = async (userData: string) => {
+export const handleChangePassword = async (userData: { password: string; currentPassword: string }) => {
     if (!token) {
         log("No token found")
         return
