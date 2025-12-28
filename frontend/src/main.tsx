@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from './utils/AuthContext.tsx'
-import { CartProvider } from './utils/CartContext.tsx'
+import { AuthProvider } from './context/AuthContext.tsx'
+import { CartProvider } from './context/CartContext.tsx'
 import { GoogleOAuthProvider } from "@react-oauth/google"
 
 createRoot(document.getElementById('root')!).render(

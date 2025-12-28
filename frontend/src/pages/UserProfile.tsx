@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar'
-import { errorLog, log } from '../utils/log'
+import { errorLog, log } from '../lib/logger'
 import Loading from '../components/Loading';
-import { useAuth } from '../utils/AuthContext'
+import { useAuth } from '../context/AuthContext'
 import { getNames } from 'country-list';
 import stringSimilarity from 'string-similarity';
-import AboutCard from '../components/AboutCard';
+import AboutCard from '../components/AboutInfoCard';
 import Footer from '../components/Footer';
-import { fetchUserData, handleDeleteUser, handleUpdateUser, verifyPassword } from '../utils/api'
+import { fetchUserData, handleDeleteUser, handleUpdateUser, verifyPassword } from '../api/apiClient'
 import { FiEye, FiEyeOff } from "react-icons/fi"
-import { useNotyf } from '../utils/useNotyf'
-import type { UserProfile } from '../utils/types'
+import { useNotyf } from '../hooks/useNotyf'
+import type { UserProfile } from '../types/types'
 
 export default function Profile() {
     const notyf = useNotyf()

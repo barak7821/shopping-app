@@ -1,17 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { errorLog } from "./log";
-import { checkUserAuth } from "./api";
+import { errorLog } from "../lib/logger";
+import { checkUserAuth } from "../api/apiClient";
+import type { AuthContextValue } from "../types/types";
 
 // Create a global context to share authentication state across the app
-export type AuthContextValue = {
-    isAuthenticated: boolean | null;
-    setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean | null>>;
-    isAdmin: boolean | null;
-    setIsAdmin: React.Dispatch<React.SetStateAction<boolean | null>>;
-    provider: string | null;
-    setProvider: React.Dispatch<React.SetStateAction<string | null>>;
-    loading: boolean;
-};
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 

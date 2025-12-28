@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import NavBar from "../components/NavBar"
-import AboutCard from "../components/AboutCard"
+import AboutCard from "../components/AboutInfoCard"
 import Footer from "../components/Footer"
-import { useApiErrorHandler } from "../utils/useApiErrorHandler"
-import { fetchContactInfo } from "../utils/api"
-import type { ContactInfo } from "../utils/types"
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler"
+import { fetchContactInfo } from "../api/apiClient"
+import type { ContactInfo } from "../types/types"
 
 export default function Contact() {
     const [contact, setContact] = useState<ContactInfo>({})

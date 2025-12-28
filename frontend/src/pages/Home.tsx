@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
-import AboutCard from '../components/AboutCard';
+import AboutCard from '../components/AboutInfoCard';
 import { FiRefreshCw, FiShield, FiHeadphones } from "react-icons/fi"
-import { fetchBestSellers, fetchHeroSection, fetchLatestProducts } from '../utils/api';
+import { fetchBestSellers, fetchHeroSection, fetchLatestProducts } from '../api/apiClient';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import { useApiErrorHandler } from '../utils/useApiErrorHandler';
-import SaleProduct from '../components/saleProduct';
-import type { Product, HeroSection } from '../utils/types';
+import { useApiErrorHandler } from '../hooks/useApiErrorHandler';
+import SaleProduct from '../components/SaleProductCard';
+import type { Product, HeroSection } from '../types/types';
 
 export default function Home() {
     const nav = useNavigate()

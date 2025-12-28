@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import { FiX } from "react-icons/fi";
-import { log } from '../utils/log';
-import { findProductsSearch } from "../utils/api";
+import { log } from '../lib/logger';
+import { findProductsSearch } from "../api/apiClient";
 import { useNavigate } from "react-router-dom";
-import { useApiErrorHandler } from "../utils/useApiErrorHandler";
-import type { Product } from "../utils/types";
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
+import type { Product } from "../types/types";
 
 export default function SearchBar({ setSearchOpen }: { setSearchOpen: (open: boolean) => void }) {
     const nav = useNavigate()

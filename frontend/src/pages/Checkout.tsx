@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
-import AboutCard from '../components/AboutCard';
+import AboutCard from '../components/AboutInfoCard';
 import { useNavigate } from 'react-router-dom';
-import { errorLog, log } from '../utils/log';
+import { errorLog, log } from '../lib/logger';
 import { getNames } from 'country-list';
 import stringSimilarity from 'string-similarity';
-import { useCart } from '../utils/CartContext';
-import { useAuth } from '../utils/AuthContext';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import Loading from '../components/Loading';
-import { fetchUserData } from '../utils/api';
-import { useNotyf } from '../utils/useNotyf';
+import { fetchUserData } from '../api/apiClient';
+import { useNotyf } from '../hooks/useNotyf';
 
 export default function Checkout() {
   const nav = useNavigate()

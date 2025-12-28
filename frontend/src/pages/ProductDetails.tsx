@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
-import AboutCard from '../components/AboutCard';
-import { errorLog, log } from '../utils/log';
-import { useCart } from '../utils/CartContext';
+import AboutCard from '../components/AboutInfoCard';
+import { errorLog, log } from '../lib/logger';
+import { useCart } from '../context/CartContext';
 import Loading from '../components/Loading';
-import { fetchProductById } from '../utils/api';
+import { fetchProductById } from '../api/apiClient';
 import NotFound from './NotFound';
-import { useApiErrorHandler } from '../utils/useApiErrorHandler';
-import type { Product } from '../utils/types';
+import { useApiErrorHandler } from '../hooks/useApiErrorHandler';
+import type { Product } from '../types/types';
 
 export default function ProductDetails() {
     const { productId } = useParams<{ productId: string }>()

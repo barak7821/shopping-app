@@ -3,14 +3,14 @@ import type { ChangeEvent } from 'react'
 import NavBar from '../components/NavBar'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { SetURLSearchParams } from 'react-router-dom'
-import { fetchProductsByQuery } from '../utils/api';
+import { fetchProductsByQuery } from '../api/apiClient';
 import Footer from '../components/Footer';
-import AboutCard from '../components/AboutCard';
+import AboutCard from '../components/AboutInfoCard';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import { useApiErrorHandler } from '../utils/useApiErrorHandler';
-import SaleProduct from '../components/saleProduct';
-import type { Product, Query } from '../utils/types';
-import getPageNumbers from '../utils/paginationHelper';
+import { useApiErrorHandler } from '../hooks/useApiErrorHandler';
+import SaleProduct from '../components/SaleProductCard';
+import type { Product, Query } from '../types/types';
+import getPageNumbers from '../lib/getPageNumbers';
 
 export default function Collection() {
     const nav = useNavigate()

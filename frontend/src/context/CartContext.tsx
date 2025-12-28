@@ -1,20 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import type { CartContextType } from "../types/types"
 
-interface CartItem {
-    id: string
-    size: string
-    quantity: number
-}
-
-interface CartContextType {
-    cart: CartItem[]
-    setCart: React.Dispatch<React.SetStateAction<CartItem[]>>
-    addToCart: (productId: string, size: string) => void
-    removeFromCart: (productId: string, size: string) => void
-    address: any // You might want to define a more specific type for address
-    setAddress: React.Dispatch<React.SetStateAction<any>>
-    clearItem: (productId: string, size: string) => void
-}
 
 const CartContext = createContext<CartContextType | null>(null)
 

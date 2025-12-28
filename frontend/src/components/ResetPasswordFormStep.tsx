@@ -1,11 +1,11 @@
-import { errorLog, log } from '../utils/log';
+import { errorLog, log } from '../lib/logger';
 import Loading from './Loading';
 import { useState } from 'react';
-import { handleResetPassword } from '../utils/api';
+import { handleResetPassword } from '../api/apiClient';
 import { useNavigate } from 'react-router-dom';
 import { FiEye, FiEyeOff } from "react-icons/fi"
-import { useApiErrorHandler } from "../utils/useApiErrorHandler";
-import { useNotyf } from '../utils/useNotyf';
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
+import { useNotyf } from '../hooks/useNotyf';
 
 export default function ResetPasswordStep({ email, otp }: { email: string, otp: string }) {
     const notyf = useNotyf()

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { FiMail, FiPhone, FiInstagram, FiFacebook, FiTwitter } from "react-icons/fi"
-import { fetchContactInfo } from "../utils/api"
-import { useApiErrorHandler } from "../utils/useApiErrorHandler"
-import type { ContactInfo } from "../utils/types"
+import { fetchContactInfo } from "../api/apiClient"
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler"
+import type { ContactInfo } from "../types/types"
 
 export default function AboutCard() {
     const [contact, setContact] = useState<ContactInfo>({})

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { setTheme, initTheme } from "../utils/darkMode"
+import { setTheme, initTheme } from "../lib/themeMode"
 
 export default function Theme() {
     const [themeBtn, setThemeBtn] = useState(false)

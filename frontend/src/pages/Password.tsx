@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar'
 import Loading from '../components/Loading'
-import { errorLog, log } from '../utils/log'
-import { handleChangePassword } from '../utils/api'
+import { errorLog, log } from '../lib/logger'
+import { handleChangePassword } from '../api/apiClient'
 import { FiEye, FiEyeOff } from "react-icons/fi"
-import { useAuth } from '../utils/AuthContext'
+import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { useApiErrorHandler } from '../utils/useApiErrorHandler'
-import { useNotyf } from '../utils/useNotyf'
+import { useApiErrorHandler } from '../hooks/useApiErrorHandler'
+import { useNotyf } from '../hooks/useNotyf'
 
 export default function Password() {
     const notyf = useNotyf()

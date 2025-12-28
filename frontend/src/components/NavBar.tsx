@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
-import { useAuth } from '../utils/AuthContext';
-import type { AuthContextValue } from '../utils/AuthContext';
+import { useAuth } from '../context/AuthContext';
+import type { AuthContextValue } from '../context/AuthContext';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { FiUser, FiSearch, FiShoppingCart, FiMenu, FiX } from "react-icons/fi"
-import { useCart } from '../utils/CartContext';
-import Theme from './Theme';
+import { useCart } from '../context/CartContext';
+import Theme from './ThemeSwitcher';
 import SearchBar from './SearchBar';
 
 export default function NavBar() {

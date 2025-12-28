@@ -1,9 +1,9 @@
-import { errorLog, log } from '../utils/log';
+import { errorLog, log } from '../lib/logger';
 import Loading from './Loading';
 import { useState } from 'react';
-import { handleSendOtp } from '../utils/api';
-import { useApiErrorHandler } from "../utils/useApiErrorHandler";
-import { useNotyf } from '../utils/useNotyf';
+import { handleSendOtp } from '../api/apiClient';
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
+import { useNotyf } from '../hooks/useNotyf';
 
 export default function OtpStep({ onNext }: { onNext: (email: string) => void }) {
     const notyf = useNotyf()

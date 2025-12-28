@@ -1,11 +1,11 @@
 import Loading from '../components/Loading';
-import { useAuth } from '../utils/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import OtpStep from '../components/OtpStep';
-import VerifyOtpStep from '../components/VerifyOtpStep';
-import ResetPasswordStep from '../components/ResetPasswordStep';
+import OtpStep from '../components/OtpStepForm';
+import VerifyOtpStep from '../components/OtpVerificationStep';
+import ResetPasswordStep from '../components/ResetPasswordFormStep';
 
 export default function ResetPassword() {
     const nav = useNavigate()

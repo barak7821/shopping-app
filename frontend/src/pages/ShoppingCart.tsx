@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar';
-import { useCart } from '../utils/CartContext';
+import { useCart } from '../context/CartContext';
 import { FiX } from "react-icons/fi"
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
-import AboutCard from '../components/AboutCard';
-import { fetchProductsByIds } from '../utils/api';
-import { useApiErrorHandler } from '../utils/useApiErrorHandler';
-import type { FullCartItem } from '../utils/types';
+import AboutCard from '../components/AboutInfoCard';
+import { fetchProductsByIds } from '../api/apiClient';
+import { useApiErrorHandler } from '../hooks/useApiErrorHandler';
+import type { FullCartItem } from '../types/types';
 
 export default function Cart() {
     const nav = useNavigate()

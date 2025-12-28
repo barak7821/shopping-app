@@ -1,4 +1,4 @@
-import { initTheme } from '../utils/darkMode';
+import { initTheme } from '../lib/themeMode';
 
 export default function Loading() {
   initTheme()

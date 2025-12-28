@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { errorLog, log } from '../utils/log';
+import { errorLog, log } from '../lib/logger';
 import Loading from '../components/Loading';
-import { useAuth } from '../utils/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
 import { FiEye, FiEyeOff } from "react-icons/fi"
-import { handleGoogle, handleLogin } from '../utils/api';
+import { handleGoogle, handleLogin } from '../api/apiClient';
 import { useGoogleLogin } from '@react-oauth/google';
-import { useApiErrorHandler } from '../utils/useApiErrorHandler';
-import { useNotyf } from '../utils/useNotyf';
+import { useApiErrorHandler } from '../hooks/useApiErrorHandler';
+import { useNotyf } from '../hooks/useNotyf';
 
 export default function Login() {
     const notyf = useNotyf()

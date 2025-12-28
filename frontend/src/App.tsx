@@ -1,25 +1,25 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import ProtectedRouteAuth from './utils/ProtectedRouteAuth';
-import Home from './pages/Home.jsx';
+import ProtectedRouteAuth from './routes/ProtectedRouteAuth';
+import Home from './pages/Home';
 import NotFound from './pages/NotFound';
-import Register from './pages/Register.jsx';
-import Login from './pages/Login.jsx';
-import ProductDetails from './pages/ProductDetails.jsx';
-import Cart from './pages/Cart.jsx';
-import Checkout from './pages/Checkout.jsx';
-import Payment from './pages/Payment.jsx';
-import Profile from './pages/Profile.jsx';
-import Password from './pages/Password.jsx';
-import Orders from './pages/Orders.jsx';
-import OrderDetails from './pages/OrderDetails.jsx';
-import Collection from './pages/Collection.jsx';
-import About from './pages/About.jsx';
-import Contact from './pages/Contact.jsx';
-import SearchResults from './pages/SearchResults.jsx';
-import OrderSuccess from './pages/OrderSuccess.jsx';
-import ResetPassword from './pages/ResetPassword.jsx';
-import { initTheme } from './utils/darkMode.js';
+import Register from './pages/Register';
+import Login from './pages/Login';
+import ProductDetails from './pages/ProductDetails';
+import Cart from './pages/ShoppingCart';
+import Checkout from './pages/Checkout';
+import Payment from './pages/PaymentDetails';
+import Profile from './pages/UserProfile';
+import Password from './pages/Password';
+import Orders from './pages/OrderHistory';
+import OrderDetails from './pages/OrderDetails';
+import Collection from './pages/Collection';
+import About from './pages/AboutUs';
+import Contact from './pages/ContactUs';
+import SearchResults from './pages/SearchResults';
+import OrderSuccess from './pages/OrderConfirmation';
+import ResetPassword from './pages/PasswordReset';
+import { initTheme } from './lib/themeMode';
 
 function App() {
   useEffect(() => {

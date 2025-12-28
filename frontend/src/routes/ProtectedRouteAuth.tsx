@@ -1,4 +1,4 @@
-import { useAuth } from './AuthContext'
+import { useAuth } from '../context/AuthContext'
 import { Navigate } from 'react-router-dom'
 import Loading from '../components/Loading';
 import type { JSX } from 'react';

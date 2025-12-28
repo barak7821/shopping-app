@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { errorLog, log } from '../utils/log.js';
+import { errorLog, log } from '../lib/logger.js';
 import Loading from '../components/Loading.js';
-import { useAuth } from '../utils/AuthContext.js';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import NavBar from '../components/NavBar.js';
 import { FiEye, FiEyeOff } from "react-icons/fi"
 import { useEffect } from 'react';
-import { handleRegister } from '../utils/api.js';
-import { useApiErrorHandler } from '../utils/useApiErrorHandler.js';
-import { useNotyf } from '../utils/useNotyf.js';
+import { handleRegister } from '../api/apiClient';
+import { useApiErrorHandler } from '../hooks/useApiErrorHandler';
+import { useNotyf } from '../hooks/useNotyf';
 
 export default function Home() {
   const notyf = useNotyf()

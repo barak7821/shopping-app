@@ -34,7 +34,6 @@ export type FullCartItem = {
     selectedQuantity?: number
 }
 
-// Collection page query parameters
 export type Query = {
     page: number
     category?: string
@@ -97,4 +96,30 @@ export type UserProfile = {
     city?: string
     zip?: string
     country?: string
+}
+
+export type AuthContextValue = {
+    isAuthenticated: boolean | null
+    setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean | null>>
+    isAdmin: boolean | null
+    setIsAdmin: React.Dispatch<React.SetStateAction<boolean | null>>
+    provider: string | null
+    setProvider: React.Dispatch<React.SetStateAction<string | null>>
+    loading: boolean
+}
+
+export interface CartItem {
+    id: string
+    size: string
+    quantity: number
+}
+
+export interface CartContextType {
+    cart: CartItem[]
+    setCart: React.Dispatch<React.SetStateAction<CartItem[]>>
+    addToCart: (productId: string, size: string) => void
+    removeFromCart: (productId: string, size: string) => void
+    address: any
+    setAddress: React.Dispatch<React.SetStateAction<any>>
+    clearItem: (productId: string, size: string) => void
 }

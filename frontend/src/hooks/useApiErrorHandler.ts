@@ -1,9 +1,8 @@
-import { Notyf } from 'notyf';
-import 'notyf/notyf.min.css';
-import { errorLog } from "./log"
+import { errorLog } from "../lib/logger"
+import { useNotyf } from "./useNotyf"
 
 export const useApiErrorHandler = () => {
-  const notyf = new Notyf({ position: { x: 'center', y: 'top' } })
+  const notyf = useNotyf()
 
   const handleApiError = (error: any, context = "API request") => {
     if ((error as any)?.code === "ERR_CANCELED" || error?.name === "CanceledError") return // AbortController cancellations surface as errors in axios, but should be ignored in the UI layer.
@@ -48,7 +47,7 @@ export const useApiErrorHandler = () => {
     if (code && errorMap[code as keyof typeof errorMap]) message = errorMap[code as keyof typeof errorMap]
 
     // Display notification
-    notyf.error(message)
+    notyf?.error(message)
     errorLog(`Error (${code || "unknown"}) in ${context}`, error)
 
     return { status, code, message }

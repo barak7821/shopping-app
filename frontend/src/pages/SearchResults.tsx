@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar';
-import AboutCard from '../components/AboutCard';
+import AboutCard from '../components/AboutInfoCard';
 import Footer from '../components/Footer';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { errorLog } from '../utils/log';
+import { errorLog } from '../lib/logger';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import { findProductsQuery } from '../utils/api';
-import type { Product } from '../utils/types';
+import { findProductsQuery } from '../api/apiClient';
+import type { Product } from '../types/types';
 
 export default function SearchResults() {
     const nav = useNavigate()

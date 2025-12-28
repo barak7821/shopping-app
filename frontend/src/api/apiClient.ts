@@ -1,25 +1,12 @@
 import axios from "axios"
-import { log } from "./log"
+import { log } from "../lib/logger"
+import type { Order } from "../types/types"
 
 const baseApiUrl = `${import.meta.env.VITE_BACKEND_URL}/api`
-
-type OrderDetails = {
-    orderItems: Array<{
-        itemId: string
-        itemTitle: string
-        itemPricePerUnit: number
-        selectedQuantity: number
-        selectedSize: string | null
-    }>
-    shippingAddress: Record<string, unknown>
-    paymentMethod: string
-}
-
-type UserData = Record<string, unknown>
+const token = localStorage.getItem("token")
 
 // Function to send order details to the server - logged in user only
-export const handleOrder = async (orderDetails: OrderDetails) => {
-    const token = localStorage.getItem("token")
+export const handleOrder = async (orderDetails: Order) => {
     if (!token) {
         log("No token found")
         return
@@ -32,7 +19,7 @@ export const handleOrder = async (orderDetails: OrderDetails) => {
 }
 
 // Function to send order details to the server - guest user only
-export const handleGuestOrder = async (orderDetails: OrderDetails) => {
+export const handleGuestOrder = async (orderDetails: Order) => {
     const { data } = await axios.post(`${baseApiUrl}/order/guest`, { orderDetails })
     log("Order response:", data)
     return data
@@ -46,7 +33,7 @@ export const handleLogin = async (email: string, password: string) => {
 }
 
 // Function to register a new user
-export const handleRegister = async (userData: UserData) => {
+export const handleRegister = async (userData: string) => {
     const { data } = await axios.post(`${baseApiUrl}/auth`, userData)
     log("Register response:", data)
     return data
@@ -54,7 +41,6 @@ export const handleRegister = async (userData: UserData) => {
 
 // Function to check if a user is authenticated - logged in or guest
 export const checkUserAuth = async () => {
-    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -68,7 +54,6 @@ export const checkUserAuth = async () => {
 
 // Function to fetch user data from the server
 export const fetchUserData = async () => {
-    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -81,8 +66,7 @@ export const fetchUserData = async () => {
 }
 
 // Function to update user data in the server
-export const handleUpdateUser = async (userData: UserData) => {
-    const token = localStorage.getItem("token")
+export const handleUpdateUser = async (userData: string) => {
     if (!token) {
         log("No token found")
         return
@@ -95,8 +79,7 @@ export const handleUpdateUser = async (userData: UserData) => {
 }
 
 // Function to change password
-export const handleChangePassword = async (userData: UserData) => {
-    const token = localStorage.getItem("token")
+export const handleChangePassword = async (userData: string) => {
     if (!token) {
         log("No token found")
         return
@@ -110,7 +93,6 @@ export const handleChangePassword = async (userData: UserData) => {
 
 // Function to verify password
 export const verifyPassword = async (password: string) => {
-    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -124,7 +106,6 @@ export const verifyPassword = async (password: string) => {
 
 // Function to fetch order by ID
 export const fetchOrderById = async (id: string) => {
-    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -169,7 +150,6 @@ export const findProductsQuery = async (query: string) => {
 
 // Function to delete the user
 export const handleDeleteUser = async () => {
-    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return
@@ -280,7 +260,6 @@ export const fetchProductById = async (id: string) => {
 // Function to fetch order by query - pagination
 export const fetchOrdersByQuery = async (query: any, opt: { signal?: AbortSignal } = {}) => {
     const { signal } = opt
-    const token = localStorage.getItem("token")
     if (!token) {
         log("No token found")
         return

@@ -1,10 +1,10 @@
-import { log } from '../utils/log';
+import { log } from '../lib/logger';
 import Loading from './Loading';
 import { useEffect, useState } from 'react';
-import { handleSendOtp, handleVerifyOtp } from '../utils/api';
-import { useApiErrorHandler } from "../utils/useApiErrorHandler";
+import { handleSendOtp, handleVerifyOtp } from '../api/apiClient';
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
 import OTPInput from "otp-input-react";
-import { useNotyf } from '../utils/useNotyf';
+import { useNotyf } from '../hooks/useNotyf';
 
 export default function VerifyOtpStep({ email, onNext }: { email: string, onNext: (otp: string) => void }) {
     const notyf = useNotyf()

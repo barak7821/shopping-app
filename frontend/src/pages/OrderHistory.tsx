@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar'
-import { fetchOrdersByQuery, fetchProductsByIdsOrders } from '../utils/api'
+import { fetchOrdersByQuery, fetchProductsByIdsOrders } from '../api/apiClient'
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import AboutCard from '../components/AboutCard';
+import AboutCard from '../components/AboutInfoCard';
 import Footer from '../components/Footer';
-import { useApiErrorHandler } from '../utils/useApiErrorHandler'
-import getPageNumbers from '../utils/paginationHelper';
-import type { Order, Product } from '../utils/types';
+import { useApiErrorHandler } from '../hooks/useApiErrorHandler'
+import getPageNumbers from '../lib/getPageNumbers';
+import type { Order, Product } from '../types/types';
 
 export default function Orders() {
     const nav = useNavigate()

@@ -1,16 +1,16 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import NavBar from '../components/NavBar';
-import { useCart } from '../utils/CartContext';
-import { log } from '../utils/log';
+import { useCart } from '../context/CartContext';
+import { log } from '../lib/logger';
 import { FaCreditCard, FaPaypal, FaApplePay, FaGooglePay } from "react-icons/fa6"
-import AboutCard from '../components/AboutCard';
+import AboutCard from '../components/AboutInfoCard';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../utils/AuthContext';
-import { fetchProductsByIds, handleGuestOrder, handleOrder } from '../utils/api';
-import { useApiErrorHandler } from '../utils/useApiErrorHandler';
-import { useNotyf } from '../utils/useNotyf';
-import type { FullCartItem, Product, PaymentDetails } from '../utils/types';
+import { useAuth } from '../context/AuthContext';
+import { fetchProductsByIds, handleGuestOrder, handleOrder } from '../api/apiClient';
+import { useApiErrorHandler } from '../hooks/useApiErrorHandler';
+import { useNotyf } from '../hooks/useNotyf';
+import type { FullCartItem, Product, PaymentDetails } from '../types/types';
 
 export default function Payment() {
     const nav = useNavigate()
