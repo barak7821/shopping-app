@@ -3,7 +3,9 @@ import Order from "../models/orderModel.js";
 import Product, { productSchemaJoi, updateProductSchemaJoi } from "../models/productModel.js";
 import User from "../models/userModel.js";
 import { BestSeller, bestSellerSchemaJoi, ContactInfo, contactInfoSchemaJoi, Hero, heroSchemaJoi } from "../models/homePageModel.js";
-import { errorLog, log } from "../utils/log.js";
+import { getErrorMessage } from "../utils/errorUtils.js";
+import { errorLog, log } from "../utils/logger.js";
+import type { AdminHandler, UpdateProductFields } from "../utils/types.js"
 import { sendOrderConfirmationEmail } from "../utils/userNotifications.js";
 import ArchivedProduct from "../models/archivedProductModel.js";
 import logAdminAction from "../utils/adminLogger.js";
@@ -11,26 +13,28 @@ import AdminLog from "../models/adminLogModel.js";
 import AdminSettings from "../models/adminSettingsModel.js";
 import { checkPassword } from "../utils/passwordUtils.js";
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose"
+import type { SortOrder } from "mongoose"
 import { authenticator } from "otplib"
 import QRCode from "qrcode"
 
 // Temp Controller - SHOULD ONLY BE USED FOR TESTING!!!
 
 // temp - Controller for delete all products - SHOULD ONLY BE USED FOR TESTING!!!
-export const deleteAllProducts = async (req, res) => {
+export const deleteAllProducts: AdminHandler = async (req, res) => {
     try {
         await Product.deleteMany({})
 
         log("All products deleted")
         res.status(200).json({ message: "All products deleted" })
     } catch (error) {
-        errorLog("Error in deleteAllProducts controller", error.message)
+        errorLog("Error in deleteAllProducts controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // temp - Controller to add multiple products at once - SHOULD ONLY BE USED FOR TESTING/SEEDING!!!
-export const addMultipleProducts = async (req, res) => {
+export const addMultipleProducts: AdminHandler = async (req, res) => {
     const products = req.body
     if (!Array.isArray(products) || products.length === 0) return res.status(400).json({ code: "!field", message: "No products provided" })
 
@@ -55,7 +59,7 @@ export const addMultipleProducts = async (req, res) => {
             }
 
             // Calculate total stock
-            const totalStock = sizes.reduce((sum, size) => {
+            const totalStock = sizes.reduce((sum: number, size: { stock?: number }) => {
                 return sum + (size.stock || 0)
             }, 0)
 
@@ -80,13 +84,13 @@ export const addMultipleProducts = async (req, res) => {
         log(`${formattedProducts.length} products added`)
         res.status(201).json({ message: `${formattedProducts.length} products added`, added: formattedProducts.length })
     } catch (error) {
-        errorLog("Error in addMultipleProducts controller", error.message)
+        errorLog("Error in addMultipleProducts controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // temp - Controller to seed users at once - SHOULD ONLY BE USED FOR TESTING/SEEDING!!
-export const seedUsers = async (req, res) => {
+export const seedUsers: AdminHandler = async (req, res) => {
     const users = req.body
     if (!Array.isArray(users) || users.length === 0) return res.status(400).json({ code: "!field", message: "No users provided" })
 
@@ -126,13 +130,13 @@ export const seedUsers = async (req, res) => {
         log(`${results.length} users added`)
         res.status(201).json({ message: `${results.length} users added`, added: results.length })
     } catch (error) {
-        errorLog("Error in seedUsers controller", error.message)
+        errorLog("Error in seedUsers controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // temp - Controller to update hero section - SHOULD ONLY BE USED FOR TESTING!!!
-export const tempHeroSection = async (req, res) => {
+export const tempHeroSection: AdminHandler = async (req, res) => {
     const { title, subtitle, description, buttonText, buttonLink, imageUrl, imageAlt } = req.body
     if (!title || !subtitle || !description || !buttonText || !buttonLink || !imageUrl || !imageAlt) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
@@ -170,13 +174,13 @@ export const tempHeroSection = async (req, res) => {
         log("Hero section updated successfully")
         res.status(200).json({ message: "Hero section updated successfully" })
     } catch (error) {
-        errorLog("Error in tempHeroSection controller", error.message)
+        errorLog("Error in tempHeroSection controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // temp - Controller to update contact info section - SHOULD ONLY BE USED FOR TESTING!!!
-export const tempContactInfo = async (req, res) => {
+export const tempContactInfo: AdminHandler = async (req, res) => {
     const { email, phone, facebookUrl, instagramUrl, twitterUrl, openingHours, address } = req.body
     if (!email || !phone || !facebookUrl || !instagramUrl || !twitterUrl || !openingHours || !address) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
@@ -214,13 +218,13 @@ export const tempContactInfo = async (req, res) => {
         log("Contact info section updated successfully")
         res.status(200).json({ message: "Contact info section updated successfully" })
     } catch (error) {
-        errorLog("Error in tempContactInfo controller", error.message)
+        errorLog("Error in tempContactInfo controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // temp - Controller to update best seller section - SHOULD ONLY BE USED FOR TESTING!!!
-export const tempBestSeller = async (req, res) => {
+export const tempBestSeller: AdminHandler = async (req, res) => {
     const { bestSellerSection } = req.body
 
     try {
@@ -245,7 +249,7 @@ export const tempBestSeller = async (req, res) => {
         log("Best seller section updated successfully")
         res.status(200).json({ message: "Best seller section updated successfully" })
     } catch (error) {
-        errorLog("Error in tempBestSeller controller", error.message)
+        errorLog("Error in tempBestSeller controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -253,7 +257,7 @@ export const tempBestSeller = async (req, res) => {
 /////////// Products Controllers ///////////
 
 // Controller to add a new product
-export const addProduct = async (req, res) => {
+export const addProduct: AdminHandler = async (req, res) => {
     const { title, category, price, image, description, sizes, type, onSale, discountPercent } = req.body
     if (!title || !category || !price || !image || !description || !sizes || sizes.length === 0 || !type) return res.status(400).json({ code: "!field", message: "Missing required fields" }) // onSale and discountPercent are optional
 
@@ -266,7 +270,7 @@ export const addProduct = async (req, res) => {
         if (product) return res.status(400).json({ code: "exist", message: "Product already exists" })
 
         // Calculate total stock
-        const totalStock = sizes.reduce((sum, size) => {
+        const totalStock = sizes.reduce((sum: number, size: { stock?: number }) => {
             return sum + (size.stock || 0)
         }, 0)
 
@@ -293,13 +297,13 @@ export const addProduct = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "create_product", newProduct._id)
     } catch (error) {
-        errorLog("Error in addProduct controller", error.message)
+        errorLog("Error in addProduct controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to archive product by id
-export const archiveProductById = async (req, res) => {
+export const archiveProductById: AdminHandler = async (req, res) => {
     const { id } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
     log("Product with id ${id} deleted successfully")
@@ -322,13 +326,13 @@ export const archiveProductById = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "archive_product", product._id)
     } catch (error) {
-        errorLog("Error in archiveProductById controller", error.message)
+        errorLog("Error in archiveProductById controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get product by id
-export const getProductById = async (req, res) => {
+export const getProductById: AdminHandler = async (req, res) => {
     const { id } = req.query
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
@@ -346,13 +350,13 @@ export const getProductById = async (req, res) => {
         log(`Product with id ${id} found successfully`)
         res.status(200).json(sanitizedProduct)
     } catch (error) {
-        errorLog("Error in getProductById controller", error.message)
+        errorLog("Error in getProductById controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to edit product by id
-export const updateProductById = async (req, res) => {
+export const updateProductById: AdminHandler = async (req, res) => {
     const { id, title, category, price, image, description, sizes, type, onSale, discountPercent } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
@@ -361,7 +365,7 @@ export const updateProductById = async (req, res) => {
         await updateProductSchemaJoi.validate({ title, category, price, image, description, sizes, type })
 
         // Update product data if provided
-        const updateFields = {}
+        const updateFields: UpdateProductFields = {}
         if (title) updateFields.title = title.toLowerCase()
         if (category) updateFields.category = category.toLowerCase()
         if (price) updateFields.price = price
@@ -371,7 +375,7 @@ export const updateProductById = async (req, res) => {
             updateFields.sizes = sizes
 
             // Calculate total stock
-            const totalStock = sizes.reduce((sum, size) => {
+            const totalStock = sizes.reduce((sum: number, size: { stock?: number }) => {
                 return sum + (size.stock || 0)
             }, 0)
 
@@ -394,13 +398,13 @@ export const updateProductById = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "update_product", product._id, updateFields)
     } catch (error) {
-        errorLog("Error in updateProductById controller", error.message)
+        errorLog("Error in updateProductById controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to gets multiple products by their IDs
-export const getProductsByIds = async (req, res) => {
+export const getProductsByIds: AdminHandler = async (req, res) => {
     const { ids } = req.body
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
@@ -411,18 +415,18 @@ export const getProductsByIds = async (req, res) => {
         log("Products found successfully")
         res.status(200).json(products)
     } catch (error) {
-        errorLog("Error in getProductsByIds controller", error.message)
+        errorLog("Error in getProductsByIds controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get products by query parameters for pagination
-export const getProductsByQuery = async (req, res) => {
+export const getProductsByQuery: AdminHandler = async (req, res) => {
     try {
-        const page = Math.max(1, +req.query.page || 1) // Default to page 1 if not provided
+        const page = Math.max(1, Number(req.query.page ?? 1)) // Default to page 1 if not provided
         const limit = 20 // Default to 20 items per page
 
-        const sortBy = { createdAt: -1, _id: 1 } // Default sort by createdAt in descending order
+        const sortBy: Record<string, SortOrder> = { createdAt: "desc", _id: "asc" } // Default sort by createdAt in descending order
 
         const total = await Product.countDocuments() // Count total number of products
 
@@ -437,7 +441,7 @@ export const getProductsByQuery = async (req, res) => {
         log(`Fetched ${items.length} products for page ${page}`)
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in getProductsByQuery controller", error.message)
+        errorLog("Error in getProductsByQuery controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -445,12 +449,12 @@ export const getProductsByQuery = async (req, res) => {
 //////////// Archived Product Controllers //////////////
 
 // Controller to get products by query parameters for pagination
-export const getArchivedProductsByQuery = async (req, res) => {
+export const getArchivedProductsByQuery: AdminHandler = async (req, res) => {
     try {
-        const page = Math.max(1, +req.query.page || 1) // Default to page 1 if not provided
+        const page = Math.max(1, Number(req.query.page ?? 1)) // Default to page 1 if not provided
         const limit = 20 // Default to 20 items per page
 
-        const sortBy = { createdAt: -1, _id: 1 } // Default sort by createdAt in descending order
+        const sortBy: Record<string, SortOrder> = { createdAt: "desc", _id: "asc" } // Default sort by createdAt in descending order
 
         const total = await ArchivedProduct.countDocuments() // Count total number of products
 
@@ -465,13 +469,13 @@ export const getArchivedProductsByQuery = async (req, res) => {
         log(`Fetched ${items.length} products for page ${page}`)
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in getArchivedProductsByQuery controller", error.message)
+        errorLog("Error in getArchivedProductsByQuery controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to restore archived product by Id
-export const restoreArchivedProduct = async (req, res) => {
+export const restoreArchivedProduct: AdminHandler = async (req, res) => {
     const { id } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
@@ -493,13 +497,13 @@ export const restoreArchivedProduct = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "restore_product", product._id)
     } catch (error) {
-        errorLog("Error in restoreArchivedProduct controller", error.message)
+        errorLog("Error in restoreArchivedProduct controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get archived product by Id
-export const getArchivedProductById = async (req, res) => {
+export const getArchivedProductById: AdminHandler = async (req, res) => {
     const { id } = req.query
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
@@ -510,7 +514,7 @@ export const getArchivedProductById = async (req, res) => {
         log(`Product with id ${id} found successfully`)
         res.status(200).json(archivedProduct)
     } catch (error) {
-        errorLog("Error in getArchivedProductById controller", error.message)
+        errorLog("Error in getArchivedProductById controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -518,11 +522,11 @@ export const getArchivedProductById = async (req, res) => {
 /////////// Users Controllers ///////////
 
 // Controller to fetch users
-export const getUsersByQuery = async (req, res) => {
+export const getUsersByQuery: AdminHandler = async (req, res) => {
     try {
-        const page = Math.max(1, +req.query.page || 1)
+        const page = Math.max(1, Number(req.query.page ?? 1))
         const limit = 20
-        const sortBy = { createdAt: -1, _id: 1 }
+        const sortBy: Record<string, SortOrder> = { createdAt: "desc", _id: "asc" }
 
         const total = await User.countDocuments()
         const items = await User.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v -city -provider -street -zip -country -phone").lean()
@@ -535,13 +539,13 @@ export const getUsersByQuery = async (req, res) => {
         log(`Fetched ${items.length} users for page ${page}`)
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in getUsersByQuery controller", error.message)
+        errorLog("Error in getUsersByQuery controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to delete user by ID
-export const deleteUserById = async (req, res) => {
+export const deleteUserById: AdminHandler = async (req, res) => {
     const { id } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
 
@@ -572,13 +576,13 @@ export const deleteUserById = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "delete_user", user._id)
     } catch (error) {
-        errorLog("Error in deleteUserById controller", error.message)
+        errorLog("Error in deleteUserById controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get user by ID
-export const getUserById = async (req, res) => {
+export const getUserById: AdminHandler = async (req, res) => {
     const { id } = req.query
     if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
 
@@ -589,17 +593,17 @@ export const getUserById = async (req, res) => {
         log(`User with id ${id} found successfully`)
         res.status(200).json(user)
     } catch (error) {
-        errorLog("Error in getUserById controller", error.message)
+        errorLog("Error in getUserById controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to fetch deleted users
-export const getDeletedUsersByQuery = async (req, res) => {
+export const getDeletedUsersByQuery: AdminHandler = async (req, res) => {
     try {
-        const page = Math.max(1, +req.query.page || 1)
+        const page = Math.max(1, Number(req.query.page ?? 1))
         const limit = 20
-        const sortBy = { deletedAt: -1, _id: 1 }
+        const sortBy: Record<string, SortOrder> = { deletedAt: "desc", _id: "asc" }
 
         const total = await DeletedUser.countDocuments()
         const items = await DeletedUser.find().sort(sortBy).skip((page - 1) * limit).limit(limit).select("-password -otpCode -otpExpiresAt -otpLastSentAt -otpAttempts -otpBlockedUntil -__v -city -provider -street -zip -country -phone -createdAt -updatedAt").lean()
@@ -612,13 +616,13 @@ export const getDeletedUsersByQuery = async (req, res) => {
         log(`Fetched ${items.length} deleted users for page ${page}`)
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in getDeletedUsersByQuery controller", error.message)
+        errorLog("Error in getDeletedUsersByQuery controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get deleted user by ID
-export const getDeletedUserById = async (req, res) => {
+export const getDeletedUserById: AdminHandler = async (req, res) => {
     const { id } = req.query
     if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
 
@@ -629,13 +633,13 @@ export const getDeletedUserById = async (req, res) => {
         log(`User with id ${id} found successfully`)
         res.status(200).json(deletedUser)
     } catch (error) {
-        errorLog("Error in getDeletedUserById controller", error.message)
+        errorLog("Error in getDeletedUserById controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to make admin 
-export const makeAdmin = async (req, res) => {
+export const makeAdmin: AdminHandler = async (req, res) => {
     const { id } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
 
@@ -656,13 +660,13 @@ export const makeAdmin = async (req, res) => {
             newRole: user.role
         })
     } catch (error) {
-        errorLog("Error in makeAdmin controller", error.message)
+        errorLog("Error in makeAdmin controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to remove admin
-export const removeAdmin = async (req, res) => {
+export const removeAdmin: AdminHandler = async (req, res) => {
     const { id } = req.body
     if (!id) return res.status(400).json({ code: "!field", message: "User id is required" })
 
@@ -683,13 +687,13 @@ export const removeAdmin = async (req, res) => {
             newRole: user.role
         })
     } catch (error) {
-        errorLog("Error in removeAdmin controller", error.message)
+        errorLog("Error in removeAdmin controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to add note to user
-export const addNoteToUser = async (req, res) => {
+export const addNoteToUser: AdminHandler = async (req, res) => {
     const { id, note } = req.body
     if (!id || !note) return res.status(400).json({ code: "!field", message: "User id and note is required" })
 
@@ -705,7 +709,7 @@ export const addNoteToUser = async (req, res) => {
         log(`Note added to user with id ${id} successfully`)
         res.status(200).json({ message: `Note added to user with id ${id} successfully` })
     } catch (error) {
-        errorLog("Error in addNoteToUser controller", error.message)
+        errorLog("Error in addNoteToUser controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -713,9 +717,9 @@ export const addNoteToUser = async (req, res) => {
 /////////// Orders Controllers ///////////
 
 // Controller to fetch orders
-export const getOrderByQuery = async (req, res) => {
+export const getOrderByQuery: AdminHandler = async (req, res) => {
     try {
-        const page = Math.max(1, +req.query.page || 1)
+        const page = Math.max(1, Number(req.query.page ?? 1))
         const limit = 20
 
         const total = await Order.countDocuments()
@@ -730,13 +734,13 @@ export const getOrderByQuery = async (req, res) => {
         log(`Fetched ${items.length} orders for page ${page}`)
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in getOrderByQuery controller", error.message)
+        errorLog("Error in getOrderByQuery controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get order by Number
-export const getOrderByOrderNumber = async (req, res) => {
+export const getOrderByOrderNumber: AdminHandler = async (req, res) => {
     const { number } = req.query
     if (!number) return res.status(400).json({ code: "!field", message: "Order id is required" })
 
@@ -747,13 +751,13 @@ export const getOrderByOrderNumber = async (req, res) => {
         log(`Order ${number} found successfully`)
         res.status(200).json(order)
     } catch (error) {
-        errorLog("Error in getOrderByOrderNumber controller", error.message)
+        errorLog("Error in getOrderByOrderNumber controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to updates an order's status by ID
-export const updateOrderStatus = async (req, res) => {
+export const updateOrderStatus: AdminHandler = async (req, res) => {
     const { id, newStatus } = req.body
     if (!id || !newStatus) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
@@ -780,13 +784,13 @@ export const updateOrderStatus = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "update_order_status", order._id)
     } catch (error) {
-        errorLog("Error in updateOrderStatus controller", error.message)
+        errorLog("Error in updateOrderStatus controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to resend order receipt email
-export const resendOrderReceipt = async (req, res) => {
+export const resendOrderReceipt: AdminHandler = async (req, res) => {
     const { orderId, orderNumber, email } = req.body
     if (!orderId && !orderNumber) return res.status(400).json({ code: "!field", message: "Order id or order number is required" })
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -803,14 +807,14 @@ export const resendOrderReceipt = async (req, res) => {
             user = await User.findById(order.userId).lean()
         }
 
-        await sendOrderConfirmationEmail({ user, order, overrideEmail: email })
+        await sendOrderConfirmationEmail({ user: user ?? undefined, order, overrideEmail: email })
 
         log(`Order receipt resent for order ${order.orderNumber}`)
         res.status(200).json({ message: "Receipt sent successfully" })
 
         logAdminAction(req.user.id, "resend_order_receipt", order._id)
     } catch (error) {
-        errorLog("Error in resendOrderReceipt controller", error.message)
+        errorLog("Error in resendOrderReceipt controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -818,7 +822,7 @@ export const resendOrderReceipt = async (req, res) => {
 /////////// Home Page Controllers ///////////
 
 // Controller to update hero section
-export const heroSection = async (req, res) => {
+export const heroSection: AdminHandler = async (req, res) => {
     const { heroSection } = req.body
     if (!heroSection) return res.status(400).json({ code: "!field", message: "All fields are required" })
     if (Object.keys(heroSection).length === 0) return res.status(400).json({ code: "!field", message: "All fields are required" })
@@ -829,7 +833,7 @@ export const heroSection = async (req, res) => {
 
         const hero = await Hero.findById("hero_section")
         if (!hero) { // if hero is not found
-            const newHero = new hero({
+            const newHero = new Hero({
                 _id: "hero_section",
                 title: heroSection.title,
                 subtitle: heroSection.subtitle,
@@ -838,7 +842,7 @@ export const heroSection = async (req, res) => {
                 buttonLink: heroSection.buttonLink.toLowerCase(),
                 imageUrl: heroSection.imageUrl,
                 imageAlt: heroSection.imageAlt,
-                updatedBy: req.user.id,
+                updatedBy: new mongoose.Types.ObjectId(req.user.id),
                 version: 1
             })
             await newHero.save()
@@ -866,7 +870,7 @@ export const heroSection = async (req, res) => {
         hero.buttonLink = heroSection.buttonLink
         hero.imageUrl = heroSection.imageUrl
         hero.imageAlt = heroSection.imageAlt
-        hero.updatedBy = req.user.id
+        hero.updatedBy = new mongoose.Types.ObjectId(req.user.id)
         hero.version += 1
 
         await hero.save()
@@ -877,13 +881,13 @@ export const heroSection = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "update_hero_section")
     } catch (error) {
-        errorLog("Error in heroSection controller", error.message)
+        errorLog("Error in heroSection controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to update best seller section
-export const bestSellerSection = async (req, res) => {
+export const bestSellerSection: AdminHandler = async (req, res) => {
     const { bestSellerSection } = req.body
     if (!bestSellerSection) return res.status(400).json({ code: "!field", message: "All fields are required" }) // if no best seller section is provided
     if (bestSellerSection.length < 5) return res.status(400).json({ code: "!field", message: "Best seller section must have at least 5 items" }) // if best seller section has less than 5 items
@@ -897,7 +901,7 @@ export const bestSellerSection = async (req, res) => {
             const newBestSeller = new BestSeller({
                 _id: "best_seller",
                 products: bestSellerSection,
-                updatedBy: req.user.id,
+                updatedBy: new mongoose.Types.ObjectId(req.user.id),
                 version: 1
             })
             await newBestSeller.save()
@@ -913,7 +917,7 @@ export const bestSellerSection = async (req, res) => {
 
         // Update best seller section data
         bestSeller.products = bestSellerSection
-        bestSeller.updatedBy = req.user.id
+        bestSeller.updatedBy = new mongoose.Types.ObjectId(req.user.id)
         bestSeller.version += 1
 
         await bestSeller.save()
@@ -924,13 +928,13 @@ export const bestSellerSection = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "update_best_seller_section")
     } catch (error) {
-        errorLog("Error in bestSellerSection controller", error.message)
+        errorLog("Error in bestSellerSection controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to update contact info
-export const contactInfoSection = async (req, res) => {
+export const contactInfoSection: AdminHandler = async (req, res) => {
     const { contactInfoSection } = req.body
     if (!contactInfoSection) return res.status(400).json({ code: "!field", message: "All fields are required" }) // if no contact info section is provided
     try {
@@ -948,7 +952,7 @@ export const contactInfoSection = async (req, res) => {
                 twitterUrl: contactInfoSection.twitterUrl,
                 openingHours: contactInfoSection.openingHours,
                 address: contactInfoSection.address,
-                updatedBy: req.user.id,
+                updatedBy: new mongoose.Types.ObjectId(req.user.id),
                 version: 1
             })
             await newContactInfo.save()
@@ -976,7 +980,7 @@ export const contactInfoSection = async (req, res) => {
         contactInfo.twitterUrl = contactInfoSection.twitterUrl
         contactInfo.openingHours = contactInfoSection.openingHours
         contactInfo.address = contactInfoSection.address
-        contactInfo.updatedBy = req.user.id
+        contactInfo.updatedBy = new mongoose.Types.ObjectId(req.user.id)
         contactInfo.version += 1
 
         await contactInfo.save()
@@ -987,16 +991,16 @@ export const contactInfoSection = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "update_contact_info_section")
     } catch (error) {
-        errorLog("Error in contactInfoSection controller", error.message)
+        errorLog("Error in contactInfoSection controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 /////////// Logs Controllers ///////////
 
-export const getLogsByQuery = async (req, res) => {
+export const getLogsByQuery: AdminHandler = async (req, res) => {
     try {
-        const page = Math.max(1, +req.query.page || 1)
+        const page = Math.max(1, Number(req.query.page ?? 1))
         const limit = 20
 
         const total = await AdminLog.countDocuments()
@@ -1010,7 +1014,7 @@ export const getLogsByQuery = async (req, res) => {
         log(`Fetched ${items.length} logs for page ${page}`)
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in getLogsByQuery controller", error.message)
+        errorLog("Error in getLogsByQuery controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
@@ -1018,7 +1022,7 @@ export const getLogsByQuery = async (req, res) => {
 /////////// Notification Controllers ///////////
 
 // Controller to get notification emails list
-export const getNotificationEmail = async (req, res) => {
+export const getNotificationEmail: AdminHandler = async (req, res) => {
     try {
         const emailsList = await AdminSettings.findById("notification_emails").lean()
 
@@ -1032,13 +1036,13 @@ export const getNotificationEmail = async (req, res) => {
         log("Fetched notification emails list")
         res.status(200).json(emailsList.notificationEmails)
     } catch (error) {
-        errorLog("Error in getNotificationEmail controller", error.message)
+        errorLog("Error in getNotificationEmail controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to update notification emails list
-export const updateNotificationEmail = async (req, res) => {
+export const updateNotificationEmail: AdminHandler = async (req, res) => {
     const { emails } = req.body
     if (!Array.isArray(emails)) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
@@ -1065,23 +1069,23 @@ export const updateNotificationEmail = async (req, res) => {
         // Log admin action
         logAdminAction(req.user.id, "update_notification_emails")
     } catch (error) {
-        errorLog("Error in updateNotificationEmail controller", error.message)
+        errorLog("Error in updateNotificationEmail controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller for checking if the admin is authenticated based on the JWT token
-export const checkAdminAuth = async (req, res) => {
+export const checkAdminAuth: AdminHandler = async (req, res) => {
     try {
         res.status(200).json({ exist: true, provider: req.user.provider, role: req.user.role, mfa: req.user.mfa, aud: req.user.aud })
     } catch (error) {
-        errorLog("Error in checkAdminAuth controller", error.message)
+        errorLog("Error in checkAdminAuth controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to handle admin login
-export const adminLogin = async (req, res) => {
+export const adminLogin: AdminHandler = async (req, res) => {
     const { email, password } = req.body
     if (!email || !password) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
@@ -1093,6 +1097,7 @@ export const adminLogin = async (req, res) => {
         const adminUser = await User.findOne({ email: email.toLowerCase(), role: "admin" }).select("+password +adminMFASecret +adminMFAEnabled")
         // Generic message to prevent user enumeration
         if (!adminUser) return res.status(401).json({ code: "invalid_pass", message: "Invalid credentials" })
+        if (!adminUser.password) return res.status(401).json({ code: "invalid_pass", message: "Invalid credentials" })
 
         // Check if password is correct
         const isPasswordValid = await checkPassword(password, adminUser.password)
@@ -1113,13 +1118,13 @@ export const adminLogin = async (req, res) => {
         log(`MFA required for admin user ${adminUser._id}`)
         return res.status(200).json({ code: "mfa_required", message: "MFA required", token: mfaToken })
     } catch (error) {
-        errorLog("Error in adminLogin controller", error.message)
+        errorLog("Error in adminLogin controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to handle 2FA setup for admin
-export const setupAdmin2FA = async (req, res) => {
+export const setupAdmin2FA: AdminHandler = async (req, res) => {
     const { setupToken } = req.body
     if (!setupToken) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
@@ -1129,11 +1134,17 @@ export const setupAdmin2FA = async (req, res) => {
 
         // Verify setup token
         const decoded = jwt.verify(setupToken, process.env.JWT_SECRET)
-        if (!decoded?.sub || decoded.aud !== "admin_setup" || decoded.purpose !== "admin_setup") return res.status(401).json({ code: "invalid_setup", message: "Invalid credentials" })
+        if (typeof decoded === "string" || !("sub" in decoded) || !("aud" in decoded) || !("purpose" in decoded)) {
+            return res.status(401).json({ code: "invalid_setup", message: "Invalid credentials" })
+        }
+        if (decoded.aud !== "admin_setup" || decoded.purpose !== "admin_setup") {
+            return res.status(401).json({ code: "invalid_setup", message: "Invalid credentials" })
+        }
 
         // Find admin user by ID
         const adminUser = await User.findById(decoded.sub).select("email role provider +adminMFASecret +adminMFAEnabled")
         if (!adminUser || adminUser.role !== "admin" || adminUser.provider !== "local") return res.status(401).json({ code: "invalid_setup", message: "Invalid credentials" })
+        if (!adminUser.email) return res.status(401).json({ code: "invalid_setup", message: "Invalid credentials" })
 
         // Check if MFA is already enabled
         if (adminUser.adminMFAEnabled && adminUser.adminMFASecret) return res.status(409).json({ code: "mfa_already_enabled", message: "MFA is already enabled" })
@@ -1154,13 +1165,13 @@ export const setupAdmin2FA = async (req, res) => {
         log(`MFA setup initiated for admin user ${adminUser._id}`)
         return res.status(200).json({ qrDataUrl, manualKey: secret, issuer, email: adminUser.email })
     } catch (error) {
-        errorLog("Error in setupAdmin2FA controller", error.message)
+        errorLog("Error in setupAdmin2FA controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to verify 2FA code for admin
-export const verifyAdmin2FA = async (req, res) => {
+export const verifyAdmin2FA: AdminHandler = async (req, res) => {
     const { token, code } = req.body
     if (!token || !code) return res.status(400).json({ code: "!field", message: "All fields are required" })
 
@@ -1169,11 +1180,15 @@ export const verifyAdmin2FA = async (req, res) => {
         if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined in environment variables")
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET) // Verify token
-        const isSetup = decoded?.aud === "admin_setup" && decoded?.purpose === "admin_setup" // Check if it's for setup
-        const isMFA = decoded?.aud === "admin_mfa" && decoded?.purpose === "admin_mfa" // Check if it's for MFA verification
+        if (typeof decoded === "string" || !("sub" in decoded) || !("aud" in decoded) || !("purpose" in decoded)) {
+            return res.status(401).json({ code: "invalid_token", message: "Invalid credentials" })
+        }
+
+        const isSetup = decoded.aud === "admin_setup" && decoded.purpose === "admin_setup" // Check if it's for setup
+        const isMFA = decoded.aud === "admin_mfa" && decoded.purpose === "admin_mfa" // Check if it's for MFA verification
 
         // Invalid token
-        if (!decoded?.sub || (!isSetup && !isMFA)) return res.status(401).json({ code: "invalid_token", message: "Invalid credentials" })
+        if (!decoded.sub || (!isSetup && !isMFA)) return res.status(401).json({ code: "invalid_token", message: "Invalid credentials" })
 
         // Find admin user by ID
         const adminUser = await User.findById(decoded.sub).select("role provider +adminMFASecret +adminMFAEnabled +adminMFALastVerifiedAt")
@@ -1197,7 +1212,7 @@ export const verifyAdmin2FA = async (req, res) => {
         log(`MFA verified for admin user ${adminUser._id}`)
         return res.status(200).json({ message: "MFA verified successfully", token: adminToken })
     } catch (error) {
-        errorLog("Error in verifyAdmin2FA controller", error.message)
+        errorLog("Error in verifyAdmin2FA controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

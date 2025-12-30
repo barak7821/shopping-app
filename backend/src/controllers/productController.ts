@@ -1,54 +1,60 @@
 import Product from "../models/productModel.js";
-import { errorLog, log } from "../utils/log.js";
+import type { Request, Response } from "express"
+import { errorLog, log } from "../utils/logger.js";
+import { getErrorMessage } from "../utils/errorUtils.js"
 import ArchivedProduct from "../models/archivedProductModel.js";
+import type { SortOrder } from "mongoose"
+import { ProductHandler } from "../utils/types.js";
 
 // Controller to find products - Search Bar and Admin Best Seller
-export const findProductsSearch = async (req, res) => {
+export const findProductsSearch: ProductHandler = async (req, res) => {
     const { search } = req.body
-    if (!search || search.trim() === "") return res.status(400).json({ code: "!field", message: "Search input is required" })
+    const searchText = typeof search === "string" ? search.trim() : ""
+    if (!searchText) return res.status(400).json({ code: "!field", message: "Search input is required" })
 
     try {
-        const products = await Product.find({ title: { $regex: search, $options: "i" }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category").limit(10).lean()
+        const products = await Product.find({ title: { $regex: searchText, $options: "i" }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category").limit(10).lean()
 
-        log(`Found ${products.length} products for search: ${search}`)
+        log(`Found ${products.length} products for search: ${searchText}`)
         res.status(200).json(products)
     } catch (error) {
-        errorLog("Error in findProductsSearch controller", error.message)
+        errorLog("Error in findProductsSearch controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to find products by query parameters - Search Results Page
-export const findProductsQuery = async (req, res) => {
+export const findProductsQuery: ProductHandler = async (req, res) => {
     const { search } = req.query // Use query parameters for search input
-    if (!search || search.trim() === "") return res.status(400).json({ code: "!field", message: "Search query is required" })
+    const searchText = typeof search === "string" ? search.trim() : ""
+    if (!searchText) return res.status(400).json({ code: "!field", message: "Search query is required" })
 
     try {
-        const products = await Product.find({ title: { $regex: search, $options: "i" }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold -sizes.").limit(10).lean()
+        const products = await Product.find({ title: { $regex: searchText, $options: "i" }, active: true }).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold -sizes.").limit(10).lean()
 
-        log(`Found ${products.length} products for search: ${search}`)
+        log(`Found ${products.length} products for search: ${searchText}`)
         res.status(200).json(products)
     } catch (error) {
-        errorLog("Error in findProducts controller", error.message)
+        errorLog("Error in findProducts controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get latest 10 products
-export const getLatestProducts = async (req, res) => {
+export const getLatestProducts: ProductHandler = async (req, res) => {
     try {
         const products = await Product.find({ active: true }).sort({ createdAt: -1 }).limit(10).select("-__v -createdAt -updatedAt -description -sizes -type -category -lowStockThreshold").lean()
 
         log(`Fetched ${products.length} latest products`)
         res.status(200).json(products)
     } catch (error) {
-        errorLog("Error in getLatestProducts controller", error.message)
+        errorLog("Error in getLatestProducts controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to gets multiple products by their IDs
-export const getProductsByIds = async (req, res) => {
+export const getProductsByIds: ProductHandler = async (req, res) => {
     const { ids } = req.body
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
@@ -58,13 +64,13 @@ export const getProductsByIds = async (req, res) => {
         log("Products found successfully")
         res.status(200).json(products)
     } catch (error) {
-        errorLog("Error in getProductsByIds controller", error.message)
+        errorLog("Error in getProductsByIds controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to gets multiple products by list of IDs - exclusive for ORDERS!!!!!
-export const getProductsByIdsOrders = async (req, res) => {
+export const getProductsByIdsOrders: ProductHandler = async (req, res) => {
     const { ids } = req.body
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ code: "!field", message: "Product ids are required" })
 
@@ -80,29 +86,29 @@ export const getProductsByIdsOrders = async (req, res) => {
         log("Products found successfully")
         res.status(200).json(products)
     } catch (error) {
-        errorLog("Error in getProductsByIds controller", error.message)
+        errorLog("Error in getProductsByIds controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get products by query parameters for pagination + filters + sort
-export const getProductsByQuery = async (req, res) => {
+export const getProductsByQuery: ProductHandler = async (req, res) => {
     try {
-        const page = Math.max(1, +req.query.page || 1) // Default to page 1 if not provided
+        const page = Math.max(1, Number(req.query.page ?? 1)) // Default to page 1 if not provided
         const limit = 20 // Default to 20 items per page
 
-        const categoryParam = (req.query.category || "").trim() // Default to empty string if not provided
+        const categoryParam = typeof req.query.category === "string" ? req.query.category.trim() : "" // Default to empty string if not provided
 
         const categoriesArray = categoryParam ? categoryParam.split(",").map(s => s.trim().toLowerCase()).filter(Boolean) : [] // Split categories by comma and trim whitespace
 
-        const typeParam = (req.query.type || "").trim() // Default to empty string if not provided
+        const typeParam = typeof req.query.type === "string" ? req.query.type.trim() : "" // Default to empty string if not provided
 
         const typesArray = typeParam ? typeParam.split(",").map(s => s.trim().toLowerCase()).filter(Boolean) : [] // Split types by comma and trim whitespace
 
-        const sizes = (req.query.sizes || "").trim().toUpperCase() // Default to empty string if not provided
-        const sort = (req.query.sort || "new").trim() // Default to "new" if not provided   
+        const sizes = typeof req.query.sizes === "string" ? req.query.sizes.trim().toUpperCase() : "" // Default to empty string if not provided
+        const sort = typeof req.query.sort === "string" ? req.query.sort.trim() : "new" // Default to "new" if not provided   
 
-        const query = {} // Empty query object
+        const query: Record<string, unknown> = {} // Empty query object
         if (categoriesArray.length) query.category = { $in: categoriesArray } // Add category to query
         if (typesArray.length) query.type = { $in: typesArray } // Add type to query 
         if (sizes) { // Add sizes to query
@@ -110,10 +116,10 @@ export const getProductsByQuery = async (req, res) => {
             if (arr.length) query.sizes = { $in: arr }
         }
 
-        let sortBy = { createdAt: -1 } // Default sort by createdAt in descending order
-        if (sort === "price-low") sortBy = { price: 1, _id: 1 } // Sort by price in ascending order 
-        if (sort === "price-high") sortBy = { price: -1, _id: 1 } // Sort by price in descending order
-        if (sort === "featured") sortBy = { createdAt: -1, _id: 1 } // Sort by createdAt in descending order - then by _id in ascending order
+        let sortBy: Record<string, SortOrder> = { createdAt: "desc" } // Default sort by createdAt in descending order
+        if (sort === "price-low") sortBy = { price: "asc", _id: "asc" } // Sort by price in ascending order 
+        if (sort === "price-high") sortBy = { price: "desc", _id: "asc" } // Sort by price in descending order
+        if (sort === "featured") sortBy = { createdAt: "desc", _id: "asc" } // Sort by createdAt in descending order - then by _id in ascending order
 
         query.active = true // Add active to query
 
@@ -130,13 +136,13 @@ export const getProductsByQuery = async (req, res) => {
         log(`Fetched ${items.length} products for page ${page}`)
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in getProductsByQuery controller", error.message)
+        errorLog("Error in getProductsByQuery controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get product by ID
-export const getProductById = async (req, res) => {
+export const getProductById: ProductHandler = async (req, res) => {
     const { id } = req.params
     if (!id) return res.status(400).json({ code: "!field", message: "Product id is required" })
 
@@ -154,7 +160,7 @@ export const getProductById = async (req, res) => {
         log(`Product with id ${id} found successfully`)
         res.status(200).json(sanitizedProduct)
     } catch (error) {
-        errorLog("Error in getProductById controller", error.message)
+        errorLog("Error in getProductById controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

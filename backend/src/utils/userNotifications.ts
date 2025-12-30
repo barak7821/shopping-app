@@ -1,16 +1,12 @@
 import { notifyAdminOnFailedUserEmail } from "./adminNotifications.js"
 import { sendEmail } from "./emailService.js"
-import { errorLog } from "./log.js"
+import { getErrorMessage } from "./errorUtils.js"
+import { errorLog } from "./logger.js"
 import { generateReceiptPdfBuffer } from "./receiptPdf.js"
+import type { NotificationUser, OrderNotificationOrder } from "./types.js"
+import { SendUserEmailParams, USER_EMAIL_TYPES } from "./types.js"
 
-export const USER_EMAIL_TYPES = {
-    ACCOUNT_CREATED: "account_created",
-    ACCOUNT_PASSWORD_CHANGED: "account_password_changed",
-    ACCOUNT_EMAIL_CHANGED: "account_email_changed",
-    ACCOUNT_DELETED: "account_deleted",
-    ORDER_CONFIRMED: "order_confirmed"
-}
-const sendUserEmail = async ({ to, subject, html, attachments = [], type, meta = {} }) => {
+const sendUserEmail = async ({ to, subject, html, attachments = [], type, meta = {} }: SendUserEmailParams) => {
     try {
         await sendEmail({
             to,
@@ -33,7 +29,7 @@ const sendUserEmail = async ({ to, subject, html, attachments = [], type, meta =
 }
 
 // Send account created email
-export const sendAccountCreatedEmail = async (user) => {
+export const sendAccountCreatedEmail = async (user: NotificationUser) => {
     const to = user.email
     if (!to) return
     const subject = `Welcome to ${process.env.APP_NAME}`
@@ -103,7 +99,7 @@ export const sendAccountCreatedEmail = async (user) => {
 }
 
 // Send account password changed email
-export const sendAccountPasswordChangedEmail = async user => {
+export const sendAccountPasswordChangedEmail = async (user: NotificationUser) => {
     const to = user.email
     if (!to) return
     const subject = `Your password has been changed`
@@ -174,7 +170,7 @@ export const sendAccountPasswordChangedEmail = async user => {
 }
 
 // Send account email changed email (only to the updated email)
-export const sendAccountEmailChangedEmail = async user => {
+export const sendAccountEmailChangedEmail = async (user: NotificationUser) => {
     const to = user.email
     if (!to) return
     const subject = `Your email address has been updated`
@@ -227,8 +223,9 @@ export const sendAccountEmailChangedEmail = async user => {
 }
 
 // Send account deleted email
-export const sendAccountDeletedEmail = async user => {
+export const sendAccountDeletedEmail = async (user: NotificationUser) => {
     const to = user.email
+    if (!to) return
     const subject = `Your account has been deleted`
 
     const html = `
@@ -278,12 +275,12 @@ export const sendAccountDeletedEmail = async user => {
 }
 
 // Send order confirmation email
-export const sendOrderConfirmationEmail = async ({ user, order, overrideEmail }) => {
+export const sendOrderConfirmationEmail = async ({ user, order, overrideEmail }: { user?: NotificationUser; order: OrderNotificationOrder; overrideEmail?: string }) => {
     const to = overrideEmail || user?.email || order?.shippingAddress?.email || order?.userEmail
     if (!to) return
     const subject = `Thank you for your order - ${order.orderNumber}`
 
-    const formatPrice = amount => {
+    const formatPrice = (amount: number | null | undefined) => {
         if (amount == null || Number.isNaN(+amount)) return "-"
         return `${(+amount).toFixed(2)} $`
     }
@@ -293,6 +290,11 @@ export const sendOrderConfirmationEmail = async ({ user, order, overrideEmail })
         : new Date().toLocaleString()
 
     const items = order.orderItems || []
+    const receiptItems = items.map(item => ({
+        ...item,
+        selectedQuantity: item.selectedQuantity ?? 0,
+        itemPricePerUnit: item.itemPricePerUnit ?? 0
+    }))
     const itemsHtml = items
         .map(item => {
             const size = item.selectedSize || "N/A"
@@ -428,13 +430,13 @@ export const sendOrderConfirmationEmail = async ({ user, order, overrideEmail })
         receiptPdfBuffer = await generateReceiptPdfBuffer({
             orderNumber: order.orderNumber,
             createdAt: order.createdAt || new Date(),
-            shippingAddress,
-            orderItems: items,
+            shippingAddress: shippingAddress ?? undefined,
+            orderItems: receiptItems,
             userName: user?.name || order.userName || shippingAddress?.name,
             userEmail: to
         })
     } catch (error) {
-        errorLog("Failed to generate receipt PDF", error.message)
+        errorLog("Failed to generate receipt PDF", getErrorMessage(error))
     }
 
     const attachments = receiptPdfBuffer

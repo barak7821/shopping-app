@@ -6,7 +6,7 @@ import userRoutes from "./routes/userRoutes.js"
 import orderRoutes from "./routes/orderRoutes.js"
 import productRoutes from "./routes/productRoutes.js"
 import connectToDB from "./utils/dbConfig.js"
-import { errorLog, log } from "./utils/log.js"
+import { errorLog, log } from "./utils/logger.js"
 import helmet from "helmet"
 import compression from "compression"
 import morgan from "morgan"
@@ -19,7 +19,7 @@ const app = Express()
 
 // Middleware
 app.use(cors({
-    origin: [process.env.CORS_ORIGIN, process.env.ADMIN_CORS_ORIGIN] || "*"
+    origin: [process.env.CORS_ORIGIN, process.env.ADMIN_CORS_ORIGIN].filter(Boolean) as string[] || "*"
 }))
 app.use(helmet())
 app.use(Express.json({ limit: "10mb" }))

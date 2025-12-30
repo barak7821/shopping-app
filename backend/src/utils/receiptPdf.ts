@@ -1,11 +1,13 @@
 import PDFDocument from "pdfkit"
+import { ReceiptOrder } from "./types.ts"
 
-const formatMoney = value => {
-  const amount = Number.isFinite(+value) ? +value : 0
+const formatMoney = (value: unknown) => {
+  const numeric = Number(value)
+  const amount = Number.isFinite(numeric) ? numeric : 0
   return amount.toFixed(2)
 }
 
-const formatDate = date =>
+const formatDate = (date: string | number | Date) =>
   new Intl.DateTimeFormat("en-GB", {
     year: "numeric",
     month: "short",
@@ -14,13 +16,13 @@ const formatDate = date =>
     minute: "2-digit",
   }).format(new Date(date))
 
-export const generateReceiptPdfBuffer = order =>
+export const generateReceiptPdfBuffer = (order: ReceiptOrder): Promise<Buffer> =>
   new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: "A4", margin: 50 })
-      const chunks = []
+      const chunks: Buffer[] = []
 
-      doc.on("data", chunk => chunks.push(chunk))
+      doc.on("data", (chunk: Buffer) => chunks.push(chunk))
       doc.on("end", () => resolve(Buffer.concat(chunks)))
       doc.on("error", reject)
 
@@ -32,7 +34,7 @@ export const generateReceiptPdfBuffer = order =>
     }
   })
 
-const buildReceipt = (doc, order) => {
+const buildReceipt = (doc: typeof PDFDocument.prototype, order: ReceiptOrder) => {
   const shopName = "Your Store"
   const shopAddressLines = ["1234 Company St,", "Company Town, ST 12345"]
   const supportEmail = "support@yourstore.com"
@@ -149,7 +151,7 @@ const buildReceipt = (doc, order) => {
   const summaryX = 300
   const summaryWidth = 245
 
-  const row = (label, value) => {
+  const row = (label: string, value: string) => {
     doc.font("Helvetica").fontSize(10).fillColor("#111").text(label, summaryX, y, { width: 120 })
     doc.text(value, summaryX + 120, y, { width: 120, align: "right" })
     y += 16

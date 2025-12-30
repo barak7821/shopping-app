@@ -1,5 +1,6 @@
 import { sendEmail } from "./emailService.js"
 import AdminSettings from "../models/adminSettingsModel.js"
+import { AdminNotificationProduct, FailedUserEmailNotification } from "./types.js"
 
 export const getAdminNotificationEmails = async () => {
     // Get admin settings
@@ -14,7 +15,7 @@ export const getAdminNotificationEmails = async () => {
     return settings.notificationEmails
 }
 
-const formatAvailability = availability => {
+const formatAvailability = (availability: string) => {
     if (availability === "available") return "Available"
     if (availability === "medium") return "Medium stock"
     if (availability === "low") return "Low stock"
@@ -23,12 +24,19 @@ const formatAvailability = availability => {
 }
 
 // Notify admins about current stock status of a product
-export const notifyAdminOnCurrentStockStatus = async (product, size) => {
+export const notifyAdminOnCurrentStockStatus = async (
+    product: AdminNotificationProduct,
+    size: { code?: string } | string | null | undefined
+) => {
     const emailList = await getAdminNotificationEmails()
     if (!emailList || emailList.length === 0) return
     const availability = product.availability
     if (!availability || availability === "available") return
 
+    const sizeLabel =
+        typeof size === "object" && size !== null && "code" in size
+            ? size.code
+            : size
     const subject = `Stock status: ${product.title} – ${formatAvailability(availability)}`
 
     const html = `<div style="font-family: 'Montserrat', Arial, sans-serif; background-color: #faf8f6; padding: 40px; color: #232323;">
@@ -56,7 +64,7 @@ export const notifyAdminOnCurrentStockStatus = async (product, size) => {
                     <strong style="color: #c1a875;">Status:</strong> ${formatAvailability(availability)}
                 </p>
                 <p style="margin: 8px 0 0; font-size: 15px; color: #444;">
-                    <strong style="color: #c1a875;">Size:</strong> ${size?.code || size || "N/A"}
+                    <strong style="color: #c1a875;">Size:</strong> ${sizeLabel || "N/A"}
                 </p>
                 </div>
 
@@ -85,16 +93,17 @@ export const notifyAdminOnCurrentStockStatus = async (product, size) => {
             productId: String(product._id),
             availability,
             totalStock: product.totalStock,
-            size: size?.code || size || null
+            size: sizeLabel || null
         }
     })
 }
 
 // Notify admins when a user email fails to send
-export const notifyAdminOnFailedUserEmail = async ({ to, type, meta, error }) => {
+export const notifyAdminOnFailedUserEmail = async ({ to, type, meta, error }: FailedUserEmailNotification) => {
     const emailList = await getAdminNotificationEmails()
     if (!emailList?.length) return
 
+    const errorMessage = error instanceof Error ? error.message : error ? String(error) : ""
     const subject = `User email failed: ${type} → ${to}`
 
     const html = `
@@ -118,7 +127,7 @@ export const notifyAdminOnFailedUserEmail = async ({ to, type, meta, error }) =>
 
             ${error ? `
             <p style="font-size: 12px; color: #999; margin: 0 0 4px;">
-                <strong style="color:#c1a875;">Error:</strong> ${error.message || error}
+                <strong style="color:#c1a875;">Error:</strong> ${errorMessage}
             </p>` : ""}
 
             <hr style="border:none; border-top:1px solid #eee; margin: 20px 0 10px;" />

@@ -75,6 +75,10 @@ const userSchema = new mongoose.Schema(
             default: 0,
             select: false
         },
+        passwordChangedAt: {
+            type: Date,
+            select: false
+        },
         otpBlockedUntil: { // Temporary block after too many attempts
             type: Date,
             select: false

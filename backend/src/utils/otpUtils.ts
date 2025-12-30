@@ -1,4 +1,5 @@
 import crypto from "crypto"
+import { UserIdLike } from "./types.js"
 
 // Generate a secure 6-digit OTP code
 export const generate6DigitOtp = () => {
@@ -7,7 +8,7 @@ export const generate6DigitOtp = () => {
 }
 
 // Hash OTP using HMAC with pepper and user ID
-export const hashOtp = (otp, userId) => {
+export const hashOtp = (otp: string, userId: UserIdLike) => {
   const pepper = process.env.OTP_PEPPER
   if (!pepper) throw new Error("Missing OTP_PEPPER in environment variables")
 
@@ -18,7 +19,7 @@ export const hashOtp = (otp, userId) => {
 }
 
 // Verify OTP by comparing hashed values securely
-export const verifyOtpHash = (otp, userId, storedHash) => {
+export const verifyOtpHash = (otp: string, userId: UserIdLike, storedHash: string) => {
   const pepper = process.env.OTP_PEPPER
   if (!pepper) throw new Error("Missing OTP_PEPPER in environment variables")
 

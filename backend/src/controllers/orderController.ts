@@ -2,13 +2,17 @@ import Order from '../models/orderModel.js'
 import { orderUserSchemaJoi, orderGuestSchemaJoi } from '../models/orderModel.js'
 import Product from '../models/productModel.js'
 import User from '../models/userModel.js'
-import { log, errorLog } from "../utils/log.js"
+import { log, errorLog } from "../utils/logger.js"
 import { notifyAdminOnCurrentStockStatus } from "../utils/adminNotifications.js"
 import { sendOrderConfirmationEmail } from '../utils/userNotifications.js'
 import { generateOrderNumber } from '../utils/OrderNumberGenerator.js'
+import { getErrorMessage } from '../utils/errorUtils.js'
+import { OrderHandler, OrderItemInput, AuthenticatedOrderHandler } from '../utils/types.js'
+import type { SortOrder } from "mongoose"
+
 
 // Controller to create a new order for guest users - not registered
-export const createOrder = async (req, res) => {
+export const createOrder: OrderHandler = async (req, res) => {
     const { orderDetails } = req.body
     if (!orderDetails) return res.status(400).json({ code: "!field", message: "Order details are required" })
 
@@ -17,7 +21,7 @@ export const createOrder = async (req, res) => {
         orderDetails.userId = "guest"
 
         // Get unique product IDs
-        const productIds = [...new Set(orderDetails.orderItems.map(item => item.itemId))]
+        const productIds = [...new Set(orderDetails.orderItems.map((item: OrderItemInput) => item.itemId))]
 
         // Fetch products
         const products = await Product.find({ _id: { $in: productIds }, active: true })
@@ -25,7 +29,7 @@ export const createOrder = async (req, res) => {
         // Verify if product exists
         if (products.length !== productIds.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
-        const quantityByProductAndSize = {}
+        const quantityByProductAndSize: Record<string, number> = {}
 
         // Calculate total quantity by product and size
         for (const item of orderDetails.orderItems) {
@@ -65,7 +69,8 @@ export const createOrder = async (req, res) => {
                 await newOrder.save() // Save the order to the database
                 break // Exit loop if successful
             } catch (error) {
-                if (error?.code === 11000 && error?.keyPattern?.orderNumber) { // Check for duplicate order number error
+                const mongoError = error as { code?: number; keyPattern?: { orderNumber?: unknown } }
+                if (mongoError.code === 11000 && mongoError.keyPattern?.orderNumber) { // Check for duplicate order number error
                     lastError = error
                     continue // Retry
                 }
@@ -101,13 +106,13 @@ export const createOrder = async (req, res) => {
         log("Order created successfully")
         res.status(201).json({ message: "Order created successfully" })
     } catch (error) {
-        errorLog("Error in createOrderForUser controller", error.message)
+        errorLog("Error in createOrderForUser controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to create a new order for registered users
-export const createOrderForUser = async (req, res) => {
+export const createOrderForUser: AuthenticatedOrderHandler = async (req, res) => {
     const { orderDetails } = req.body
     if (!orderDetails) return res.status(400).json({ code: "!field", message: "Order details are required" })
 
@@ -124,7 +129,7 @@ export const createOrderForUser = async (req, res) => {
         orderDetails.userId = userId
 
         // Get unique product IDs
-        const productIds = [...new Set(orderDetails.orderItems.map(item => item.itemId))]
+        const productIds = [...new Set(orderDetails.orderItems.map((item: OrderItemInput) => item.itemId))]
 
         // Fetch products
         const products = await Product.find({ _id: { $in: productIds }, active: true })
@@ -132,7 +137,7 @@ export const createOrderForUser = async (req, res) => {
         // Verify if product exists
         if (products.length !== productIds.length) return res.status(404).json({ code: "not_found", message: "Product not found" })
 
-        const quantityByProductAndSize = {}
+        const quantityByProductAndSize: Record<string, number> = {}
 
         for (const item of orderDetails.orderItems) {
             const key = `${item.itemId}:${item.selectedSize}` // create a unique key based on product ID and size
@@ -170,7 +175,8 @@ export const createOrderForUser = async (req, res) => {
                 await newOrder.save() // Save the order to the database
                 break // Exit loop if successful
             } catch (error) {
-                if (error?.code === 11000 && error?.keyPattern?.orderNumber) { // Check for duplicate order number error
+                const mongoError = error as { code?: number; keyPattern?: { orderNumber?: unknown } }
+                if (mongoError.code === 11000 && mongoError.keyPattern?.orderNumber) { // Check for duplicate order number error
                     lastError = error
                     continue // Retry
                 }
@@ -207,13 +213,13 @@ export const createOrderForUser = async (req, res) => {
         log("Order created successfully")
         res.status(201).json({ message: "Order created successfully" })
     } catch (error) {
-        errorLog("Error in createOrder controller", error.message)
+        errorLog("Error in createOrder controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get order by order number
-export const getOrderByOrderNumber = async (req, res) => {
+export const getOrderByOrderNumber: OrderHandler = async (req, res) => {
     const { number } = req.params
     if (!number) return res.status(400).json({ code: "!field", message: "Order number is required" })
 
@@ -224,17 +230,17 @@ export const getOrderByOrderNumber = async (req, res) => {
         log("Order found successfully")
         res.status(200).json(orders)
     } catch (error) {
-        errorLog("Error in getOrderByOrderNumber controller", error.message)
+        errorLog("Error in getOrderByOrderNumber controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to get orders by query parameters for pagination
-export const getOrdersByQuery = async (req, res) => {
+export const getOrdersByQuery: AuthenticatedOrderHandler = async (req, res) => {
     try {
-        const page = Math.max(1, +req.query.page || 1)
+        const page = Math.max(1, Number(req.query.page ?? 1))
         const limit = 5
-        const sortBy = { createdAt: -1, _id: 1 }
+        const sortBy: Record<string, SortOrder> = { createdAt: "desc", _id: "asc" }
 
         const total = await Order.countDocuments()
         const items = await Order.find({ userId: req.user.id }).sort(sortBy).skip((page - 1) * limit).limit(limit).select("-__v -updatedAt").lean()
@@ -247,7 +253,7 @@ export const getOrdersByQuery = async (req, res) => {
         log(`Fetched ${items.length} orders for page ${page}`)
         res.status(200).json({ items, page, total, totalPages, hasNext, hasPrev })
     } catch (error) {
-        errorLog("Error in getOrdersByQuery controller", error.message)
+        errorLog("Error in getOrdersByQuery controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

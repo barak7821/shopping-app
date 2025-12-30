@@ -1,11 +1,14 @@
 import DeletedUser from "../models/deletedUserModel.js"
 import User, { updatePasswordSchemaJoi, updateUserSchemaJoi } from "../models/userModel.js"
-import { log, errorLog } from "../utils/log.js"
+import { log, errorLog } from "../utils/logger.js"
 import { checkPassword, hashPassword } from "../utils/passwordUtils.js"
 import { sendAccountDeletedEmail, sendAccountEmailChangedEmail, sendAccountPasswordChangedEmail } from "../utils/userNotifications.js"
+import { getErrorMessage } from "../utils/errorUtils.js"
+import type { Response } from "express"
+import type { AuthenticatedRequest, UpdateUserFields, UserHandler } from "../utils/types.js"
 
 // Controller to get the logged-in user's details
-export const getUser = async (req, res) => {
+export const getUser: UserHandler = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("-password -__v -createdAt -updatedAt  -_id")
         if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
@@ -13,12 +16,12 @@ export const getUser = async (req, res) => {
         log("User found successfully")
         res.status(200).json(user)
     } catch (error) {
-        errorLog("Error in getUser controller", error.message)
+        errorLog("Error in getUser controller", getErrorMessage(error))
         res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
-export const updateUser = async (req, res) => {
+export const updateUser: UserHandler = async (req, res) => {
     const { name, email, phone, street, city, zip, country } = req.body
     if (Object.keys(req.body).length === 0) return res.status(400).json({ code: "!field", message: "No data provided" })
 
@@ -30,7 +33,9 @@ export const updateUser = async (req, res) => {
         await updateUserSchemaJoi.validateAsync({ name, email, phone, street, city, zip, country })
 
         // Update user data if provided
-        const updateFields = {}
+
+
+        const updateFields: UpdateUserFields = {}
         if (name) updateFields.name = name.toLowerCase()
         if (email) updateFields.email = email.toLowerCase()
         if (phone !== undefined) updateFields.phone = phone
@@ -50,19 +55,19 @@ export const updateUser = async (req, res) => {
         await User.findByIdAndUpdate(user._id, { lastLogin: new Date() })
 
         if (email) {
-            sendAccountEmailChangedEmail({ user, email: email.toLowerCase() }).catch(error => errorLog("Failed to send account email changed email", error.message))
+            sendAccountEmailChangedEmail(user).catch(error => errorLog("Failed to send account email changed email", getErrorMessage(error)))
         }
 
         log("User data updated successfully")
         res.status(200).json({ message: "User data updated successfully" })
     } catch (error) {
-        errorLog("Error in updateUser controller", error.message)
+        errorLog("Error in updateUser controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to delete a user
-export const deleteUser = async (req, res) => {
+export const deleteUser: UserHandler = async (req, res) => {
     try {
         // Check if user exists and delete it
         const user = await User.findById(req.user.id)
@@ -81,19 +86,19 @@ export const deleteUser = async (req, res) => {
         // Update last login
         await User.findByIdAndUpdate(user._id, { lastLogin: new Date() })
 
-        sendAccountDeletedEmail(user).catch(error => errorLog("Failed to send account deleted email", error.message))
+        sendAccountDeletedEmail(user).catch(error => errorLog("Failed to send account deleted email", getErrorMessage(error)))
 
         log("User deleted successfully", user._id)
         res.status(200).json({ message: "User deleted successfully", id: user._id })
     } catch (error) {
-        errorLog("Error in deleteUser controller", error.message)
+        errorLog("Error in deleteUser controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 
 // Controller to change password
-export const changePassword = async (req, res) => {
+export const changePassword: UserHandler = async (req, res) => {
     const { password, currentPassword } = req.body
     // Validate input fields
     if (!password || !currentPassword) return res.status(400).json({ code: "!field", message: "All fields are required" })
@@ -107,6 +112,7 @@ export const changePassword = async (req, res) => {
         // Find user by email
         const user = await User.findById(req.user.id).select("+password")
         if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
+        if (!user.password) return res.status(401).json({ code: "invalid_pass", message: "Invalid password" })
 
         // Check if user google sign-in account 
         if (user.provider === "google") return res.status(403).json({ code: "google_user", message: "Google users cannot change passwords because they sign in with Google." })
@@ -124,18 +130,18 @@ export const changePassword = async (req, res) => {
         // Update last login
         await User.findByIdAndUpdate(user._id, { lastLogin: new Date() })
 
-        sendAccountPasswordChangedEmail(user).catch(error => errorLog("Failed to send password changed email", error.message))
+        sendAccountPasswordChangedEmail(user).catch(error => errorLog("Failed to send password changed email", getErrorMessage(error)))
 
         log("Password changed successfully")
         res.status(200).json({ message: "Password changed successfully" })
     } catch (error) {
-        errorLog("Error in changePassword controller", error.message)
+        errorLog("Error in changePassword controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }
 
 // Controller to verify password
-export const verifyPassword = async (req, res) => {
+export const verifyPassword: UserHandler = async (req, res) => {
     const { password } = req.body
     // Validate input fields
     if (!password) return res.status(400).json({ code: "!field", message: "All fields are required" })
@@ -144,6 +150,7 @@ export const verifyPassword = async (req, res) => {
         // Find user
         const user = await User.findById(req.user.id).select("+password")
         if (!user) return res.status(404).json({ code: "not_found", message: "User not found" })
+        if (!user.password) return res.status(401).json({ code: "invalid_pass", message: "Invalid password" })
 
         // Verify the password
         const isPasswordValid = await checkPassword(password, user.password)
@@ -152,7 +159,7 @@ export const verifyPassword = async (req, res) => {
         log("Password verified successfully")
         res.status(200).json({ message: "Password verified successfully" })
     } catch (error) {
-        errorLog("Error in verifyPassword controller", error.message)
+        errorLog("Error in verifyPassword controller", getErrorMessage(error))
         return res.status(500).json({ code: "server_error", message: "server_error" })
     }
 }

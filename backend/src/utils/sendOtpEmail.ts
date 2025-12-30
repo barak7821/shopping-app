@@ -1,6 +1,6 @@
 import { sendEmail } from "./emailService.js";
 
-export const sendOtpEmail = async (to, otp) => {
+export const sendOtpEmail = async (to: string, otp: string) => {
   await sendEmail({
     to,
     subject: `Reset your password - ${process.env.APP_NAME}`,

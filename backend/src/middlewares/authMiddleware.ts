@@ -1,9 +1,12 @@
 import jwt from "jsonwebtoken"
+import type { NextFunction, Response } from "express"
 import User from "../models/userModel.js"
-import { errorLog } from "../utils/log.js"
+import { errorLog } from "../utils/logger.js"
+import { AuthRequest, AuthUser } from "../utils/types.js"
+import { getErrorMessage } from "../utils/errorUtils.js"
 
 // Middleware to authenticate the user via JWT token
-const adminAuthMiddleware = async (req, res, next) => {
+const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
 
     // Retrieve the Authorization header
     const authHeader = req.header("Authorization")
@@ -25,27 +28,24 @@ const adminAuthMiddleware = async (req, res, next) => {
 
         // Verify the token using the JWT secret
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        if (!decoded.sub || decoded.aud !== "admin" || decoded.mfa !== true) {
-            return res.status(401).json({ message: "Unauthorized" })
+        if (typeof decoded === "string" || !("id" in decoded)) {
+            throw new Error("Invalid token")
         }
 
-        req.user = { id: decoded.sub, aud: decoded.aud, mfa: decoded.mfa }
+        req.user = decoded as AuthUser
 
         // Find the user in the database based on the decoded ID
-        const user = await User.findById(decoded.sub)
-        if (!user) return res.status(401).json({ message: "Unauthorized" })
-
-        // Check if the user has admin role and is a local user
-        if (user.role !== "admin" || user.provider !== "local") return res.status(403).json({ message: "Forbidden" })
+        const user = await User.findById(decoded.id)
+        if (!user) return res.status(200).json({ exist: false }) // Not an error — just means the user doesn't exist
 
         req.user.role = user.role
         req.user.provider = user.provider
 
         next()
     } catch (error) {
-        errorLog("Token verification error:", error.message)
-        return res.status(401).json({ message: "Unauthorized" })
+        errorLog("Token verification error:", getErrorMessage(error))
+        res.status(200).json({ message: "Unauthorized", exist: false })  // Not an error — just means the user doesn't exist
     }
 }
 
-export default adminAuthMiddleware
+export default authMiddleware
