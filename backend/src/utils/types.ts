@@ -1,5 +1,5 @@
-import type { Attachment } from "nodemailer/lib/mailer";
-import type { Request, Response } from "express";
+import type { Attachment } from "nodemailer/lib/mailer/index.d.ts";
+import type { Request, Response, RequestHandler } from "express";
 
 export type AdminNotificationProduct = {
     availability?: string
@@ -130,7 +130,7 @@ export type AuthenticatedRequest = Request & {
 
 export type AdminAuthRequest = AuthRequest & { user: AuthUser }
 
-export type AdminHandler = (req: AdminAuthRequest, res: Response) => Promise<Response | void>
+export type AdminHandler = RequestHandler
 
 export type UpdateProductFields = {
     title?: string
