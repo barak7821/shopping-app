@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Theme from "./ThemeSwitcher";
 
 export default function SideBar() {
-    const pathname = usePathname();
+    const pathname = usePathname()
 
     return (
         <div className="hidden lg:block">
@@ -29,9 +29,9 @@ export default function SideBar() {
                             { text: "Best Sellers Editor", link: "/bestSeller", aria: "Best Sellers" },
                             { text: "Contact Info Editor", link: "/contact", aria: "Contact Info" },
                             { text: "Activity Logs", link: "/logs", aria: "Activity Logs" },
-                            { text: "Notification Emails", link: "/notifications", aria: "Notification Emails" },
+                            { text: "Notification Emails", link: "/notifications", aria: "Notification Emails" }
                         ].map((item, index) => {
-                            const isActive = pathname === item.link;
+                            const isActive = pathname === item.link
 
                             return (
                                 <li key={index}>

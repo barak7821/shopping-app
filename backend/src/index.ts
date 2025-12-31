@@ -19,8 +19,7 @@ const app = Express()
 
 // Middleware
 app.use(cors({
-    // origin: [process.env.CORS_ORIGIN, process.env.ADMIN_CORS_ORIGIN].filter(Boolean) as string[] || "*"
-    origin: "*"
+    origin: [process.env.CORS_ORIGIN, process.env.ADMIN_CORS_ORIGIN].filter(Boolean) as string[]
 }))
 app.use(helmet())
 app.use(Express.json({ limit: "10mb" }))
