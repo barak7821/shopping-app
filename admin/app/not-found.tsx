@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+"use client"
+import Link from "next/link"
 
 export default function NotFound() {
   return (
@@ -8,7 +9,7 @@ export default function NotFound() {
         <p className="font-semibold text-3xl dark:text-gray-200">Sorry, we couldn't find this page.</p>
         <p className="mt-4 mb-8 dark:text-gray-400">But don't worry, you can find plenty of other things on our homepage.</p>
         {/* Redirecting the user to the homepage when they click the link */}
-        <Link to='/' className='bg-blue-900 rounded-xl text-white py-2 px-8 cursor-pointer hover:scale-105 active:scale-95 duration-300'>Back to homepage</Link>
+        <Link href='/' className='bg-blue-900 rounded-xl text-white py-2 px-8 cursor-pointer hover:scale-105 active:scale-95 duration-300'>Back to homepage</Link>
       </div>
     </div>
   )
