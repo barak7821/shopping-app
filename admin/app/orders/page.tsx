@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
-import { fetchOrdersByQuery } from "../api/apiClient";
+import { fetchOrdersByQuery } from "../services/apiClient";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
 import { type Order } from "../types/types";
 import getPageNumbers from "../lib/getPageNumbers";

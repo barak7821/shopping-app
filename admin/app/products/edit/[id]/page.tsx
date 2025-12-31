@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import SideBar from "@/app/components/SideBar";
 import { log } from "@/app/lib/logger";
-import { updateProductById, getProductById } from "@/app/api/apiClient";
+import { updateProductById, getProductById } from "@/app/services/apiClient";
 import { useApiErrorHandler, type ApiError } from "@/app/hooks/useApiErrorHandler";
 import ProductForm from "@/app/components/ProductForm";
 import Loading from "@/app/components/Loading";

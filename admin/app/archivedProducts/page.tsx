@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { fetchArchivedProducts, restoreArchivedProduct } from "../api/apiClient";
+import { fetchArchivedProducts, restoreArchivedProduct } from "../services/apiClient";
 import { log } from "../lib/logger";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";

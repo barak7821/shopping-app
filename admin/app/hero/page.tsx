@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState, type ChangeEvent } from "react";
 import SideBar from "../components/SideBar";
-import { fetchHeroSection, updateHeroSection } from "../api/apiClient";
+import { fetchHeroSection, updateHeroSection } from "../services/apiClient";
 import { log } from "../lib/logger";
 import Loading from "../components/Loading";
 import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import SideBar from "../components/SideBar";
-import { fetchAdminLogsByQuery } from "../api/apiClient";
+import { fetchAdminLogsByQuery } from "../services/apiClient";
 import { type AdminLog } from "../types/types";
 import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
 import getPageNumbers from "../lib/getPageNumbers";

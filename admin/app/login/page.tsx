@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { errorLog, log } from "../lib/logger";
 import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
-import { adminLogin } from "../api/apiClient";
+import { adminLogin } from "../services/apiClient";
 import Loading from "../components/Loading";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";

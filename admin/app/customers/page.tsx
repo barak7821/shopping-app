@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { deleteUserById, fetchUsersByQuery } from "../api/apiClient";
+import { deleteUserById, fetchUsersByQuery } from "../services/apiClient";
 import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
 import { log } from "../lib/logger";

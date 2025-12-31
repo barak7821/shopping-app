@@ -3,7 +3,7 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import SideBar from "../components/SideBar";
 import { log } from "../lib/logger";
 import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
-import { fetchContactInfo, updateContactInfo } from "../api/apiClient";
+import { fetchContactInfo, updateContactInfo } from "../services/apiClient";
 import Loading from "../components/Loading";
 import { type ContactInfo } from "../types/types";
 import { useNotyf } from "../hooks/useNotyf";

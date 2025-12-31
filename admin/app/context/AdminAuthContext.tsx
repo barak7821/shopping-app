@@ -1,7 +1,7 @@
 "use client"
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { errorLog } from "../lib/logger";
-import { checkAdminAuth } from "../api/apiClient";
+import { checkAdminAuth } from "../services/apiClient";
 
 interface AuthResponse {
   exist: boolean

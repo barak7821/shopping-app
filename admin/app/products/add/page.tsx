@@ -1,7 +1,7 @@
 "use client"
 import SideBar from "@/app/components/SideBar";
 import { log } from "@/app/lib/logger";
-import { addProduct } from "@/app/api/apiClient";
+import { addProduct } from "@/app/services/apiClient";
 import { useApiErrorHandler, type ApiError } from "@/app/hooks/useApiErrorHandler";
 import ProductForm from "@/app/components/ProductForm";
 import { type ProductFormData } from "@/app/types/types";

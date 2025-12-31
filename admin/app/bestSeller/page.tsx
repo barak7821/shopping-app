@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import SideBar from "../components/SideBar"
-import { findProductsSearch, updateBestSellerSection } from "../api/apiClient"
+import { findProductsSearch, updateBestSellerSection } from "../services/apiClient"
 import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler"
 import { log } from "../lib/logger"
 import { type Product } from "../types/types";

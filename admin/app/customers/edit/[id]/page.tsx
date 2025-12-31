@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import SideBar from "@/app/components/SideBar"
 import { useApiErrorHandler, type ApiError } from "@/app/hooks/useApiErrorHandler";
 import Loading from "@/app/components/Loading";
-import { addNoteToUser, deleteUserById, getUserById, makeAdmin, removeAdmin } from "@/app/api/apiClient";
+import { addNoteToUser, deleteUserById, getUserById, makeAdmin, removeAdmin } from "@/app/services/apiClient";
 import { type User } from "@/app/types/types";
 import { useNotyf } from "@/app/hooks/useNotyf";
 import { useParams, useRouter } from "next/navigation";

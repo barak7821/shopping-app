@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import SideBar from "@/app/components/SideBar"
 import { useApiErrorHandler, type ApiError } from "@/app/hooks/useApiErrorHandler";
 import Loading from "@/app/components/Loading";
-import { getOrderByOrderNumber, getProductsByIds, resendOrderReceipt, updateOrderStatusById } from "@/app/api/apiClient";
+import { getOrderByOrderNumber, getProductsByIds, resendOrderReceipt, updateOrderStatusById } from "@/app/services/apiClient";
 import { log } from "@/app/lib/logger";
 import { type Order } from "@/app/types/types";
 import { useNotyf } from "@/app/hooks/useNotyf";

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import SideBar from "../../../components/SideBar"
 import { useApiErrorHandler, type ApiError } from "../../../hooks/useApiErrorHandler";
 import Loading from "../../../components/Loading";
-import { getDeletedUserById } from "../../../api/apiClient";
+import { getDeletedUserById } from "../../../services/apiClient";
 import { type User } from "../../../types/types";
 import { useParams } from "next/navigation";
 

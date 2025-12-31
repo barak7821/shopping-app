@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
-import { verifyAdmin2FA } from "../api/apiClient"
+import { verifyAdmin2FA } from "../services/apiClient"
 import { useApiErrorHandler } from "../hooks/useApiErrorHandler"
 import { log } from "../lib/logger"
 import { useRouter } from "next/navigation"

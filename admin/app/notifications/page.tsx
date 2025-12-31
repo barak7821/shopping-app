@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState, type ChangeEvent } from "react";
 import SideBar from "../components/SideBar";
-import { getNotificationEmails, updateNotificationEmails } from "../api/apiClient";
+import { getNotificationEmails, updateNotificationEmails } from "../services/apiClient";
 import Loading from "../components/Loading";
 import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
 import { useNotyf } from "../hooks/useNotyf";

@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { log } from "../lib/logger"
-import { setupAdmin2FA, verifyAdmin2FA } from "../api/apiClient"
+import { setupAdmin2FA, verifyAdmin2FA } from "../services/apiClient"
 import { useApiErrorHandler } from "../hooks/useApiErrorHandler"
 import Loading from "../components/Loading"
 import { type Setup2FAProps } from "../types/types"

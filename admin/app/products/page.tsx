@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-import { archiveProductById, fetchProductsByQuery } from "../api/apiClient";
+import { archiveProductById, fetchProductsByQuery } from "../services/apiClient";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import TableLoadingSkeleton from "../components/TableLoadingSkeleton";
 import { useApiErrorHandler, type ApiError } from "../hooks/useApiErrorHandler";
