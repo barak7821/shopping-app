@@ -18,9 +18,15 @@ dotenv.config()
 const app = Express()
 
 // Middleware
+const corsOrigins = (process.env.CORS_ORIGIN ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    
 app.use(cors({
-    origin: [process.env.CORS_ORIGIN].filter(Boolean) as string[]
+    origin: corsOrigins.length > 0 ? corsOrigins : true
 }))
+
 app.use(helmet())
 app.use(Express.json({ limit: "10mb" }))
 app.use(compression())
