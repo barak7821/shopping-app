@@ -138,30 +138,33 @@ productSchema.index({ category: 1, type: 1, price: 1 })
 productSchema.index({ category: 1, type: 1, createdAt: -1 })
 productSchema.index({ title: "text" })
 
-productSchema.virtual("totalStock").get(function () { // Calculate total stock
+productSchema.virtual("totalStock").get(function (this: { sizes?: Array<{ stock?: number }> }) { // Calculate total stock
     if (!this.sizes || !Array.isArray(this.sizes)) return 0
     return this.sizes.reduce((sum, size) => {
         return sum + (size.stock || 0)
     }, 0)
 })
 
-productSchema.virtual("availability").get(function () { // Check stock availability
-    const totalStock = this.totalStock
+productSchema.virtual("availability").get(function (this: { sizes?: Array<{ stock?: number }>; lowStockThreshold?: number }) { // Check stock availability
+    const sizes = Array.isArray(this.sizes) ? this.sizes : []
+    const totalStock = sizes.reduce((sum, size) => sum + (size.stock || 0), 0)
+    const lowStockThreshold = this.lowStockThreshold ?? 0
 
     if (totalStock <= 0) return "out"
-    if (totalStock <= this.lowStockThreshold) return "low"
-    if (totalStock <= this.lowStockThreshold * 3) return "medium"
+    if (totalStock <= lowStockThreshold) return "low"
+    if (totalStock <= lowStockThreshold * 3) return "medium"
     return "available"
 })
 
 productSchema.set("toJSON", {
     virtuals: true,
     transform(doc, ret) {
-        delete ret.totalStock
-        delete ret.lowStockThreshold
-        delete ret.__v
-        delete ret.updatedAt
-        return ret
+        const mutable = ret as Record<string, unknown>
+        delete mutable.totalStock
+        delete mutable.lowStockThreshold
+        delete mutable.__v
+        delete mutable.updatedAt
+        return mutable
     }
 })
 

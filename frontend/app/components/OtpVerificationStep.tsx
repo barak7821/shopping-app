@@ -4,7 +4,11 @@ import Loading from './Loading';
 import { useEffect, useState } from 'react';
 import { handleSendOtp, handleVerifyOtp } from '../services/apiClient';
 import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
-import OTPInput from "otp-input-react";
+import dynamic from "next/dynamic";
+
+const OTPInput = dynamic(() => import("otp-input-react").then((mod) => mod.default), {
+    ssr: false,
+});
 import { useNotyf } from '../hooks/useNotyf';
 
 export default function VerifyOtpStep({ email, onNext }: { email: string, onNext: (otp: string) => void }) {

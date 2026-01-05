@@ -1,5 +1,5 @@
 import PDFDocument from "pdfkit"
-import { ReceiptOrder } from "./types.ts"
+import { ReceiptOrder } from "./types.js";
 
 const formatMoney = (value: unknown) => {
   const numeric = Number(value)

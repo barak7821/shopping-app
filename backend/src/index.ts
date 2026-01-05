@@ -22,9 +22,10 @@ const corsOrigins = (process.env.CORS_ORIGIN ?? "")
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean)
-    
+const allowAllOrigins = corsOrigins.includes("*")
+
 app.use(cors({
-    origin: corsOrigins.length > 0 ? corsOrigins : true
+    origin: allowAllOrigins ? true : (corsOrigins.length > 0 ? corsOrigins : true)
 }))
 
 app.use(helmet())
